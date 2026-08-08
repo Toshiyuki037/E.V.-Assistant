@@ -4,24 +4,23 @@ import wave
 import sounddevice as sd
 from faster_whisper import WhisperModel
 
-
 SAMPLE_RATE = 16000
 CHANNELS = 1
-RECORD_SECONDS = 5
+RECORD_SECONDS = 6
 
-print("Loading Whisper...")
+print("Loading speech recognition...")
 
-model = WhisperModel(
+whisper = WhisperModel(
     "small.en",
     device="cuda",
     compute_type="float16",
 )
 
-print("Whisper ready.")
+print("Speech recognition ready.")
 
 
 def listen():
-    print("Listening...")
+    print("\nListening...")
 
     audio = sd.rec(
         int(RECORD_SECONDS * SAMPLE_RATE),
@@ -35,27 +34,24 @@ def listen():
     with tempfile.NamedTemporaryFile(
         suffix=".wav",
         delete=False,
-    ) as temp_file:
+    ) as temp:
+        filename = temp.name
 
-        with wave.open(temp_file.name, "wb") as wav:
-            wav.setnchannels(CHANNELS)
-            wav.setsampwidth(2)
-            wav.setframerate(SAMPLE_RATE)
-            wav.writeframes(audio.tobytes())
+    with wave.open(filename, "wb") as wav:
+        wav.setnchannels(CHANNELS)
+        wav.setsampwidth(2)
+        wav.setframerate(SAMPLE_RATE)
+        wav.writeframes(audio.tobytes())
 
-        segments, info = model.transcribe(
-            temp_file.name,
-            beam_size=5,
-        )
+    segments, _ = whisper.transcribe(
+        filename,
+        language="en",
+        beam_size=5,
+    )
 
-        text = " ".join(
-            segment.text.strip()
-            for segment in segments
-        )
+    text = " ".join(
+        segment.text.strip()
+        for segment in segments
+    ).strip()
 
     return text
-
-
-if __name__ == "__main__":
-    text = listen()
-    print("You said:", text)
