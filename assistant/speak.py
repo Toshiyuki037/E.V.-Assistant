@@ -1,3 +1,24 @@
+"""
+E.V. Assistant - Voice Synthesis Module
+
+Created: August 7, 2026
+Last Edited: August 8, 2026
+Author: Max Maehara
+
+Purpose:
+    Converts E.V.'s generated text responses into spoken audio.
+
+How It Works:
+    Uses the local F5-TTS model with an authorized reference voice.
+    The model remains loaded on the NVIDIA GPU for faster repeated
+    inference. Generated speech is written temporarily, played directly
+    through the system speakers, and then deleted.
+
+Most Recent Change:
+    Changed speech output from permanently saved WAV files to temporary
+    audio that automatically plays and is deleted after playback.
+"""
+
 import os
 import tempfile
 from pathlib import Path
@@ -9,8 +30,8 @@ from f5_tts.api import F5TTS
 
 ROOT = Path(__file__).resolve().parent.parent
 
-REF_AUDIO = ROOT / "eve-voice" / "references" / "eve-neutral.wav"
-REF_TEXT_FILE = ROOT / "eve-voice" / "references" / "eve-neutral.txt"
+REF_AUDIO = ROOT / "evie-voice" / "references" / "evie-neutral.wav"
+REF_TEXT_FILE = ROOT / "evie-voice" / "references" / "evie-neutral.txt"
 
 REF_TEXT = REF_TEXT_FILE.read_text(encoding="utf-8").strip()
 

@@ -1,3 +1,23 @@
+"""
+E.V. Assistant - Speech Recognition Module
+
+Created: August 7, 2026
+Last Edited: August 8, 2026
+Author: Max Maehara
+
+Purpose:
+    Converts the user's spoken input into text for E.V.
+
+How It Works:
+    Records microphone audio locally and sends the recording through
+    Faster-Whisper speech recognition running on the GPU. The resulting
+    transcription is returned to main.py and processed exactly like a
+    terminal prompt.
+
+Most Recent Change:
+    Added microphone-based input as an alternative to terminal prompting.
+"""
+
 import tempfile
 import wave
 
