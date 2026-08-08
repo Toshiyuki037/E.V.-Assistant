@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 *.wav
 voice-output/
+memory/memory.db
 tests/
 .env
 .cache/

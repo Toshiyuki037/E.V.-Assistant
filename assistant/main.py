@@ -6,75 +6,216 @@ Last Edited: August 8, 2026
 Author: Max Maehara
 
 Purpose:
-    Main entry point for the E.V. Assistant. Controls the user interaction
-    loop and allows E.V. to receive input through either the terminal or
-    microphone.
+    Main entry point for E.V.
+
+    Handles terminal input, voice input, AI reasoning,
+    persistent memory, and spoken output.
 
 How It Works:
-    1. User selects terminal or voice input.
-    2. Voice input is converted to text through listen.py.
-    3. The prompt is sent to brain.py for processing.
-    4. The generated response is displayed in the terminal.
-    5. speak.py converts the response into E.V.'s voice and plays it.
+    1. User chooses terminal or voice input.
+    2. Voice input is converted to text by listen.py.
+    3. Explicit memory commands are processed locally.
+    4. Normal prompts are sent to brain.py.
+    5. Conversations are saved to memory.db.
+    6. Responses are spoken through speak.py.
 
 Most Recent Change:
-    Added support for both terminal and microphone input through the same
-    E.V. processing pipeline.
+    Added explicit long-term memory using the command
+    "remember that ...".
 """
 
 from brain import chat
 from listen import listen
+from memory import (
+    init_memory,
+    save_conversation,
+    save_memory,
+)
 from speak import speak
-from memory import init_memory, save_conversation
 
 
-def process_prompt(user_text):
+# ---------------------------------------------------------------------------
+# Prompt Processing
+# ---------------------------------------------------------------------------
+
+def process_prompt(
+    user_text: str,
+):
+    user_text = user_text.strip()
+
     if not user_text:
         return
 
     print(f"\nYou: {user_text}")
 
-    response = chat(user_text)
+    lowered = user_text.lower()
 
-    print(f"\nE.V.: {response}\n")
 
-    save_conversation(user_text, response)
+    # -----------------------------------------------------------------------
+    # Explicit Long-Term Memory
+    # -----------------------------------------------------------------------
+
+    remember_prefix = "remember that "
+
+    if lowered.startswith(
+        remember_prefix
+    ):
+        memory_text = user_text[
+            len(remember_prefix):
+        ].strip()
+
+        if not memory_text:
+            response = (
+                "Tell me what you'd like me "
+                "to remember."
+            )
+
+        else:
+            save_memory(
+                memory_text,
+                category="general",
+            )
+
+            response = (
+                "I'll remember that."
+            )
+
+        print(
+            f"\nE.V.: {response}\n"
+        )
+
+        speak(response)
+
+        return
+
+
+    # -----------------------------------------------------------------------
+    # Normal Conversation
+    # -----------------------------------------------------------------------
+
+    response = chat(
+        user_text
+    )
+
+    print(
+        f"\nE.V.: {response}\n"
+    )
+
+    save_conversation(
+        user_text,
+        response,
+    )
 
     speak(response)
 
 
+# ---------------------------------------------------------------------------
+# Startup
+# ---------------------------------------------------------------------------
+
 init_memory()
 
 print("\nE.V. Online")
+
 print("-------------------------")
 print("[T] Terminal")
 print("[V] Voice")
 print("[Q] Quit")
 print("-------------------------")
 
-while True:
-    mode = input("\nMode: ").strip().lower()
 
-    if mode in {"q", "quit", "exit"}:
-        print("E.V. Offline")
+# ---------------------------------------------------------------------------
+# Main Loop
+# ---------------------------------------------------------------------------
+
+while True:
+    mode = input(
+        "\nMode: "
+    ).strip().lower()
+
+
+    # -----------------------------------------------------------------------
+    # Quit
+    # -----------------------------------------------------------------------
+
+    if mode in {
+        "q",
+        "quit",
+        "exit",
+    }:
+        print(
+            "\nE.V. Offline"
+        )
+
         break
 
-    if mode in {"t", "terminal"}:
-        user_text = input("You: ").strip()
 
-        if user_text.lower() in {"quit", "exit"}:
+    # -----------------------------------------------------------------------
+    # Terminal Input
+    # -----------------------------------------------------------------------
+
+    elif mode in {
+        "t",
+        "terminal",
+    }:
+        user_text = input(
+            "You: "
+        ).strip()
+
+        if user_text.lower() in {
+            "quit",
+            "exit",
+        }:
+            print(
+                "\nE.V. Offline"
+            )
+
             break
 
-        process_prompt(user_text)
+        process_prompt(
+            user_text
+        )
 
-    elif mode in {"v", "voice"}:
+
+    # -----------------------------------------------------------------------
+    # Voice Input
+    # -----------------------------------------------------------------------
+
+    elif mode in {
+        "v",
+        "voice",
+    }:
         user_text = listen()
 
         if not user_text:
-            print("I didn't hear anything.")
+            print(
+                "\nI didn't hear anything."
+            )
+
             continue
 
-        process_prompt(user_text)
+        if user_text.lower() in {
+            "quit",
+            "exit",
+            "goodbye",
+        }:
+            print(
+                "\nE.V. Offline"
+            )
+
+            break
+
+        process_prompt(
+            user_text
+        )
+
+
+    # -----------------------------------------------------------------------
+    # Invalid Input
+    # -----------------------------------------------------------------------
 
     else:
-        print("Choose T, V, or Q.")
+        print(
+            "\nChoose T for terminal, "
+            "V for voice, or Q to quit."
+        )

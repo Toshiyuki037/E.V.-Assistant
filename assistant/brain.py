@@ -6,33 +6,33 @@ Last Edited: August 8, 2026
 Author: Max Maehara
 
 Purpose:
-    Handles E.V.'s reasoning, personality, conversation context,
+    Handles E.V.'s reasoning, personality, persistent context,
     and communication with the current language model.
 
 How It Works:
-    1. Receives the user's message from main.py.
-    2. Loads recent conversations from memory.py.
-    3. Adds relevant recent history to E.V.'s context.
-    4. Sends the prompt and context to the OpenAI Responses API.
-    5. Returns E.V.'s response text to main.py.
-
-    The reasoning layer is kept separate from E.V.'s voice,
-    memory, and input systems so the current cloud model can
-    later be replaced by a locally hosted LLM.
+    1. Receives user text from main.py.
+    2. Loads recent conversation history.
+    3. Loads saved long-term memories.
+    4. Builds a context package.
+    5. Sends the user request and context to the language model.
+    6. Returns the generated response to main.py.
 
 Most Recent Change:
-    Added retrieval of recent persistent conversations from
-    memory/memory.db and included them as context for E.V.
+    Added long-term memory retrieval alongside persistent
+    conversation history.
 """
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from memory import get_recent_conversations
+from memory import (
+    get_all_memories,
+    get_recent_conversations,
+)
 
 
 # ---------------------------------------------------------------------------
-# Environment / Client Initialization
+# Environment / Client
 # ---------------------------------------------------------------------------
 
 load_dotenv()
@@ -55,7 +55,7 @@ Your personality is:
 - Direct
 - Observant
 - Natural
-- Concise unless more detail is useful
+- Concise unless detail is useful
 
 You are especially useful for:
 - Electrical engineering
@@ -68,18 +68,24 @@ You are especially useful for:
 - Research
 - Project development
 
-Use the provided memory when it is relevant.
+You may receive two forms of memory:
 
-Do not claim to remember something unless it appears in the provided
-memory or current conversation.
+1. Recent conversation history
+2. Long-term persistent memories
 
-If memory is incomplete, say so rather than inventing information.
+Use memory when it is relevant.
+
+Do not claim to remember information that does not appear in
+the provided memory or current conversation.
+
+If memory is incomplete, say so instead of inventing details.
 
 Address Max naturally when appropriate.
 
 Never say you are ChatGPT.
-Do not mention OpenAI unless directly asked about the underlying model
-or implementation.
+
+Do not mention OpenAI unless directly asked about the underlying
+model or implementation.
 """
 
 
@@ -87,26 +93,51 @@ or implementation.
 # Memory Formatting
 # ---------------------------------------------------------------------------
 
-def build_memory_context(limit: int = 5) -> str:
-    """
-    Retrieves recent conversations from E.V.'s local SQLite database
-    and formats them for use as model context.
-    """
+def build_conversation_context(
+    limit: int = 5,
+) -> str:
+    conversations = get_recent_conversations(
+        limit=limit
+    )
 
-    recent_conversations = get_recent_conversations(limit=limit)
+    if not conversations:
+        return "No recent conversation history."
 
-    if not recent_conversations:
-        return "No previous conversation memory is currently available."
+    formatted = []
 
-    formatted_memory = []
-
-    for user_message, ev_response in recent_conversations:
-        formatted_memory.append(
+    for user_message, ev_response in conversations:
+        formatted.append(
             f"User: {user_message}\n"
             f"E.V.: {ev_response}"
         )
 
-    return "\n\n".join(formatted_memory)
+    return "\n\n".join(formatted)
+
+
+def build_long_term_memory_context(
+    limit: int = 20,
+) -> str:
+    memories = get_all_memories(
+        limit=limit
+    )
+
+    if not memories:
+        return "No long-term memories stored."
+
+    formatted = []
+
+    for (
+        memory_id,
+        content,
+        category,
+        created_at,
+    ) in memories:
+
+        formatted.append(
+            f"[{category}] {content}"
+        )
+
+    return "\n".join(formatted)
 
 
 # ---------------------------------------------------------------------------
@@ -114,32 +145,40 @@ def build_memory_context(limit: int = 5) -> str:
 # ---------------------------------------------------------------------------
 
 def chat(user_message: str) -> str:
-    """
-    Sends a user message to E.V.'s current reasoning model.
-
-    Recent persistent conversation history is retrieved locally
-    and supplied as additional context.
-    """
-
     user_message = user_message.strip()
 
     if not user_message:
         return "I didn't receive a message."
 
-    memory_context = build_memory_context(limit=5)
+    recent_context = build_conversation_context(
+        limit=5
+    )
+
+    long_term_context = build_long_term_memory_context(
+        limit=20
+    )
+
+    memory_context = f"""
+RECENT CONVERSATION HISTORY
+
+{recent_context}
+
+
+LONG-TERM MEMORY
+
+{long_term_context}
+"""
 
     response = client.responses.create(
         model="gpt-5.5",
-
         instructions=SYSTEM_PROMPT,
-
         input=[
             {
                 "role": "developer",
                 "content": (
-                    "The following information comes from E.V.'s local "
-                    "persistent memory. Use it only when relevant to the "
-                    "user's current request.\n\n"
+                    "The following information comes from "
+                    "E.V.'s local memory system. "
+                    "Use it only when relevant.\n\n"
                     f"{memory_context}"
                 ),
             },
@@ -169,9 +208,12 @@ if __name__ == "__main__":
     while True:
         message = input("You: ").strip()
 
-        if message.lower() in {"quit", "exit"}:
+        if message.lower() in {
+            "quit",
+            "exit",
+        }:
             break
 
         answer = chat(message)
 
-        print(f"E.V.: {answer}")
+        print(f"\nE.V.: {answer}\n")
