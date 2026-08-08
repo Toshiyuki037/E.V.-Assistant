@@ -1,38 +1,30 @@
 """
-E.V. Assistant - Intelligence / Reasoning Module
+E.V.I.E. - Intelligence / Reasoning Module
 
 Created: August 7, 2026
 Last Edited: August 8, 2026
 Author: Max Maehara
 
 Purpose:
-    Handles E.V.'s reasoning, personality, persistent context,
-    and communication with the current language model.
+    Handles E.V.I.E.'s primary language reasoning.
 
 How It Works:
-    1. Receives user text from main.py.
-    2. Loads recent conversation history.
-    3. Loads saved long-term memories.
-    4. Builds a context package.
-    5. Sends the user request and context to the language model.
-    6. Returns the generated response to main.py.
+    Retrieves recent conversation history and the most relevant
+    active long-term memories before calling the current reasoning model.
 
 Most Recent Change:
-    Added long-term memory retrieval alongside persistent
-    conversation history.
+    Integrated hybrid semantic memory retrieval with reranking.
 """
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from memory import (
-    get_all_memories,
-    get_recent_conversations,
-)
+from memory.database import get_recent_conversations
+from memory.retriever import retrieve_memories
 
 
 # ---------------------------------------------------------------------------
-# Environment / Client
+# Client
 # ---------------------------------------------------------------------------
 
 load_dotenv()
@@ -41,61 +33,59 @@ client = OpenAI()
 
 
 # ---------------------------------------------------------------------------
-# E.V. Personality
+# E.V.I.E. Personality
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = """
-You are E.V.
+You are E.V.I.E.
+
+E.V.I.E. stands for Enhanced Virtual Intelligence Engine.
 
 You are Max's personal AI assistant and engineering partner.
 
-Your personality is:
-- Calm
-- Intelligent
-- Direct
-- Observant
-- Natural
-- Concise unless detail is useful
+You are:
+- calm
+- intelligent
+- direct
+- observant
+- natural
 
-You are especially useful for:
-- Electrical engineering
-- Computer engineering
-- Embedded systems
-- FPGA development
-- Biomedical engineering
-- Artificial intelligence
-- Programming
-- Research
-- Project development
+Be concise unless additional detail is useful.
 
-You may receive two forms of memory:
+You may receive:
 
 1. Recent conversation history
-2. Long-term persistent memories
+2. Relevant ACTIVE long-term memories
 
-Use memory when it is relevant.
+Memory rules:
 
-Do not claim to remember information that does not appear in
-the provided memory or current conversation.
-
-If memory is incomplete, say so instead of inventing details.
+- Active long-term memory is more authoritative than older
+  conversational statements about durable facts.
+- The user's current message overrides conflicting older context.
+- If information has been updated, use the newest active information.
+- Forgotten or archived memories must not be treated as known.
+- Never invent memories.
+- Do not claim to remember something unless it appears in active
+  memory or valid current conversation context.
+- If information is incomplete, say so.
 
 Address Max naturally when appropriate.
 
 Never say you are ChatGPT.
 
-Do not mention OpenAI unless directly asked about the underlying
-model or implementation.
+Do not mention OpenAI unless directly asked about the current
+reasoning implementation.
 """
 
 
 # ---------------------------------------------------------------------------
-# Memory Formatting
+# Recent Conversation Context
 # ---------------------------------------------------------------------------
 
 def build_conversation_context(
     limit: int = 5,
 ) -> str:
+
     conversations = get_recent_conversations(
         limit=limit
     )
@@ -108,65 +98,70 @@ def build_conversation_context(
     for user_message, ev_response in conversations:
         formatted.append(
             f"User: {user_message}\n"
-            f"E.V.: {ev_response}"
+            f"E.V.I.E.: {ev_response}"
         )
 
     return "\n\n".join(formatted)
 
 
-def build_long_term_memory_context(
-    limit: int = 20,
+# ---------------------------------------------------------------------------
+# Long-Term Memory Context
+# ---------------------------------------------------------------------------
+
+def build_memory_context(
+    user_message: str,
+    limit: int = 5,
 ) -> str:
-    memories = get_all_memories(
-        limit=limit
+
+    memories = retrieve_memories(
+        query=user_message,
+        limit=limit,
     )
 
     if not memories:
-        return "No long-term memories stored."
+        return "No relevant active long-term memories were found."
 
     formatted = []
 
-    for (
-        memory_id,
-        content,
-        category,
-        created_at,
-    ) in memories:
-
+    for memory in memories:
         formatted.append(
-            f"[{category}] {content}"
+            f"[{memory['category']}] {memory['content']}"
         )
 
     return "\n".join(formatted)
 
 
 # ---------------------------------------------------------------------------
-# Main Reasoning Function
+# Main Chat Function
 # ---------------------------------------------------------------------------
 
-def chat(user_message: str) -> str:
+def chat(
+    user_message: str,
+) -> str:
+
     user_message = user_message.strip()
 
     if not user_message:
         return "I didn't receive a message."
 
-    recent_context = build_conversation_context(
+    conversation_context = build_conversation_context(
         limit=5
     )
 
-    long_term_context = build_long_term_memory_context(
-        limit=20
+    memory_context = build_memory_context(
+        user_message=user_message,
+        limit=5,
     )
 
-    memory_context = f"""
+    context = f"""
 RECENT CONVERSATION HISTORY
 
-{recent_context}
+{conversation_context}
 
 
-LONG-TERM MEMORY
+RELEVANT ACTIVE LONG-TERM MEMORY
 
-{long_term_context}
+{memory_context}
 """
 
     response = client.responses.create(
@@ -176,10 +171,10 @@ LONG-TERM MEMORY
             {
                 "role": "developer",
                 "content": (
-                    "The following information comes from "
-                    "E.V.'s local memory system. "
+                    "The following context comes from E.V.I.E.'s "
+                    "local context and memory systems. "
                     "Use it only when relevant.\n\n"
-                    f"{memory_context}"
+                    f"{context}"
                 ),
             },
             {
@@ -202,18 +197,24 @@ LONG-TERM MEMORY
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("E.V. Brain Test")
-    print("----------------")
+
+    print("E.V.I.E. Brain Test")
+    print("--------------------")
 
     while True:
-        message = input("You: ").strip()
 
-        if message.lower() in {
+        user_message = input("You: ").strip()
+
+        if user_message.lower() in {
             "quit",
             "exit",
         }:
             break
 
-        answer = chat(message)
+        response = chat(
+            user_message
+        )
 
-        print(f"\nE.V.: {answer}\n")
+        print(
+            f"\nE.V.I.E.: {response}\n"
+        )
