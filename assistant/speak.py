@@ -1,5 +1,11 @@
+import os
+import tempfile
 from pathlib import Path
+
+import sounddevice as sd
+import soundfile as sf
 from f5_tts.api import F5TTS
+
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -8,24 +14,47 @@ REF_TEXT_FILE = ROOT / "eve-voice" / "references" / "eve-neutral.txt"
 
 REF_TEXT = REF_TEXT_FILE.read_text(encoding="utf-8").strip()
 
-print("Loading EVE voice model...")
+
+print("Loading E.V. voice model...")
 
 tts = F5TTS(
     model="F5TTS_v1_Base"
 )
 
-print("EVE voice model ready.")
+print("E.V. voice ready.")
 
 
 def speak(text: str):
-    output = ROOT / "voice-output" / "latest.wav"
-    output.parent.mkdir(exist_ok=True)
+    temp_path = None
 
-    tts.infer(
-        ref_file=str(REF_AUDIO),
-        ref_text=REF_TEXT,
-        gen_text=text,
-        file_wave=str(output),
-    )
+    try:
+        # Temporary file only — not stored in voice-output
+        with tempfile.NamedTemporaryFile(
+            suffix=".wav",
+            delete=False
+        ) as temp:
+            temp_path = temp.name
 
-    return output
+        # Generate E.V.'s speech
+        tts.infer(
+            ref_file=str(REF_AUDIO),
+            ref_text=REF_TEXT,
+            gen_text=text,
+            file_wave=temp_path,
+        )
+
+        # Read generated audio
+        audio, sample_rate = sf.read(temp_path)
+
+        # Play directly through speakers
+        sd.play(audio, sample_rate)
+        sd.wait()
+
+    finally:
+        # Remove temporary audio after playback
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
+
+
+if __name__ == "__main__":
+    speak("Good evening, Max. E.V. voice systems are operating normally.")
