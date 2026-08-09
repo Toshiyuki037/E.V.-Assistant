@@ -21,9 +21,11 @@ How It Works:
         7. Send the unified context to the reasoning model.
 
 Most Recent Change:
-    Completed Phase 5 visual intelligence with routed desktop/window/monitor
-    vision and crash-safe temporary screenshot cleanup.
+    Added Phase 6 controlled tool planning, permission-gated execution,
+    approval sessions, and deterministic result verification.
 """
+
+import json
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -69,6 +71,28 @@ from .vision.analyzer import (
 
 from .vision.lifecycle import (
     delete_visual_artifact,
+)
+
+from .tools.executor import (
+    execute_tool,
+)
+
+from .tools.planner import (
+    plan_tool_request,
+    should_consider_tools,
+)
+
+from .tools.session import (
+    classify_approval_response,
+    clear_pending_action,
+    get_pending_action,
+    has_pending_action,
+    set_pending_action,
+)
+
+from .tools.verifier import (
+    verification_to_dict,
+    verify_tool_result,
 )
 
 
@@ -270,6 +294,28 @@ Rules:
   the foreground window rather than the entire desktop.
 - Normal screenshots are temporary runtime artifacts and are deleted
   after the current reasoning request.
+
+TOOL / COMPUTER CONTROL
+
+E.V.I.E. may perform controlled computer actions through a registered
+tool system.
+
+Rules:
+
+- Never claim an action happened unless the executor returned a result.
+- Tool planning does not bypass the permission engine.
+- Low-risk actions may execute automatically.
+- Medium- and high-risk actions require explicit user approval.
+- Approval applies only to the exact pending tool name, arguments, and
+  selected workspace that were saved before the user approved it.
+- If the user changes the subject instead of approving or rejecting a
+  pending action, cancel that pending approval rather than silently
+  executing it later.
+- Prefer structured tools over terminal commands.
+- Do not claim success when deterministic verification reports failure.
+- Phase 6 performs one immediate tool action per request. Multi-step
+  autonomous task execution belongs to a later phase.
+
 
 CONTEXT PRIORITY
 
@@ -596,6 +642,505 @@ def select_workspace_for_query(
     # -----------------------------------------------------------------------
 
     return active_workspace
+
+
+# ---------------------------------------------------------------------------
+# Tool Workspace Binding
+# ---------------------------------------------------------------------------
+
+WORKSPACE_SCOPED_TOOLS = {
+    "list_directory",
+    "read_file",
+    "create_file",
+    "write_file",
+    "run_command",
+    "run_python",
+    "run_tests",
+    "git_status",
+    "git_diff",
+    "git_log",
+    "git_add",
+    "git_commit",
+    "git_push",
+    "open_file_in_vscode",
+    "open_workspace_in_vscode",
+}
+
+
+def bind_workspace_to_tool_arguments(
+    tool_name: str,
+    arguments: dict,
+    user_message: str,
+):
+    """
+    Binds the exact selected workspace to a tool request.
+
+    This prevents a delayed approval from acting on a different
+    workspace if the foreground VS Code window changes.
+    """
+
+    bound = dict(
+        arguments
+        or {}
+    )
+
+    if tool_name not in WORKSPACE_SCOPED_TOOLS:
+
+        return bound
+
+    if bound.get(
+        "workspace_path"
+    ):
+
+        return bound
+
+    snapshot = (
+        get_workspace_context()
+    )
+
+    selected = (
+        select_workspace_for_query(
+            user_message=
+                user_message,
+
+            workspace_snapshot=
+                snapshot,
+        )
+    )
+
+    if not selected:
+
+        return bound
+
+    workspace_path = (
+        selected.get(
+            "workspace_path"
+        )
+    )
+
+    if workspace_path:
+
+        bound[
+            "workspace_path"
+        ] = workspace_path
+
+    return bound
+
+
+# ---------------------------------------------------------------------------
+# Tool Response Rendering
+# ---------------------------------------------------------------------------
+
+def render_tool_result_response(
+    user_message: str,
+    tool_name: str,
+    arguments: dict,
+    execution: dict,
+    verification,
+):
+    """
+    Converts deterministic tool output into a concise natural-language
+    E.V.I.E. response.
+
+    The model is not allowed to reinterpret failure as success.
+    """
+
+    payload = {
+        "tool":
+            tool_name,
+
+        "arguments":
+            arguments,
+
+        "execution":
+            execution,
+
+        "verification":
+            verification_to_dict(
+                verification
+            ),
+    }
+
+    instructions = """
+You are E.V.I.E. reporting the result of one computer tool action.
+
+Use only the supplied tool execution and verification data.
+
+Rules:
+- If verification.successful is false, clearly say the action did not
+  succeed.
+- Never claim that an unexecuted or blocked action happened.
+- If stdout/stderr or Git output is relevant, summarize it accurately.
+- Be concise.
+- Do not expose internal JSON unless the user asked for raw output.
+"""
+
+    try:
+
+        response = client.responses.create(
+            model="gpt-5.5",
+            instructions=instructions,
+            input=(
+                f"USER REQUEST:\n{user_message}\n\n"
+                "TOOL RESULT:\n"
+                f"{json.dumps(payload, ensure_ascii=False, default=str)}"
+            ),
+        )
+
+        reply = (
+            response.output_text.strip()
+        )
+
+        if reply:
+
+            return reply
+
+    except Exception as error:
+
+        print(
+            "\n[Tool Result Response Warning]"
+        )
+
+        print(
+            error
+        )
+
+    # Deterministic fallback.
+    if verification.successful:
+
+        return (
+            f"{tool_name} completed successfully."
+        )
+
+    return (
+        f"{tool_name} did not complete successfully: "
+        f"{verification.summary}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# New Tool Requests
+# ---------------------------------------------------------------------------
+
+def handle_tool_request(
+    user_message: str,
+):
+    """
+    Plans and executes at most one immediate computer action.
+
+    Returns:
+        {
+            "handled": bool,
+            "response": str | None,
+            "approval_required": bool,
+        }
+    """
+
+    if not should_consider_tools(
+        user_message
+    ):
+
+        return {
+            "handled":
+                False,
+
+            "response":
+                None,
+
+            "approval_required":
+                False,
+        }
+
+    plan = (
+        plan_tool_request(
+            user_message
+        )
+    )
+
+    if (
+        not plan.use_tool
+        or not plan.tool_name
+        or plan.confidence < 60
+    ):
+
+        return {
+            "handled":
+                False,
+
+            "response":
+                None,
+
+            "approval_required":
+                False,
+        }
+
+    arguments = (
+        bind_workspace_to_tool_arguments(
+            tool_name=
+                plan.tool_name,
+
+            arguments=
+                plan.arguments,
+
+            user_message=
+                user_message,
+        )
+    )
+
+    print(
+        "\n[Tool Planner]"
+    )
+
+    print(
+        "Tool:",
+        plan.tool_name,
+    )
+
+    print(
+        "Arguments:",
+        arguments,
+    )
+
+    print(
+        "Confidence:",
+        plan.confidence,
+    )
+
+    execution = (
+        execute_tool(
+            tool_name=
+                plan.tool_name,
+
+            arguments=
+                arguments,
+
+            approved=
+                False,
+        )
+    )
+
+    if (
+        not execution.get(
+            "executed",
+            False,
+        )
+        and execution.get(
+            "requires_approval",
+            False,
+        )
+    ):
+
+        pending = (
+            set_pending_action(
+                tool_name=
+                    plan.tool_name,
+
+                arguments=
+                    arguments,
+
+                risk=
+                    execution.get(
+                        "risk",
+                        "unknown",
+                    ),
+
+                summary=
+                    (
+                        plan.summary
+                        or (
+                            f"Execute {plan.tool_name}."
+                        )
+                    ),
+
+                original_request=
+                    user_message,
+            )
+        )
+
+        response = (
+            f"This action is {pending.risk}-risk and requires "
+            f"your approval.\n\n"
+            f"Planned action: {pending.summary}\n"
+            f"Tool: {pending.tool_name}\n\n"
+            "Approve it? Say yes to proceed or no to cancel."
+        )
+
+        return {
+            "handled":
+                True,
+
+            "response":
+                response,
+
+            "approval_required":
+                True,
+        }
+
+    verification = (
+        verify_tool_result(
+            execution
+        )
+    )
+
+    response = (
+        render_tool_result_response(
+            user_message=
+                user_message,
+
+            tool_name=
+                plan.tool_name,
+
+            arguments=
+                arguments,
+
+            execution=
+                execution,
+
+            verification=
+                verification,
+        )
+    )
+
+    return {
+        "handled":
+            True,
+
+        "response":
+            response,
+
+        "approval_required":
+            False,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Pending Approval
+# ---------------------------------------------------------------------------
+
+def handle_pending_tool_approval(
+    user_message: str,
+):
+    """
+    Handles yes/no replies for an exact pending action.
+
+    An unrelated reply cancels the old pending action and is returned
+    to the normal E.V.I.E. pipeline.
+    """
+
+    if not has_pending_action():
+
+        return {
+            "handled":
+                False,
+
+            "response":
+                None,
+        }
+
+    decision = (
+        classify_approval_response(
+            user_message
+        )
+    )
+
+    if decision == "other":
+
+        clear_pending_action()
+
+        return {
+            "handled":
+                False,
+
+            "response":
+                None,
+        }
+
+    pending = (
+        clear_pending_action()
+    )
+
+    if pending is None:
+
+        return {
+            "handled":
+                False,
+
+            "response":
+                None,
+        }
+
+    if decision == "reject":
+
+        return {
+            "handled":
+                True,
+
+            "response":
+                (
+                    f"Cancelled. I did not execute "
+                    f"{pending.tool_name}."
+                ),
+        }
+
+    print(
+        "\n[Tool Approval]"
+    )
+
+    print(
+        "Approved tool:",
+        pending.tool_name,
+    )
+
+    print(
+        "Risk:",
+        pending.risk,
+    )
+
+    execution = (
+        execute_tool(
+            tool_name=
+                pending.tool_name,
+
+            arguments=
+                pending.arguments,
+
+            approved=
+                True,
+        )
+    )
+
+    verification = (
+        verify_tool_result(
+            execution
+        )
+    )
+
+    response = (
+        render_tool_result_response(
+            user_message=
+                pending.original_request,
+
+            tool_name=
+                pending.tool_name,
+
+            arguments=
+                pending.arguments,
+
+            execution=
+                execution,
+
+            verification=
+                verification,
+        )
+    )
+
+    return {
+        "handled":
+            True,
+
+        "response":
+            response,
+    }
 
 
 # ---------------------------------------------------------------------------

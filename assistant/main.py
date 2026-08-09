@@ -24,12 +24,15 @@ How It Works:
     shorter version is sent to E.V.I.E.'s voice model.
 
 Most Recent Change:
-    Added Phase 3 computer-awareness integration and optimized spoken
-    responses so detailed terminal output does not require excessively
-    long F5-TTS generation.
+    Added Phase 6 controlled computer-tool requests and explicit
+    approval continuation while preserving memory, voice, and normal reasoning.
 """
 
-from .brain import chat
+from .brain import (
+    chat,
+    handle_pending_tool_approval,
+    handle_tool_request,
+)
 from .listen import listen
 from .speak import speak
 from .speech_formatter import prepare_spoken_text
@@ -662,11 +665,46 @@ def process_intelligent_memory(
 # Process User Prompt
 # ---------------------------------------------------------------------------
 
+def complete_response(
+    user_text: str,
+    response: str,
+):
+    """
+    Displays, stores, and speaks one completed E.V.I.E. response.
+    """
+
+    print(
+        f"\nE.V.I.E.: "
+        f"{response}\n"
+    )
+
+    save_conversation(
+        user_text,
+        response,
+    )
+
+    speak_response(
+        response
+    )
+
+
 def process_prompt(
     user_text,
 ):
     """
     Shared processing pipeline used by terminal and voice input.
+
+    Order matters:
+
+        1. Resolve an existing tool approval.
+        2. Handle explicit memory commands.
+        3. Handle a new immediate computer-action request.
+        4. Run intelligent memory analysis.
+        5. Fall back to normal reasoning.
+
+    Tool requests are intercepted before automatic memory analysis so
+    commands such as "open Chrome" or "stage this file" are not stored
+    as durable user facts.
     """
 
     user_text = (
@@ -683,12 +721,76 @@ def process_prompt(
 
 
     # -----------------------------------------------------------------------
+    # Pending Tool Approval
+    # -----------------------------------------------------------------------
+
+    approval_result = (
+        handle_pending_tool_approval(
+            user_text
+        )
+    )
+
+    if approval_result.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            approval_result.get(
+                "response"
+            )
+            or "Done."
+        )
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+        return
+
+
+    # -----------------------------------------------------------------------
     # Explicit Memory
     # -----------------------------------------------------------------------
 
     if handle_manual_memory(
         user_text
     ):
+
+        return
+
+
+    # -----------------------------------------------------------------------
+    # Immediate Computer Tool Request
+    # -----------------------------------------------------------------------
+
+    tool_result = (
+        handle_tool_request(
+            user_text
+        )
+    )
+
+    if tool_result.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            tool_result.get(
+                "response"
+            )
+            or (
+                "I processed the requested "
+                "computer action."
+            )
+        )
+
+        complete_response(
+            user_text,
+            response,
+        )
+
         return
 
 
@@ -710,30 +812,9 @@ def process_prompt(
     )
 
 
-    # Full response stays visible.
-
-    print(
-        f"\nE.V.I.E.: "
-        f"{response}\n"
-    )
-
-
-    # -----------------------------------------------------------------------
-    # Conversation History
-    # -----------------------------------------------------------------------
-
-    save_conversation(
+    complete_response(
         user_text,
         response,
-    )
-
-
-    # -----------------------------------------------------------------------
-    # Shorter Voice Output
-    # -----------------------------------------------------------------------
-
-    speak_response(
-        response
     )
 
 
