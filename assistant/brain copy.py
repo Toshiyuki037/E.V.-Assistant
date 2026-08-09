@@ -2,12 +2,12 @@
 E.V.I.E. - Intelligence / Reasoning Module
 
 Created: August 7, 2026
-Last Edited: August 9, 2026
+Last Edited: August 8, 2026
 Author: Max Maehara
 
 Purpose:
     Handles E.V.I.E.'s reasoning and combines conversation,
-    memory, perception, project knowledge, and visual intelligence.
+    memory, perception, and project knowledge.
 
 How It Works:
     For every user request:
@@ -21,8 +21,9 @@ How It Works:
         7. Send the unified context to the reasoning model.
 
 Most Recent Change:
-    Completed Phase 5 visual intelligence with routed desktop/window/monitor
-    vision and crash-safe temporary screenshot cleanup.
+    Added atomic workspace snapshots so perception and project
+    knowledge cannot disagree about which workspace was active
+    during a single request.
 """
 
 from dotenv import load_dotenv
@@ -65,10 +66,6 @@ from .vision.context import (
 
 from .vision.analyzer import (
     build_visual_input,
-)
-
-from .vision.lifecycle import (
-    delete_visual_artifact,
 )
 
 
@@ -264,12 +261,6 @@ Rules:
   or otherwise controlled anything. Phase 5 vision is read-only.
 - When the user asks what is on the screen, prioritize the
   screenshot rather than relying only on application metadata.
-- Visual input may be targeted to the desktop, active window, or
-  a specific monitor. Interpret the image according to that target.
-- Active-window captures should be treated as focused evidence about
-  the foreground window rather than the entire desktop.
-- Normal screenshots are temporary runtime artifacts and are deleted
-  after the current reasoning request.
 
 CONTEXT PRIORITY
 
@@ -888,12 +879,8 @@ def build_visual_context(
     user_message: str,
 ):
     """
-    Captures and prepares fresh visual context when required.
-
-    The visual router chooses between:
-        - desktop
-        - active window
-        - specific monitor
+    Captures and prepares fresh visual context when the current
+    request requires screen inspection.
 
     Returns:
         tuple:
@@ -910,8 +897,6 @@ def build_visual_context(
             "for this request.",
             None,
         )
-
-    visual_context = None
 
     try:
 
@@ -937,12 +922,6 @@ def build_visual_context(
 
         if not visual_input:
 
-            delete_visual_artifact(
-                visual_context.get(
-                    "screenshot_path"
-                )
-            )
-
             return (
                 "A screenshot was captured, "
                 "but it could not be prepared "
@@ -950,57 +929,21 @@ def build_visual_context(
                 None,
             )
 
-        monitor_text = (
-            str(
-                visual_input[
-                    "monitor_index"
-                ]
-            )
-
-            if visual_input.get(
-                "monitor_index"
-            )
-
-            else "Not specifically targeted"
-        )
-
-        active_window_text = (
-            visual_input.get(
-                "active_window_title"
-            )
-            or "Unknown"
-        )
-
         visual_context_text = f"""
 VISUAL CONTEXT
 
-A fresh temporary screenshot was captured for this request.
+A fresh screenshot was captured for this request.
 
-Requested target:
-{visual_input["requested_target"]}
-
-Actual capture source:
+Source:
 {visual_input["source"]}
-
-Active window at capture time:
-{active_window_text}
-
-Monitor:
-{monitor_text}
 
 Original screenshot resolution:
 {visual_input["width"]}x{visual_input["height"]}
-
-Prepared model resolution:
-{visual_input["prepared_width"]}x{visual_input["prepared_height"]}
 
 Fresh:
 {visual_input["fresh"]}
 
 Use the attached screenshot as current visual evidence.
-
-The screenshot is temporary runtime context and will be deleted
-after this reasoning request completes.
 """.strip()
 
         return (
@@ -1018,22 +961,13 @@ after this reasoning request completes.
             error
         )
 
-        if visual_context:
-
-            delete_visual_artifact(
-                visual_context.get(
-                    "screenshot_path"
-                )
-            )
-
         return (
             "Screen vision was requested, "
             "but visual context is currently "
             "unavailable.",
             None,
         )
-
-
+    
 # ---------------------------------------------------------------------------
 # Combined Context
 # ---------------------------------------------------------------------------
@@ -1155,12 +1089,13 @@ def chat(
     """
     Main E.V.I.E. reasoning entry point.
 
-    Supports:
-        - normal text-only reasoning
-        - routed multimodal screen reasoning
+    Supports both:
 
-    Temporary screenshots are deleted in a finally block whether
-    reasoning succeeds, fails, or returns an empty response.
+    - normal text-only reasoning
+    - multimodal screen reasoning
+
+    Vision is invoked only when the visual context router
+    determines that the current request requires it.
     """
 
     user_message = (
@@ -1173,210 +1108,154 @@ def chat(
             "I didn't receive a message."
         )
 
-    visual_input = None
+
+    # -----------------------------------------------------------------------
+    # Build Unified Context
+    # -----------------------------------------------------------------------
+
+    context, visual_input = (
+        build_context(
+            user_message
+        )
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Developer Context
+    # -----------------------------------------------------------------------
+
+    developer_message = (
+        "The following information "
+        "comes from E.V.I.E.'s local "
+        "memory, computer perception, "
+        "workspace, project knowledge, "
+        "and vision systems. "
+        "All current workspace information "
+        "was captured from one coherent "
+        "snapshot for this request. "
+        "When visual context is attached, "
+        "treat the screenshot as fresh "
+        "visual evidence from the current "
+        "request. Use only information "
+        "relevant to the user's request."
+        "\n\n"
+        f"{context}"
+    )
+
+
+    # -----------------------------------------------------------------------
+    # User Content
+    # -----------------------------------------------------------------------
+
+    if visual_input:
+
+        print(
+            "\n[Vision]"
+        )
+
+        print(
+            "Fresh screenshot attached:"
+        )
+
+        print(
+            visual_input[
+                "screenshot_path"
+            ]
+        )
+
+        user_content = [
+            {
+                "type":
+                    "input_text",
+
+                "text":
+                    user_message,
+            },
+
+            {
+                "type":
+                    "input_image",
+
+                "image_url":
+                    visual_input[
+                        "image_url"
+                    ],
+            },
+        ]
+
+    else:
+
+        user_content = (
+            user_message
+        )
+
+
+    # -----------------------------------------------------------------------
+    # Reasoning Request
+    # -----------------------------------------------------------------------
 
     try:
 
-        # -------------------------------------------------------------------
-        # Build Unified Context
-        # -------------------------------------------------------------------
+        response = (
+            client.responses.create(
+                model=
+                    "gpt-5.5",
 
-        context, visual_input = (
-            build_context(
-                user_message
-            )
-        )
+                instructions=
+                    SYSTEM_PROMPT,
 
-        # -------------------------------------------------------------------
-        # Developer Context
-        # -------------------------------------------------------------------
+                input=[
+                    {
+                        "role":
+                            "developer",
 
-        developer_message = (
-            "The following information "
-            "comes from E.V.I.E.'s local "
-            "memory, computer perception, "
-            "workspace, project knowledge, "
-            "and vision systems. "
-            "All current workspace information "
-            "was captured from one coherent "
-            "snapshot for this request. "
-            "When visual context is attached, "
-            "treat the screenshot as fresh "
-            "visual evidence from the current "
-            "request and interpret it according "
-            "to the stated visual target. "
-            "Use only information relevant to "
-            "the user's request."
-            "\n\n"
-            f"{context}"
-        )
+                        "content":
+                            developer_message,
+                    },
 
-        # -------------------------------------------------------------------
-        # User Content
-        # -------------------------------------------------------------------
+                    {
+                        "role":
+                            "user",
 
-        if visual_input:
-
-            print(
-                "\n[Vision]"
-            )
-
-            print(
-                "Target:",
-                visual_input[
-                    "requested_target"
+                        "content":
+                            user_content,
+                    },
                 ],
             )
-
-            print(
-                "Capture source:",
-                visual_input[
-                    "source"
-                ],
-            )
-
-            print(
-                "Fresh screenshot attached:"
-            )
-
-            print(
-                visual_input[
-                    "screenshot_path"
-                ]
-            )
-
-            user_content = [
-                {
-                    "type":
-                        "input_text",
-
-                    "text":
-                        user_message,
-                },
-
-                {
-                    "type":
-                        "input_image",
-
-                    "image_url":
-                        visual_input[
-                            "image_url"
-                        ],
-                },
-            ]
-
-        else:
-
-            user_content = (
-                user_message
-            )
-
-        # -------------------------------------------------------------------
-        # Reasoning Request
-        # -------------------------------------------------------------------
-
-        try:
-
-            response = (
-                client.responses.create(
-                    model=
-                        "gpt-5.5",
-
-                    instructions=
-                        SYSTEM_PROMPT,
-
-                    input=[
-                        {
-                            "role":
-                                "developer",
-
-                            "content":
-                                developer_message,
-                        },
-
-                        {
-                            "role":
-                                "user",
-
-                            "content":
-                                user_content,
-                        },
-                    ],
-                )
-            )
-
-        except Exception as error:
-
-            print(
-                "\n[Reasoning Error]"
-            )
-
-            print(
-                error
-            )
-
-            return (
-                "I encountered an error while "
-                "processing that request."
-            )
-
-        # -------------------------------------------------------------------
-        # Response
-        # -------------------------------------------------------------------
-
-        reply = (
-            response.output_text.strip()
         )
 
-        if not reply:
+    except Exception as error:
 
-            return (
-                "I wasn't able to generate "
-                "a response."
-            )
+        print(
+            "\n[Reasoning Error]"
+        )
 
-        return reply
+        print(
+            error
+        )
 
-    finally:
+        return (
+            "I encountered an error while "
+            "processing that request."
+        )
 
-        if (
-            visual_input
-            and visual_input.get(
-                "temporary",
-                True,
-            )
-        ):
 
-            screenshot_path = (
-                visual_input.get(
-                    "screenshot_path"
-                )
-            )
+    # -----------------------------------------------------------------------
+    # Response
+    # -----------------------------------------------------------------------
 
-            deleted = (
-                delete_visual_artifact(
-                    screenshot_path
-                )
-            )
+    reply = (
+        response.output_text.strip()
+    )
 
-            if screenshot_path:
+    if not reply:
 
-                print(
-                    "\n[Vision Cleanup]"
-                )
+        return (
+            "I wasn't able to generate "
+            "a response."
+        )
 
-                if deleted:
-
-                    print(
-                        "Temporary screenshot deleted."
-                    )
-
-                else:
-
-                    print(
-                        "Temporary screenshot was already "
-                        "absent or could not be deleted."
-                    )
+    return reply
 
 
 # ---------------------------------------------------------------------------

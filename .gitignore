@@ -6,6 +6,7 @@ __pycache__/
 voice-output/
 memory/memory.db
 knowledge/knowledge.db
+runtime/vision/
 tests/
 .env
 .cache/
