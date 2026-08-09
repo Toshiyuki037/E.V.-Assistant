@@ -17,16 +17,25 @@ How It Works:
         - supersede outdated memories
         - update existing memories
         - forget/archive one or multiple memories
-        - trigger ordinary reasoning
+        - use live computer context
+        - trigger normal reasoning
+
+    The complete response is displayed in the terminal while a cleaned,
+    shorter version is sent to E.V.I.E.'s voice model.
 
 Most Recent Change:
-    Improved forget handling so E.V.I.E. can identify and archive
-    multiple memories covered by a natural-language forget request.
+    Added Phase 3 computer-awareness integration and optimized spoken
+    responses so detailed terminal output does not require excessively
+    long F5-TTS generation.
 """
 
 from brain import chat
 from listen import listen
 from speak import speak
+
+from speech_formatter import (
+    prepare_spoken_text,
+)
 
 from memory.database import (
     archive_memories,
@@ -59,6 +68,32 @@ from memory.retriever import (
 
 
 # ---------------------------------------------------------------------------
+# Speak Model Response
+# ---------------------------------------------------------------------------
+
+def speak_response(
+    response: str,
+):
+    """
+    Keeps the complete response in the terminal while sending a cleaner,
+    shorter representation to F5-TTS.
+    """
+
+    spoken_response = (
+        prepare_spoken_text(
+            response
+        )
+    )
+
+    if not spoken_response:
+        return
+
+    speak(
+        spoken_response
+    )
+
+
+# ---------------------------------------------------------------------------
 # Store Memory
 # ---------------------------------------------------------------------------
 
@@ -71,11 +106,13 @@ def store_memory(
     source,
 ):
     """
-    Creates a local embedding and stores a new active memory.
+    Creates a local semantic embedding and stores a new memory.
     """
 
-    embedding = create_memory_embedding(
-        content
+    embedding = (
+        create_memory_embedding(
+            content
+        )
     )
 
     memory_id = save_memory(
@@ -92,7 +129,7 @@ def store_memory(
 
 
 # ---------------------------------------------------------------------------
-# Store / Resolve Duplicate / Supersede
+# Resolve New Memory
 # ---------------------------------------------------------------------------
 
 def store_with_resolution(
@@ -104,12 +141,12 @@ def store_with_resolution(
     source,
 ):
     """
-    Before storing a new memory, retrieve related memories and determine
-    whether the new fact is:
-        - genuinely new
-        - a duplicate
-        - a replacement/supersession
-        - a contradiction
+    Determines whether incoming information is:
+
+        - new
+        - duplicate
+        - superseding old information
+        - contradictory
         - merely related
     """
 
@@ -129,16 +166,25 @@ def store_with_resolution(
     # -----------------------------------------------------------------------
 
     if (
-        resolution.relation == "duplicate"
-        and resolution.matching_memory_id is not None
-        and resolution.confidence >= RELATION_CONFIDENCE
+        resolution.relation
+        == "duplicate"
+
+        and resolution.matching_memory_id
+        is not None
+
+        and resolution.confidence
+        >= RELATION_CONFIDENCE
     ):
+
         existing = next(
             (
                 memory
                 for memory in candidates
-                if memory["id"]
-                == resolution.matching_memory_id
+
+                if (
+                    memory["id"]
+                    == resolution.matching_memory_id
+                )
             ),
             None,
         )
@@ -160,8 +206,10 @@ def store_with_resolution(
                 confidence,
             )
 
-            embedding = create_memory_embedding(
-                content
+            embedding = (
+                create_memory_embedding(
+                    content
+                )
             )
 
             update_memory(
@@ -176,11 +224,13 @@ def store_with_resolution(
             )
 
             print(
-                "\n[Memory Manager: DUPLICATE MERGED]"
+                "\n[Memory Manager: "
+                "DUPLICATE MERGED]"
             )
 
             print(
-                f"Memory ID: {existing['id']}"
+                f"Memory ID: "
+                f"{existing['id']}"
             )
 
             print(
@@ -191,7 +241,7 @@ def store_with_resolution(
 
 
     # -----------------------------------------------------------------------
-    # Supersedes / Contradicts Existing Memory
+    # Supersession / Contradiction
     # -----------------------------------------------------------------------
 
     if (
@@ -200,9 +250,14 @@ def store_with_resolution(
             "supersedes",
             "contradicts",
         }
-        and resolution.matching_memory_id is not None
-        and resolution.confidence >= RELATION_CONFIDENCE
+
+        and resolution.matching_memory_id
+        is not None
+
+        and resolution.confidence
+        >= RELATION_CONFIDENCE
     ):
+
         new_id = store_memory(
             content=content,
             category=category,
@@ -225,7 +280,8 @@ def store_with_resolution(
         )
 
         print(
-            f"Archived IDs: {archived}"
+            f"Archived IDs: "
+            f"{archived}"
         )
 
         print(
@@ -240,7 +296,7 @@ def store_with_resolution(
 
 
     # -----------------------------------------------------------------------
-    # Distinct New Memory
+    # New Distinct Memory
     # -----------------------------------------------------------------------
 
     memory_id = store_memory(
@@ -268,17 +324,12 @@ def store_with_resolution(
 
 
 # ---------------------------------------------------------------------------
-# Manual Remember Command
+# Explicit Remember Command
 # ---------------------------------------------------------------------------
 
 def handle_manual_memory(
     user_text,
 ):
-    """
-    Handles explicit:
-        remember that ...
-    """
-
     prefix = "remember that "
 
     if not user_text.lower().startswith(
@@ -293,7 +344,8 @@ def handle_manual_memory(
     if not content:
 
         response = (
-            "Tell me what you'd like me to remember."
+            "Tell me what you'd like "
+            "me to remember."
         )
 
     else:
@@ -312,7 +364,8 @@ def handle_manual_memory(
         )
 
     print(
-        f"\nE.V.I.E.: {response}\n"
+        f"\nE.V.I.E.: "
+        f"{response}\n"
     )
 
     speak(
@@ -329,17 +382,6 @@ def handle_manual_memory(
 def process_intelligent_memory(
     user_text,
 ):
-    """
-    Analyzes each normal user message and performs the appropriate
-    long-term memory operation.
-
-    Possible actions:
-        none
-        store
-        update
-        delete
-    """
-
     try:
 
         analysis = analyze_memory(
@@ -362,6 +404,7 @@ def process_intelligent_memory(
         if should_auto_store(
             analysis
         ):
+
             store_with_resolution(
                 content=analysis.content,
                 category=analysis.category,
@@ -387,26 +430,40 @@ def process_intelligent_memory(
                 or analysis.content
             )
 
-            candidates = retrieve_matching_memories(
-                query=search_query,
-                limit=10,
+            candidates = (
+                retrieve_matching_memories(
+                    query=search_query,
+                    limit=10,
+                )
             )
 
             print(
-                "\n[Memory Manager: UPDATE CANDIDATES]"
+                "\n[Memory Manager: "
+                "UPDATE CANDIDATES]"
             )
 
-            for candidate in candidates:
+            if candidates:
+
+                for candidate in candidates:
+
+                    print(
+                        f"ID "
+                        f"{candidate['id']}: "
+                        f"{candidate['content']}"
+                    )
+
+            else:
 
                 print(
-                    f"ID {candidate['id']}: "
-                    f"{candidate['content']}"
+                    "No candidates found."
                 )
 
-            selection = select_update_targets(
-                user_message=user_text,
-                new_content=analysis.content,
-                candidates=candidates,
+            selection = (
+                select_update_targets(
+                    user_message=user_text,
+                    new_content=analysis.content,
+                    candidates=candidates,
+                )
             )
 
             print(
@@ -421,7 +478,12 @@ def process_intelligent_memory(
 
             selected_ids = (
                 selection.memory_ids
-                if selection.confidence >= 75
+
+                if (
+                    selection.confidence
+                    >= 75
+                )
+
                 else []
             )
 
@@ -436,10 +498,12 @@ def process_intelligent_memory(
 
             if selected_ids:
 
-                archived = archive_memories(
-                    selected_ids,
-                    reason="superseded",
-                    superseded_by=new_id,
+                archived = (
+                    archive_memories(
+                        selected_ids,
+                        reason="superseded",
+                        superseded_by=new_id,
+                    )
                 )
 
                 print(
@@ -447,7 +511,8 @@ def process_intelligent_memory(
                 )
 
                 print(
-                    f"Archived IDs: {archived}"
+                    f"Archived IDs: "
+                    f"{archived}"
                 )
 
                 print(
@@ -462,11 +527,13 @@ def process_intelligent_memory(
             else:
 
                 print(
-                    "\n[Memory Manager: UPDATE -> STORE]"
+                    "\n[Memory Manager: "
+                    "UPDATE -> STORE]"
                 )
 
                 print(
-                    "No old memory was confidently matched."
+                    "No old memory was "
+                    "confidently matched."
                 )
 
                 print(
@@ -484,19 +551,23 @@ def process_intelligent_memory(
             analysis
         ):
 
-            candidates = retrieve_matching_memories(
-                query=analysis.target_query,
-                limit=12,
+            candidates = (
+                retrieve_matching_memories(
+                    query=analysis.target_query,
+                    limit=12,
+                )
             )
 
             print(
-                "\n[Memory Manager: FORGET CANDIDATES]"
+                "\n[Memory Manager: "
+                "FORGET CANDIDATES]"
             )
 
             if not candidates:
 
                 print(
-                    "No candidate memories found."
+                    "No candidate "
+                    "memories found."
                 )
 
             else:
@@ -504,14 +575,19 @@ def process_intelligent_memory(
                 for candidate in candidates:
 
                     print(
-                        f"ID {candidate['id']}: "
+                        f"ID "
+                        f"{candidate['id']}: "
                         f"{candidate['content']}"
                     )
 
-            selection = select_forget_targets(
-                user_message=user_text,
-                target_query=analysis.target_query,
-                candidates=candidates,
+            selection = (
+                select_forget_targets(
+                    user_message=user_text,
+                    target_query=(
+                        analysis.target_query
+                    ),
+                    candidates=candidates,
+                )
             )
 
             print(
@@ -531,15 +607,17 @@ def process_intelligent_memory(
                 )
 
                 print(
-                    "No matching memories were selected."
+                    "No matching memories "
+                    "were selected."
                 )
 
                 return
 
-            # The user explicitly requested forgetting.
-            # Candidate retrieval + LLM target selection has already happened,
-            # so this threshold can be somewhat lower than normal automatic
-            # memory modification thresholds.
+
+            # Candidate retrieval and model-based selection have
+            # already occurred. This threshold protects against
+            # ambiguous memory deletion.
+
             if selection.confidence < 65:
 
                 print(
@@ -547,8 +625,8 @@ def process_intelligent_memory(
                 )
 
                 print(
-                    "Memory selection confidence was too low "
-                    "to modify storage."
+                    "Memory selection confidence "
+                    "was too low to modify storage."
                 )
 
                 return
@@ -563,7 +641,8 @@ def process_intelligent_memory(
             )
 
             print(
-                f"Archived IDs: {archived}"
+                f"Archived IDs: "
+                f"{archived}"
             )
 
             return
@@ -571,8 +650,7 @@ def process_intelligent_memory(
 
     except Exception as error:
 
-        # Memory subsystem problems should never prevent E.V.I.E.
-        # from continuing normal conversation.
+        # Memory failures must not crash E.V.I.E.
 
         print(
             "\n[Memory Manager Warning]"
@@ -591,13 +669,16 @@ def process_prompt(
     user_text,
 ):
     """
-    Main processing pipeline for both terminal and voice prompts.
+    Shared processing pipeline used by terminal and voice input.
     """
 
-    user_text = user_text.strip()
+    user_text = (
+        user_text.strip()
+    )
 
     if not user_text:
         return
+
 
     print(
         f"\nYou: {user_text}"
@@ -605,7 +686,7 @@ def process_prompt(
 
 
     # -----------------------------------------------------------------------
-    # Manual Memory
+    # Explicit Memory
     # -----------------------------------------------------------------------
 
     if handle_manual_memory(
@@ -631,13 +712,17 @@ def process_prompt(
         user_text
     )
 
+
+    # Full response stays visible.
+
     print(
-        f"\nE.V.I.E.: {response}\n"
+        f"\nE.V.I.E.: "
+        f"{response}\n"
     )
 
 
     # -----------------------------------------------------------------------
-    # Persistent Conversation History
+    # Conversation History
     # -----------------------------------------------------------------------
 
     save_conversation(
@@ -647,10 +732,10 @@ def process_prompt(
 
 
     # -----------------------------------------------------------------------
-    # Voice Output
+    # Shorter Voice Output
     # -----------------------------------------------------------------------
 
-    speak(
+    speak_response(
         response
     )
 
@@ -661,13 +746,16 @@ def process_prompt(
 
 init_memory()
 
+
 print(
     "Preparing semantic memory..."
 )
 
+
 missing_embeddings = (
     sync_memory_embeddings()
 )
+
 
 if missing_embeddings:
 
@@ -682,21 +770,26 @@ print(
     "\nE.V.I.E. Online"
 )
 
+
 print(
     "-------------------------"
 )
+
 
 print(
     "[T] Terminal"
 )
 
+
 print(
     "[V] Voice"
 )
 
+
 print(
     "[Q] Quit"
 )
+
 
 print(
     "-------------------------"
@@ -797,7 +890,7 @@ while True:
 
 
     # -----------------------------------------------------------------------
-    # Invalid Mode
+    # Invalid Input
     # -----------------------------------------------------------------------
 
     else:
