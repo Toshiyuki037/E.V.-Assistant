@@ -88,6 +88,7 @@ from .tools.session import (
     get_pending_action,
     has_pending_action,
     set_pending_action,
+    parse_approval_response,
 )
 
 from .tools.verifier import (
@@ -1021,10 +1022,17 @@ def handle_pending_tool_approval(
     user_message: str,
 ):
     """
-    Handles yes/no replies for an exact pending action.
+    Handles approval/rejection for one exact pending action.
 
-    An unrelated reply cancels the old pending action and is returned
-    to the normal E.V.I.E. pipeline.
+    Compound replies are supported:
+
+        "Yes, then show me Git status."
+
+    The pending action executes first. Any text after the approval
+    is returned to main.py as a separate follow-up request.
+
+    An unrelated reply cancels the old pending action and continues
+    normally.
     """
 
     if not has_pending_action():
@@ -1035,15 +1043,24 @@ def handle_pending_tool_approval(
 
             "response":
                 None,
+
+            "follow_up":
+                "",
         }
 
-    decision = (
-        classify_approval_response(
+
+    parsed = (
+        parse_approval_response(
             user_message
         )
     )
 
-    if decision == "other":
+
+    # -----------------------------------------------------------------------
+    # Unrelated Reply
+    # -----------------------------------------------------------------------
+
+    if parsed.decision == "other":
 
         clear_pending_action()
 
@@ -1053,11 +1070,16 @@ def handle_pending_tool_approval(
 
             "response":
                 None,
+
+            "follow_up":
+                "",
         }
+
 
     pending = (
         clear_pending_action()
     )
+
 
     if pending is None:
 
@@ -1067,9 +1089,17 @@ def handle_pending_tool_approval(
 
             "response":
                 None,
+
+            "follow_up":
+                "",
         }
 
-    if decision == "reject":
+
+    # -----------------------------------------------------------------------
+    # Reject
+    # -----------------------------------------------------------------------
+
+    if parsed.decision == "reject":
 
         return {
             "handled":
@@ -1080,7 +1110,15 @@ def handle_pending_tool_approval(
                     f"Cancelled. I did not execute "
                     f"{pending.tool_name}."
                 ),
+
+            "follow_up":
+                parsed.remainder,
         }
+
+
+    # -----------------------------------------------------------------------
+    # Approve
+    # -----------------------------------------------------------------------
 
     print(
         "\n[Tool Approval]"
@@ -1096,6 +1134,7 @@ def handle_pending_tool_approval(
         pending.risk,
     )
 
+
     execution = (
         execute_tool(
             tool_name=
@@ -1109,11 +1148,13 @@ def handle_pending_tool_approval(
         )
     )
 
+
     verification = (
         verify_tool_result(
             execution
         )
     )
+
 
     response = (
         render_tool_result_response(
@@ -1134,12 +1175,16 @@ def handle_pending_tool_approval(
         )
     )
 
+
     return {
         "handled":
             True,
 
         "response":
             response,
+
+        "follow_up":
+            parsed.remainder,
     }
 
 

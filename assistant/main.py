@@ -742,10 +742,40 @@ def process_prompt(
             or "Done."
         )
 
+        follow_up = (
+            approval_result.get(
+                "follow_up",
+                ""
+            ).strip()
+        )
+
+
+        # Report the completed/cancelled pending action first.
         complete_response(
             user_text,
             response,
         )
+
+
+        # -----------------------------------------------------------------------
+        # Compound Request
+        # -----------------------------------------------------------------------
+
+        if follow_up:
+
+            print(
+                "\n[Tool Follow-Up]"
+            )
+
+            print(
+                "Continuing with:",
+                follow_up,
+            )
+
+            process_prompt(
+                follow_up
+            )
+
 
         return
 
