@@ -6,19 +6,33 @@ Last Edited: August 9, 2026
 Author: Max Maehara
 
 Purpose:
-    Provides controlled VS Code project actions.
+    Provides controlled Visual Studio Code project actions.
 
 Current Tools:
     - open_workspace_in_vscode
     - open_file_in_vscode
 
+Capabilities:
+    - open workspace
+    - open workspace in a new VS Code window
+    - open workspace file
+    - open workspace file at a specific line
+    - open workspace file in a new VS Code window
+
 Security:
     File operations remain restricted to the selected workspace.
+
+    open_file_in_vscode() resolves files through the existing
+    workspace-scoped filesystem layer.
+
+Most Recent Change:
+    Added explicit new-window support for Phase 7 agentic tasks.
 """
 
 import os
 import shutil
 import subprocess
+
 from pathlib import Path
 
 from .filesystem import (
@@ -36,6 +50,13 @@ from .registry import (
 # ---------------------------------------------------------------------------
 
 def find_vscode():
+    """
+    Locates Visual Studio Code.
+
+    Prefers the `code` command available on PATH and falls back
+    to the normal per-user Windows installation path.
+    """
+
     command = shutil.which(
         "code"
     )
@@ -44,12 +65,14 @@ def find_vscode():
 
         return command
 
+
     local_appdata = (
         os.environ.get(
             "LOCALAPPDATA",
             ""
         )
     )
+
 
     candidate = (
         Path(
@@ -60,24 +83,33 @@ def find_vscode():
         / "Code.exe"
     )
 
+
     if candidate.exists():
 
         return str(
             candidate
         )
 
+
     raise FileNotFoundError(
-        "Visual Studio Code executable could not be located."
+        (
+            "Visual Studio Code executable "
+            "could not be located."
+        )
     )
 
 
 # ---------------------------------------------------------------------------
-# Open Workspace
+# Resolve Workspace
 # ---------------------------------------------------------------------------
 
-def open_workspace_in_vscode(
+def resolve_vscode_workspace(
     workspace_path=None,
 ):
+    """
+    Resolves the workspace used for a VS Code action.
+    """
+
     if workspace_path:
 
         workspace = Path(
@@ -90,6 +122,7 @@ def open_workspace_in_vscode(
             get_active_workspace_path()
         )
 
+
     if not workspace.exists():
 
         raise FileNotFoundError(
@@ -98,19 +131,110 @@ def open_workspace_in_vscode(
             )
         )
 
+
+    if not workspace.is_dir():
+
+        raise NotADirectoryError(
+            str(
+                workspace
+            )
+        )
+
+
+    return workspace
+
+
+# ---------------------------------------------------------------------------
+# Launch VS Code Command
+# ---------------------------------------------------------------------------
+
+def launch_vscode(
+    command: list[str],
+    cwd=None,
+):
+    """
+    Starts VS Code without shell=True.
+
+    Returns the spawned process ID when available.
+    """
+
+    process = subprocess.Popen(
+        command,
+        cwd=(
+            str(cwd)
+            if cwd is not None
+            else None
+        ),
+        shell=False,
+    )
+
+
+    return {
+        "pid":
+            process.pid,
+
+        "command":
+            command,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Open Workspace
+# ---------------------------------------------------------------------------
+
+def open_workspace_in_vscode(
+    workspace_path=None,
+    new_window: bool = False,
+):
+    """
+    Opens a workspace in Visual Studio Code.
+
+    Args:
+        workspace_path:
+            Workspace directory to open.
+
+        new_window:
+            When True, explicitly requests a new VS Code window.
+    """
+
+    workspace = (
+        resolve_vscode_workspace(
+            workspace_path
+        )
+    )
+
+
     executable = (
         find_vscode()
     )
 
-    subprocess.Popen(
-        [
-            executable,
-            str(
-                workspace
-            ),
-        ],
-        shell=False,
+
+    command = [
+        executable,
+    ]
+
+
+    if new_window:
+
+        command.append(
+            "--new-window"
+        )
+
+
+    command.append(
+        str(
+            workspace
+        )
     )
+
+
+    launch_result = (
+        launch_vscode(
+            command,
+            cwd=workspace,
+        )
+    )
+
 
     return {
         "workspace":
@@ -120,6 +244,21 @@ def open_workspace_in_vscode(
 
         "opened":
             True,
+
+        "new_window":
+            bool(
+                new_window
+            ),
+
+        "pid":
+            launch_result[
+                "pid"
+            ],
+
+        "command":
+            launch_result[
+                "command"
+            ],
     }
 
 
@@ -131,13 +270,35 @@ def open_file_in_vscode(
     path: str,
     line: int | None = None,
     workspace_path=None,
+    new_window: bool = False,
 ):
+    """
+    Opens a workspace file in Visual Studio Code.
+
+    Args:
+        path:
+            File path relative to the selected workspace.
+
+        line:
+            Optional 1-based source-code line number.
+
+        workspace_path:
+            Workspace containing the requested file.
+
+        new_window:
+            When True, explicitly requests a new VS Code window.
+
+    Security:
+        The target file must remain inside the selected workspace.
+    """
+
     root, target = (
         resolve_workspace_path(
             path,
             workspace_path,
         )
     )
+
 
     if not target.exists():
 
@@ -147,6 +308,7 @@ def open_file_in_vscode(
             )
         )
 
+
     if not target.is_file():
 
         raise IsADirectoryError(
@@ -155,9 +317,31 @@ def open_file_in_vscode(
             )
         )
 
+
     executable = (
         find_vscode()
     )
+
+
+    command = [
+        executable,
+    ]
+
+
+    # -----------------------------------------------------------------------
+    # New Window
+    # -----------------------------------------------------------------------
+
+    if new_window:
+
+        command.append(
+            "--new-window"
+        )
+
+
+    # -----------------------------------------------------------------------
+    # Optional Line Navigation
+    # -----------------------------------------------------------------------
 
     if line is not None:
 
@@ -165,42 +349,51 @@ def open_file_in_vscode(
             line
         )
 
+
         if line < 1:
 
             raise ValueError(
-                "Line number must be >= 1."
+                (
+                    "Line number must "
+                    "be >= 1."
+                )
             )
+
 
         target_argument = (
             f"{target}:{line}"
         )
 
-        command = [
-            executable,
-            "--goto",
-            target_argument,
-        ]
+
+        command.extend(
+            [
+                "--goto",
+                target_argument,
+            ]
+        )
 
     else:
 
-        command = [
-            executable,
+        command.append(
             str(
                 target
-            ),
-        ]
+            )
+        )
 
-    subprocess.Popen(
-        command,
-        cwd=str(
-            root
-        ),
-        shell=False,
+
+    launch_result = (
+        launch_vscode(
+            command,
+            cwd=root,
+        )
     )
+
 
     return {
         "workspace":
-            str(root),
+            str(
+                root
+            ),
 
         "file":
             str(
@@ -214,6 +407,21 @@ def open_file_in_vscode(
 
         "opened":
             True,
+
+        "new_window":
+            bool(
+                new_window
+            ),
+
+        "pid":
+            launch_result[
+                "pid"
+            ],
+
+        "command":
+            launch_result[
+                "command"
+            ],
     }
 
 
@@ -222,26 +430,44 @@ def open_file_in_vscode(
 # ---------------------------------------------------------------------------
 
 register_tool(
-    name="open_workspace_in_vscode",
+    name=
+        "open_workspace_in_vscode",
+
     description=(
-        "Opens the selected workspace in "
-        "Visual Studio Code."
+        "Opens the selected workspace in Visual Studio Code. "
+        "Set new_window=True when the user explicitly requests "
+        "a separate or new VS Code window."
     ),
-    category="vscode",
-    risk="low",
-    function=open_workspace_in_vscode,
+
+    category=
+        "vscode",
+
+    risk=
+        "low",
+
+    function=
+        open_workspace_in_vscode,
 )
 
 
 register_tool(
-    name="open_file_in_vscode",
+    name=
+        "open_file_in_vscode",
+
     description=(
-        "Opens a workspace file in Visual "
-        "Studio Code, optionally at a line."
+        "Opens a workspace file in Visual Studio Code, optionally "
+        "at a source-code line. Set new_window=True when the user "
+        "explicitly requests a separate or new VS Code window."
     ),
-    category="vscode",
-    risk="low",
-    function=open_file_in_vscode,
+
+    category=
+        "vscode",
+
+    risk=
+        "low",
+
+    function=
+        open_file_in_vscode,
 )
 
 
@@ -259,6 +485,9 @@ if __name__ == "__main__":
         "-----------------------"
     )
 
+
+    print()
+
     print(
         "VS Code:"
     )
@@ -266,6 +495,7 @@ if __name__ == "__main__":
     print(
         find_vscode()
     )
+
 
     print()
 
@@ -275,4 +505,29 @@ if __name__ == "__main__":
 
     print(
         get_active_workspace_path()
+    )
+
+
+    print()
+
+    print(
+        "Tool signatures:"
+    )
+
+    import inspect
+
+
+    print(
+        "open_workspace_in_vscode",
+        inspect.signature(
+            open_workspace_in_vscode
+        ),
+    )
+
+
+    print(
+        "open_file_in_vscode",
+        inspect.signature(
+            open_file_in_vscode
+        ),
     )

@@ -66,6 +66,9 @@ from .memory.retriever import (
     retrieve_memories,
 )
 
+from .agent.integration import (
+    handle_agent_message,
+)
 
 # ---------------------------------------------------------------------------
 # Speak Model Response
@@ -694,17 +697,32 @@ def process_prompt(
     """
     Shared processing pipeline used by terminal and voice input.
 
-    Order matters:
+    Routing order:
 
-        1. Resolve an existing tool approval.
-        2. Handle explicit memory commands.
-        3. Handle a new immediate computer-action request.
-        4. Run intelligent memory analysis.
-        5. Fall back to normal reasoning.
+        1. Phase 7 active/new agent task.
+        2. Existing Phase 6 approval.
+        3. Explicit memory command.
+        4. Immediate single Phase 6 tool request.
+        5. Intelligent memory analysis.
+        6. Normal reasoning.
 
-    Tool requests are intercepted before automatic memory analysis so
-    commands such as "open Chrome" or "stage this file" are not stored
-    as durable user facts.
+    Why Phase 7 comes before the single-tool planner:
+
+        A request such as:
+
+            "Open VS Code and show me Git status."
+
+        contains multiple actions.
+
+        If Phase 6 sees it first, its single-tool planner may execute
+        only the first action and discard the remainder.
+
+        Phase 7 therefore gets first opportunity to recognize a
+        genuinely multi-step goal.
+
+        If Phase 7 determines that the request requires zero or one
+        computer action, it returns handled=False and Phase 6 gets
+        the request normally.
     """
 
     user_text = (
@@ -721,7 +739,92 @@ def process_prompt(
 
 
     # -----------------------------------------------------------------------
-    # Pending Tool Approval
+    # Phase 7 Agentic Execution
+    # -----------------------------------------------------------------------
+    #
+    # IMPORTANT:
+    #
+    # Phase 7 must run BEFORE the ordinary single-tool planner.
+    #
+    # Examples:
+    #
+    # "Open VS Code."
+    #       Phase 7 -> not multi-step
+    #       Phase 6 -> open VS Code
+    #
+    # "Open VS Code and show Git status."
+    #       Phase 7 -> multi-step
+    #       Phase 7 executes both actions
+    #
+    # "What's 2 + 2?"
+    #       Phase 7 -> not multi-step
+    #       Phase 6 -> not a tool
+    #       brain -> normal answer
+    #
+    # This section also handles approval/resume for an existing
+    # Phase 7 task.
+    # -----------------------------------------------------------------------
+
+    agent_result = (
+        handle_agent_message(
+            user_text
+        )
+    )
+
+    if agent_result.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            agent_result.get(
+                "response"
+            )
+            or "Done."
+        )
+
+        follow_up = (
+            agent_result.get(
+                "follow_up",
+                ""
+            ).strip()
+        )
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+
+        # -------------------------------------------------------------------
+        # Compound Agent Request
+        # -------------------------------------------------------------------
+
+        if follow_up:
+
+            print(
+                "\n[Agent Follow-Up]"
+            )
+
+            print(
+                "Continuing with:",
+                follow_up,
+            )
+
+            process_prompt(
+                follow_up
+            )
+
+
+        return
+
+
+    # -----------------------------------------------------------------------
+    # Pending Phase 6 Tool Approval
+    # -----------------------------------------------------------------------
+    #
+    # If no Phase 7 task handled the message, check whether a Phase 6
+    # single action is waiting for approval.
     # -----------------------------------------------------------------------
 
     approval_result = (
@@ -750,16 +853,15 @@ def process_prompt(
         )
 
 
-        # Report the completed/cancelled pending action first.
         complete_response(
             user_text,
             response,
         )
 
 
-        # -----------------------------------------------------------------------
-        # Compound Request
-        # -----------------------------------------------------------------------
+        # -------------------------------------------------------------------
+        # Compound Phase 6 Request
+        # -------------------------------------------------------------------
 
         if follow_up:
 
@@ -792,7 +894,13 @@ def process_prompt(
 
 
     # -----------------------------------------------------------------------
-    # Immediate Computer Tool Request
+    # Immediate Single Computer Tool Request
+    # -----------------------------------------------------------------------
+    #
+    # At this point Phase 7 has already determined that the request is
+    # NOT a multi-step task.
+    #
+    # Phase 6 can therefore safely attempt a one-tool action.
     # -----------------------------------------------------------------------
 
     tool_result = (
@@ -846,7 +954,6 @@ def process_prompt(
         user_text,
         response,
     )
-
 
 # ---------------------------------------------------------------------------
 # Startup

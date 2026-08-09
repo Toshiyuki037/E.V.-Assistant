@@ -8,6 +8,7 @@ memory/memory.db
 knowledge/knowledge.db
 runtime/vision/
 runtime/tools/
+runtime/agent/
 tests/
 .env
 .cache/

@@ -6,36 +6,56 @@ Last Edited: August 9, 2026
 Author: Max Maehara
 
 Purpose:
-    Provides controlled subprocess execution inside the current
-    E.V.I.E. workspace.
+    Provides controlled terminal execution inside E.V.I.E.'s
+    selected workspace.
+
+Current Tools:
+    - run_command
+    - run_python
+    - run_tests
+
+Capabilities:
+    - explicit argument-list execution
+    - workspace-scoped working directories
+    - timeout protection
+    - stdout / stderr capture
+    - output truncation
+    - Python virtual-environment preservation
+    - invalid PYTHONHASHSEED sanitization
 
 Security:
-    Commands are passed as argument arrays rather than shell strings.
+    Commands are executed with shell=False.
 
-    shell=True is never used.
+    Risk classification and approval remain controlled by
+    assistant/tools/executor.py and permissions.py.
 
-    Only explicitly allowed executables may run through this module.
+Important:
+    run_python() uses the SAME Python interpreter currently running
+    E.V.I.E. instead of WindowsApps/system Python.
+
+    This prevents E.V.I.E.'s agent from accidentally switching away
+    from its active virtual environment.
 
 Most Recent Change:
-    Initial Phase 6 safe terminal execution tools.
+    Added deterministic Python interpreter selection and sanitized
+    invalid PYTHONHASHSEED values that could otherwise crash Python
+    before user code executes.
 """
 
-import shutil
+import os
+import shlex
 import subprocess
+import sys
 
 from pathlib import Path
-
-from .permissions import (
-    classify_command_risk,
-)
-
-from .registry import (
-    register_tool,
-)
 
 from .filesystem import (
     get_active_workspace_path,
     resolve_workspace_path,
+)
+
+from .registry import (
+    register_tool,
 )
 
 
@@ -45,337 +65,787 @@ from .filesystem import (
 
 DEFAULT_TIMEOUT = 60
 
-MAX_OUTPUT_CHARACTERS = (
-    50_000
-)
-
-
-ALLOWED_EXECUTABLES = {
-    "python",
-    "python.exe",
-
-    "py",
-    "py.exe",
-
-    "pytest",
-    "pytest.exe",
-
-    "pip",
-    "pip.exe",
-
-    "pip3",
-    "pip3.exe",
-
-    "node",
-    "node.exe",
-
-    "npm",
-    "npm.cmd",
-
-    "npx",
-    "npx.cmd",
-}
+MAX_OUTPUT_CHARACTERS = 20_000
 
 
 # ---------------------------------------------------------------------------
-# Executable Validation
+# Output Truncation
 # ---------------------------------------------------------------------------
 
-def normalize_executable(
-    executable: str,
+def truncate_output(
+    text: str | None,
+    limit: int = MAX_OUTPUT_CHARACTERS,
 ):
-    return Path(
-        executable
-    ).name.lower()
+    """
+    Prevents extremely large command output from flooding
+    E.V.I.E.'s context.
+
+    Returns:
+        truncated_text,
+        was_truncated
+    """
+
+    if text is None:
+
+        return (
+            "",
+            False,
+        )
 
 
-def validate_executable(
-    executable: str,
-):
-    normalized = (
-        normalize_executable(
-            executable
+    text = str(
+        text
+    )
+
+
+    if len(text) <= limit:
+
+        return (
+            text,
+            False,
+        )
+
+
+    suffix = (
+        "\n\n"
+        "[Output truncated by E.V.I.E.]"
+    )
+
+
+    keep = (
+        max(
+            0,
+            limit
+            - len(suffix)
         )
     )
 
-    if (
-        normalized
-        not in ALLOWED_EXECUTABLES
-    ):
 
-        raise PermissionError(
-            (
-                "Executable is not approved "
-                "for E.V.I.E. terminal tools: "
-                f"{executable}"
+    return (
+        text[
+            :keep
+        ]
+        + suffix,
+
+        True,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Workspace Resolution
+# ---------------------------------------------------------------------------
+
+def resolve_terminal_workspace(
+    workspace_path=None,
+):
+    """
+    Resolves the workspace used by terminal actions.
+    """
+
+    if workspace_path:
+
+        workspace = Path(
+            workspace_path
+        ).resolve()
+
+    else:
+
+        workspace = Path(
+            get_active_workspace_path()
+        ).resolve()
+
+
+    if not workspace.exists():
+
+        raise FileNotFoundError(
+            str(
+                workspace
             )
         )
 
-    return normalized
+
+    if not workspace.is_dir():
+
+        raise NotADirectoryError(
+            str(
+                workspace
+            )
+        )
+
+
+    return workspace
 
 
 # ---------------------------------------------------------------------------
-# Command Formatting
+# Working Directory Resolution
 # ---------------------------------------------------------------------------
 
-def command_to_text(
-    arguments: list[str],
+def resolve_terminal_cwd(
+    cwd=".",
+    workspace_path=None,
 ):
-    return " ".join(
-        str(argument)
-        for argument in arguments
+    """
+    Resolves a working directory while keeping it inside the
+    selected workspace.
+    """
+
+    workspace = (
+        resolve_terminal_workspace(
+            workspace_path
+        )
+    )
+
+
+    if (
+        cwd is None
+        or str(cwd).strip() == ""
+        or str(cwd).strip() == "."
+    ):
+
+        return (
+            workspace,
+            workspace,
+        )
+
+
+    root, target = (
+        resolve_workspace_path(
+            str(cwd),
+            workspace,
+        )
+    )
+
+
+    if not target.exists():
+
+        raise FileNotFoundError(
+            str(
+                target
+            )
+        )
+
+
+    if not target.is_dir():
+
+        raise NotADirectoryError(
+            str(
+                target
+            )
+        )
+
+
+    return (
+        root,
+        target,
     )
 
 
 # ---------------------------------------------------------------------------
-# Core Command Runner
+# Python Environment Validation
+# ---------------------------------------------------------------------------
+
+def valid_python_hash_seed(
+    value,
+):
+    """
+    Returns True when PYTHONHASHSEED contains a valid value.
+
+    Python accepts:
+        random
+
+    or an integer:
+        0 through 4294967295
+    """
+
+    if value is None:
+
+        return True
+
+
+    value = str(
+        value
+    ).strip()
+
+
+    if not value:
+
+        return True
+
+
+    if value.lower() == "random":
+
+        return True
+
+
+    try:
+
+        number = int(
+            value
+        )
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+
+        return False
+
+
+    return (
+        0
+        <= number
+        <= 4294967295
+    )
+
+
+# ---------------------------------------------------------------------------
+# Sanitized Python Environment
+# ---------------------------------------------------------------------------
+
+def build_python_environment():
+    """
+    Creates an environment for Python subprocesses.
+
+    E.V.I.E. inherits the current process environment, but removes an
+    invalid PYTHONHASHSEED before starting another Python interpreter.
+
+    This fixes crashes such as:
+
+        Fatal Python error:
+        config_init_hash_seed:
+        PYTHONHASHSEED must be "random" or an integer...
+
+    Only the invalid setting is removed. Other environment variables
+    remain intact.
+    """
+
+    environment = (
+        os.environ.copy()
+    )
+
+
+    hash_seed = (
+        environment.get(
+            "PYTHONHASHSEED"
+        )
+    )
+
+
+    if not valid_python_hash_seed(
+        hash_seed
+    ):
+
+        environment.pop(
+            "PYTHONHASHSEED",
+            None,
+        )
+
+
+    return environment
+
+
+# ---------------------------------------------------------------------------
+# Command Display
+# ---------------------------------------------------------------------------
+
+def command_to_text(
+    command,
+):
+    """
+    Creates a readable command representation for audit/results.
+    """
+
+    return " ".join(
+        shlex.quote(
+            str(item)
+        )
+        for item
+        in command
+    )
+
+
+# ---------------------------------------------------------------------------
+# Core Process Runner
+# ---------------------------------------------------------------------------
+
+def execute_process(
+    command,
+    cwd,
+    timeout=DEFAULT_TIMEOUT,
+    environment=None,
+):
+    """
+    Executes one subprocess with shell=False and captures its result.
+    """
+
+    if not command:
+
+        raise ValueError(
+            "No command was provided."
+        )
+
+
+    command = [
+        str(item)
+        for item
+        in command
+    ]
+
+
+    timeout = int(
+        timeout
+    )
+
+
+    if timeout < 1:
+
+        raise ValueError(
+            "Timeout must be at least 1 second."
+        )
+
+
+    timed_out = False
+
+
+    try:
+
+        process = subprocess.run(
+            command,
+
+            cwd=str(
+                cwd
+            ),
+
+            capture_output=True,
+
+            text=True,
+
+            shell=False,
+
+            timeout=timeout,
+
+            env=environment,
+
+            errors="replace",
+        )
+
+
+        exit_code = (
+            process.returncode
+        )
+
+
+        stdout = (
+            process.stdout
+            or ""
+        )
+
+
+        stderr = (
+            process.stderr
+            or ""
+        )
+
+
+    except subprocess.TimeoutExpired as error:
+
+        timed_out = True
+
+        exit_code = None
+
+
+        stdout = (
+            error.stdout
+            or ""
+        )
+
+
+        stderr = (
+            error.stderr
+            or ""
+        )
+
+
+        if isinstance(
+            stdout,
+            bytes,
+        ):
+
+            stdout = stdout.decode(
+                "utf-8",
+                errors="replace",
+            )
+
+
+        if isinstance(
+            stderr,
+            bytes,
+        ):
+
+            stderr = stderr.decode(
+                "utf-8",
+                errors="replace",
+            )
+
+
+    stdout, stdout_truncated = (
+        truncate_output(
+            stdout
+        )
+    )
+
+
+    stderr, stderr_truncated = (
+        truncate_output(
+            stderr
+        )
+    )
+
+
+    return {
+        "command":
+            command,
+
+        "command_text":
+            command_to_text(
+                command
+            ),
+
+        "exit_code":
+            exit_code,
+
+        "stdout":
+            stdout,
+
+        "stderr":
+            stderr,
+
+        "stdout_truncated":
+            stdout_truncated,
+
+        "stderr_truncated":
+            stderr_truncated,
+
+        "timed_out":
+            timed_out,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Run Generic Command
 # ---------------------------------------------------------------------------
 
 def run_command(
-    arguments: list[str],
-    cwd: str = ".",
+    arguments,
+    cwd=".",
     workspace_path=None,
-    timeout: int = DEFAULT_TIMEOUT,
+    timeout=DEFAULT_TIMEOUT,
 ):
     """
-    Runs an explicitly allowed executable without invoking a shell.
+    Runs an executable using explicit argument-list semantics.
 
-    Returns stdout, stderr, exit code, timeout status, and risk
-    classification.
+    Example:
+
+        run_command(
+            arguments=[
+                "git",
+                "status",
+                "--short",
+            ]
+        )
+
+    Security:
+        shell=False is always used.
+
+        Permission/risk classification is handled by the central
+        Phase 6 executor.
     """
 
     if not arguments:
 
         raise ValueError(
-            "Command arguments cannot be empty."
+            "run_command requires arguments."
         )
 
-    arguments = [
-        str(argument)
-        for argument in arguments
+
+    if not isinstance(
+        arguments,
+        (
+            list,
+            tuple,
+        ),
+    ):
+
+        raise TypeError(
+            (
+                "run_command arguments must "
+                "be a list or tuple."
+            )
+        )
+
+
+    workspace, working_directory = (
+        resolve_terminal_cwd(
+            cwd=cwd,
+
+            workspace_path=
+                workspace_path,
+        )
+    )
+
+
+    command = [
+        str(item)
+        for item
+        in arguments
     ]
 
-    validate_executable(
-        arguments[0]
+
+    result = execute_process(
+        command=
+            command,
+
+        cwd=
+            working_directory,
+
+        timeout=
+            timeout,
+
+        environment=
+            os.environ.copy(),
     )
 
-    root, working_directory = (
-        resolve_workspace_path(
-            cwd,
-            workspace_path,
-        )
-    )
 
-    if not working_directory.exists():
+    return {
+        "workspace":
+            str(
+                workspace
+            ),
 
-        raise FileNotFoundError(
-            (
-                "Working directory does "
-                f"not exist: {working_directory}"
-            )
-        )
-
-    if not working_directory.is_dir():
-
-        raise NotADirectoryError(
+        "cwd":
             str(
                 working_directory
-            )
-        )
-
-    command_text = (
-        command_to_text(
-            arguments
-        )
-    )
-
-    risk = (
-        classify_command_risk(
-            command_text
-        )
-    )
-
-    try:
-
-        result = subprocess.run(
-            arguments,
-            cwd=str(
-                working_directory
             ),
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            shell=False,
-            check=False,
-        )
 
-        stdout = (
-            result.stdout
-            or ""
-        )
-
-        stderr = (
-            result.stderr
-            or ""
-        )
-
-        return {
-            "workspace":
-                str(root),
-
-            "cwd":
-                str(
-                    working_directory
-                ),
-
-            "command":
-                arguments,
-
-            "command_text":
-                command_text,
-
-            "risk":
-                risk,
-
-            "exit_code":
-                result.returncode,
-
-            "stdout":
-                stdout[
-                    :MAX_OUTPUT_CHARACTERS
-                ],
-
-            "stderr":
-                stderr[
-                    :MAX_OUTPUT_CHARACTERS
-                ],
-
-            "stdout_truncated":
-                (
-                    len(stdout)
-                    > MAX_OUTPUT_CHARACTERS
-                ),
-
-            "stderr_truncated":
-                (
-                    len(stderr)
-                    > MAX_OUTPUT_CHARACTERS
-                ),
-
-            "timed_out":
-                False,
-        }
-
-    except subprocess.TimeoutExpired as error:
-
-        return {
-            "workspace":
-                str(root),
-
-            "cwd":
-                str(
-                    working_directory
-                ),
-
-            "command":
-                arguments,
-
-            "command_text":
-                command_text,
-
-            "risk":
-                risk,
-
-            "exit_code":
-                None,
-
-            "stdout":
-                (
-                    error.stdout
-                    or ""
-                ),
-
-            "stderr":
-                (
-                    error.stderr
-                    or ""
-                ),
-
-            "timed_out":
-                True,
-        }
+        **result,
+    }
 
 
 # ---------------------------------------------------------------------------
-# Python Runner
+# Run Python
 # ---------------------------------------------------------------------------
 
 def run_python(
     arguments=None,
-    cwd: str = ".",
+    cwd=".",
     workspace_path=None,
-    timeout: int = DEFAULT_TIMEOUT,
+    timeout=DEFAULT_TIMEOUT,
 ):
     """
-    Executes Python with argument-list semantics.
+    Runs Python inside the selected workspace.
+
+    IMPORTANT:
+        This uses sys.executable.
+
+        Therefore, when E.V.I.E. itself is running from:
+
+            eve-assistant/venv/Scripts/python.exe
+
+        run_python() uses that SAME interpreter.
+
+        It does NOT rely on WindowsApps, PATH ordering, or whatever
+        interpreter VS Code happens to have selected.
 
     Example:
 
         run_python(
-            ["-m", "assistant.memory.database"]
+            arguments=[
+                "TypewriterTest/typewriter.py"
+            ]
         )
+
+    Equivalent to:
+
+        <E.V.I.E. venv python> TypewriterTest/typewriter.py
     """
 
     if arguments is None:
 
         arguments = []
 
-    command = [
-        "python",
-        *arguments,
-    ]
 
-    return run_command(
-        arguments=command,
-        cwd=cwd,
-        workspace_path=
-            workspace_path,
-        timeout=timeout,
+    if not isinstance(
+        arguments,
+        (
+            list,
+            tuple,
+        ),
+    ):
+
+        raise TypeError(
+            (
+                "run_python arguments must "
+                "be a list or tuple."
+            )
+        )
+
+
+    workspace, working_directory = (
+        resolve_terminal_cwd(
+            cwd=cwd,
+
+            workspace_path=
+                workspace_path,
+        )
     )
 
 
+    python_executable = Path(
+        sys.executable
+    ).resolve()
+
+
+    if not python_executable.exists():
+
+        raise FileNotFoundError(
+            (
+                "Current Python interpreter "
+                "could not be located: "
+                f"{python_executable}"
+            )
+        )
+
+
+    command = [
+        str(
+            python_executable
+        ),
+    ]
+
+
+    command.extend(
+        str(item)
+        for item
+        in arguments
+    )
+
+
+    environment = (
+        build_python_environment()
+    )
+
+
+    result = execute_process(
+        command=
+            command,
+
+        cwd=
+            working_directory,
+
+        timeout=
+            timeout,
+
+        environment=
+            environment,
+    )
+
+
+    return {
+        "workspace":
+            str(
+                workspace
+            ),
+
+        "cwd":
+            str(
+                working_directory
+            ),
+
+        "python_executable":
+            str(
+                python_executable
+            ),
+
+        "pythonhashseed_sanitized":
+            (
+                not valid_python_hash_seed(
+                    os.environ.get(
+                        "PYTHONHASHSEED"
+                    )
+                )
+            ),
+
+        **result,
+    }
+
+
 # ---------------------------------------------------------------------------
-# Test Runner
+# Run Tests
 # ---------------------------------------------------------------------------
 
 def run_tests(
-    test_path: str | None = None,
-    cwd: str = ".",
+    arguments=None,
+    cwd=".",
     workspace_path=None,
-    timeout: int = 120,
+    timeout=120,
 ):
     """
-    Runs pytest inside the selected workspace.
+    Runs pytest using E.V.I.E.'s current Python interpreter.
+
+    Using:
+
+        python -m pytest
+
+    is more reliable than relying on a separate `pytest` executable
+    appearing on PATH.
     """
 
-    arguments = [
-        "python",
+    if arguments is None:
+
+        arguments = []
+
+
+    if not isinstance(
+        arguments,
+        (
+            list,
+            tuple,
+        ),
+    ):
+
+        raise TypeError(
+            (
+                "run_tests arguments must "
+                "be a list or tuple."
+            )
+        )
+
+
+    test_arguments = [
         "-m",
         "pytest",
     ]
 
-    if test_path:
 
-        arguments.append(
-            test_path
-        )
+    test_arguments.extend(
+        str(item)
+        for item
+        in arguments
+    )
 
-    return run_command(
-        arguments=arguments,
-        cwd=cwd,
+
+    return run_python(
+        arguments=
+            test_arguments,
+
+        cwd=
+            cwd,
+
         workspace_path=
             workspace_path,
-        timeout=timeout,
+
+        timeout=
+            timeout,
     )
 
 
@@ -384,38 +854,67 @@ def run_tests(
 # ---------------------------------------------------------------------------
 
 register_tool(
-    name="run_command",
+    name=
+        "run_command",
+
     description=(
-        "Runs an approved executable with "
-        "explicit argument-list semantics "
-        "inside the active workspace."
+        "Runs an executable with explicit argument-list semantics "
+        "inside the selected workspace. The command must be supplied "
+        "through the arguments list. shell=False is always used."
     ),
-    category="terminal",
-    risk="low",
-    function=run_command,
+
+    category=
+        "terminal",
+
+    risk=
+        "low",
+
+    function=
+        run_command,
 )
 
 
 register_tool(
-    name="run_python",
+    name=
+        "run_python",
+
     description=(
-        "Runs Python inside the active "
-        "workspace."
+        "Runs Python using E.V.I.E.'s current Python interpreter "
+        "inside the selected workspace. Supply Python arguments in "
+        "the arguments list, for example "
+        "arguments=['TypewriterTest/typewriter.py']. "
+        "Invalid PYTHONHASHSEED values are sanitized automatically."
     ),
-    category="terminal",
-    risk="low",
-    function=run_python,
+
+    category=
+        "terminal",
+
+    risk=
+        "low",
+
+    function=
+        run_python,
 )
 
 
 register_tool(
-    name="run_tests",
+    name=
+        "run_tests",
+
     description=(
-        "Runs pytest for the active project."
+        "Runs pytest through E.V.I.E.'s current Python interpreter "
+        "inside the selected workspace. Optional pytest arguments are "
+        "supplied through the arguments list."
     ),
-    category="terminal",
-    risk="low",
-    function=run_tests,
+
+    category=
+        "terminal",
+
+    risk=
+        "low",
+
+    function=
+        run_tests,
 )
 
 
@@ -430,41 +929,81 @@ if __name__ == "__main__":
     )
 
     print(
-        "------------------------"
+        "-----------------------"
     )
+
 
     print()
 
+    print(
+        "Current Python:"
+    )
+
+    print(
+        sys.executable
+    )
+
+
+    print()
+
+    print(
+        "Active workspace:"
+    )
+
+    print(
+        get_active_workspace_path()
+    )
+
+
+    print()
+
+    print(
+        "PYTHONHASHSEED:"
+    )
+
+    print(
+        repr(
+            os.environ.get(
+                "PYTHONHASHSEED"
+            )
+        )
+    )
+
+
+    print()
+
+    print(
+        "PYTHONHASHSEED valid:"
+    )
+
+    print(
+        valid_python_hash_seed(
+            os.environ.get(
+                "PYTHONHASHSEED"
+            )
+        )
+    )
+
+
+    print()
+
+    print(
+        "TEST 1 - Basic Python"
+    )
+
+
     result = run_python(
-        [
+        arguments=[
             "-c",
-            "print('E.V.I.E. terminal tool works')",
+            (
+                "import sys; "
+                "print('E.V.I.E. terminal tool works'); "
+                "print(sys.executable)"
+            ),
         ]
     )
 
-    print(
-        "Exit code:",
-        result[
-            "exit_code"
-        ],
-    )
 
     print(
-        "STDOUT:"
-    )
-
-    print(
-        result[
-            "stdout"
-        ]
-    )
-
-    print(
-        "STDERR:"
-    )
-
-    print(
-        result[
-            "stderr"
-        ]
+        result
     )
