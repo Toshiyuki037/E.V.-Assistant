@@ -29,15 +29,12 @@ Most Recent Change:
     long F5-TTS generation.
 """
 
-from brain import chat
-from listen import listen
-from speak import speak
+from .brain import chat
+from .listen import listen
+from .speak import speak
+from .speech_formatter import prepare_spoken_text
 
-from speech_formatter import (
-    prepare_spoken_text,
-)
-
-from memory.database import (
+from .memory.database import (
     archive_memories,
     init_memory,
     save_conversation,
@@ -45,12 +42,12 @@ from memory.database import (
     update_memory,
 )
 
-from memory.embeddings import (
+from .memory.embeddings import (
     create_memory_embedding,
     sync_memory_embeddings,
 )
 
-from memory.manager import (
+from .memory.manager import (
     RELATION_CONFIDENCE,
     analyze_memory,
     resolve_new_memory,
@@ -61,7 +58,7 @@ from memory.manager import (
     should_auto_update,
 )
 
-from memory.retriever import (
+from .memory.retriever import (
     retrieve_matching_memories,
     retrieve_memories,
 )

@@ -1,22 +1,24 @@
 """
-E.V.I.E. - Dynamic Workspace Awareness
+E.V.I.E. - Multi-Workspace Awareness
 
 Created: August 8, 2026
 Last Edited: August 8, 2026
 Author: Max Maehara
 
 Purpose:
-    Determines which development project is currently active.
+    Detects the active development workspace and other visible
+    VS Code workspaces.
 
-Capabilities:
-    - Active VS Code workspace detection
-    - Dynamic project folder resolution
-    - Git repository detection
-    - Git branch
-    - Modified/untracked files
+How It Works:
+    - Reads the foreground window.
+    - Enumerates visible VS Code windows.
+    - Extracts workspace names from VS Code titles.
+    - Resolves workspace names to local project folders.
+    - Retrieves Git branch and modified-file state.
+    - Marks which workspace is currently active.
 
 Most Recent Change:
-    Replaced the fixed E.V.I.E. workspace with dynamic project detection.
+    Added multi-workspace detection for final Phase 4 project routing.
 """
 
 import os
@@ -25,11 +27,12 @@ from pathlib import Path
 
 from .system import (
     get_active_window_title,
+    get_visible_applications,
 )
 
 
 # ---------------------------------------------------------------------------
-# Default Project Root
+# E.V.I.E. Root
 # ---------------------------------------------------------------------------
 
 EVIE_ROOT = (
@@ -42,7 +45,7 @@ EVIE_ROOT = (
 
 
 # ---------------------------------------------------------------------------
-# Read-Only Command Helper
+# Command Helper
 # ---------------------------------------------------------------------------
 
 def run_command(
@@ -66,8 +69,7 @@ def run_command(
         if result.returncode != 0:
             return None
 
-        # IMPORTANT:
-        # Keep leading Git status spaces.
+        # Preserve leading Git porcelain spaces.
         output = result.stdout.rstrip()
 
         return (
@@ -85,16 +87,18 @@ def run_command(
 
 
 # ---------------------------------------------------------------------------
-# Workspace Name From Window
+# VS Code Workspace Name
 # ---------------------------------------------------------------------------
 
 def infer_workspace_name(
     window_title: str | None,
 ):
     """
-    VS Code commonly formats titles roughly as:
+    Typical VS Code titles:
 
     brain.py - eve-assistant - Visual Studio Code
+
+    index.html - FinalCollegePortfolio - Visual Studio Code
     """
 
     if not window_title:
@@ -111,9 +115,9 @@ def infer_workspace_name(
         for part in window_title.split(
             " - "
         )
+        if part.strip()
     ]
 
-    # Remove VS Code suffix.
     parts = [
         part
         for part in parts
@@ -126,8 +130,6 @@ def infer_workspace_name(
     if not parts:
         return None
 
-    # When a file and workspace both exist:
-    # brain.py - eve-assistant
     if len(parts) >= 2:
         return parts[-1]
 
@@ -135,7 +137,7 @@ def infer_workspace_name(
 
 
 # ---------------------------------------------------------------------------
-# Likely Development Roots
+# Search Roots
 # ---------------------------------------------------------------------------
 
 def get_search_roots():
@@ -154,13 +156,16 @@ def get_search_roots():
     )
 
     if onedrive:
-        one = Path(onedrive)
+
+        one = Path(
+            onedrive
+        )
 
         roots.extend(
             [
+                one,
                 one / "Desktop",
                 one / "Documents",
-                one,
             ]
         )
 
@@ -169,10 +174,10 @@ def get_search_roots():
     seen = set()
 
     for root in roots:
+
         try:
-            resolved = (
-                root.resolve()
-            )
+            resolved = root.resolve()
+
         except OSError:
             continue
 
@@ -183,7 +188,9 @@ def get_search_roots():
         if key in seen:
             continue
 
-        seen.add(key)
+        seen.add(
+            key
+        )
 
         if resolved.exists():
             unique.append(
@@ -194,36 +201,35 @@ def get_search_roots():
 
 
 # ---------------------------------------------------------------------------
-# Resolve Workspace Folder
+# Workspace Folder Resolution
 # ---------------------------------------------------------------------------
 
 def find_workspace_folder(
     workspace_name: str | None,
 ):
     if not workspace_name:
-        return EVIE_ROOT
+        return None
 
-    # E.V.I.E. itself is an easy exact match.
     if (
         EVIE_ROOT.name.lower()
         == workspace_name.lower()
     ):
         return EVIE_ROOT
 
+    # First try direct children.
     for root in get_search_roots():
 
-        # Root itself could be workspace.
         if (
             root.name.lower()
             == workspace_name.lower()
         ):
             return root
 
-        # Keep search shallow intentionally.
         try:
             children = list(
                 root.iterdir()
             )
+
         except (
             PermissionError,
             OSError,
@@ -231,6 +237,7 @@ def find_workspace_folder(
             continue
 
         for child in children:
+
             if not child.is_dir():
                 continue
 
@@ -239,6 +246,29 @@ def find_workspace_folder(
                 == workspace_name.lower()
             ):
                 return child
+
+    # Slightly deeper fallback.
+    for root in get_search_roots():
+
+        try:
+            for child in root.glob(
+                "*/*"
+            ):
+
+                if not child.is_dir():
+                    continue
+
+                if (
+                    child.name.lower()
+                    == workspace_name.lower()
+                ):
+                    return child
+
+        except (
+            PermissionError,
+            OSError,
+        ):
+            continue
 
     return None
 
@@ -296,22 +326,18 @@ def get_git_status(
 def get_modified_files(
     path: Path,
 ):
-    status_lines = get_git_status(
-        path
-    )
-
     files = []
 
-    for line in status_lines:
+    for line in get_git_status(
+        path
+    ):
 
-        # Git porcelain format:
-        # XY<space>filename
         if len(line) < 4:
             continue
 
-        file_path = line[
-            3:
-        ].strip()
+        file_path = (
+            line[3:].strip()
+        )
 
         if file_path:
             files.append(
@@ -322,45 +348,61 @@ def get_modified_files(
 
 
 # ---------------------------------------------------------------------------
-# Dynamic Workspace Context
+# Build Workspace Record
 # ---------------------------------------------------------------------------
 
-def get_workspace_context():
-    active_window = (
-        get_active_window_title()
+def build_workspace_record(
+    workspace_name: str,
+    window_title: str | None = None,
+    active: bool = False,
+):
+    folder = find_workspace_folder(
+        workspace_name
     )
 
-    workspace_hint = (
-        infer_workspace_name(
-            active_window
-        )
-    )
+    if folder is None:
 
-    detected_folder = (
-        find_workspace_folder(
-            workspace_hint
-        )
-    )
+        return {
+            "workspace_name":
+                workspace_name,
 
-    if detected_folder is None:
-        detected_folder = EVIE_ROOT
+            "workspace_path":
+                None,
 
-    git_root_string = (
-        get_git_root(
-            detected_folder
-        )
+            "window_title":
+                window_title,
+
+            "git_repository":
+                None,
+
+            "git_branch":
+                None,
+
+            "modified_files":
+                [],
+
+            "active":
+                active,
+
+            "resolved":
+                False,
+        }
+
+    git_root_string = get_git_root(
+        folder
     )
 
     if git_root_string:
+
         repository = Path(
             git_root_string
         )
-    else:
-        repository = (
-            detected_folder
-        )
 
-    git_branch = (
+    else:
+
+        repository = folder
+
+    branch = (
         get_git_branch(
             repository
         )
@@ -368,7 +410,7 @@ def get_workspace_context():
         else None
     )
 
-    modified_files = (
+    modified = (
         get_modified_files(
             repository
         )
@@ -377,16 +419,14 @@ def get_workspace_context():
     )
 
     return {
-        "workspace_hint":
-            workspace_hint,
-
         "workspace_name":
-            detected_folder.name,
+            folder.name,
 
         "workspace_path":
-            str(
-                detected_folder
-            ),
+            str(folder),
+
+        "window_title":
+            window_title,
 
         "git_repository":
             (
@@ -396,38 +436,384 @@ def get_workspace_context():
             ),
 
         "git_branch":
-            git_branch,
+            branch,
 
         "modified_files":
-            modified_files,
+            modified,
 
-        "detection_source":
-            (
-                "active_window"
-                if workspace_hint
-                else "fallback"
-            ),
+        "active":
+            active,
+
+        "resolved":
+            True,
     }
 
 
 # ---------------------------------------------------------------------------
-# Test
+# All Open VS Code Workspaces
+# ---------------------------------------------------------------------------
+
+def get_open_workspaces():
+    """
+    Returns every visible VS Code workspace that can be inferred
+    from the current Windows desktop.
+    """
+
+    applications = (
+        get_visible_applications()
+    )
+
+    active_title = (
+        get_active_window_title()
+    )
+
+    detected = []
+
+    seen_names = set()
+
+    for app in applications:
+
+        process_name = (
+            app.get(
+                "process",
+                ""
+            )
+            .lower()
+        )
+
+        title = (
+            app.get(
+                "title"
+            )
+            or ""
+        )
+
+        if (
+            process_name != "code.exe"
+            and "Visual Studio Code"
+            not in title
+        ):
+            continue
+
+        workspace_name = (
+            infer_workspace_name(
+                title
+            )
+        )
+
+        if not workspace_name:
+            continue
+
+        normalized = (
+            workspace_name.lower()
+        )
+
+        if normalized in seen_names:
+            continue
+
+        seen_names.add(
+            normalized
+        )
+
+        is_active = (
+            active_title == title
+        )
+
+        detected.append(
+            build_workspace_record(
+                workspace_name=
+                    workspace_name,
+
+                window_title=
+                    title,
+
+                active=
+                    is_active,
+            )
+        )
+
+    # Active VS Code title may occasionally not appear in enumeration.
+    active_name = infer_workspace_name(
+        active_title
+    )
+
+    if (
+        active_name
+        and active_name.lower()
+        not in seen_names
+    ):
+
+        detected.append(
+            build_workspace_record(
+                workspace_name=
+                    active_name,
+
+                window_title=
+                    active_title,
+
+                active=True,
+            )
+        )
+
+    detected.sort(
+        key=lambda item: (
+            not item[
+                "active"
+            ],
+
+            item[
+                "workspace_name"
+            ].lower(),
+        )
+    )
+
+    return detected
+
+
+# ---------------------------------------------------------------------------
+# Active Workspace
+# ---------------------------------------------------------------------------
+
+def get_active_workspace():
+    workspaces = (
+        get_open_workspaces()
+    )
+
+    for workspace in workspaces:
+
+        if workspace.get(
+            "active"
+        ):
+            return workspace
+
+    # Fallback for when VS Code isn't foreground.
+    active_title = (
+        get_active_window_title()
+    )
+
+    workspace_name = (
+        infer_workspace_name(
+            active_title
+        )
+    )
+
+    if workspace_name:
+
+        return build_workspace_record(
+            workspace_name=
+                workspace_name,
+
+            window_title=
+                active_title,
+
+            active=True,
+        )
+
+    # Final fallback to E.V.I.E.
+    return build_workspace_record(
+        workspace_name=
+            EVIE_ROOT.name,
+
+        window_title=
+            None,
+
+        active=False,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Compatibility Function
+# ---------------------------------------------------------------------------
+
+def get_workspace_context():
+    """
+    Maintains compatibility with the existing Phase 3 system.
+
+    Returns active workspace plus all detected open workspaces.
+    """
+
+    active = (
+        get_active_workspace()
+    )
+
+    open_workspaces = (
+        get_open_workspaces()
+    )
+
+    return {
+        "workspace_hint":
+            active.get(
+                "workspace_name"
+            ),
+
+        "workspace_name":
+            active.get(
+                "workspace_name"
+            ),
+
+        "workspace_path":
+            active.get(
+                "workspace_path"
+            ),
+
+        "git_repository":
+            active.get(
+                "git_repository"
+            ),
+
+        "git_branch":
+            active.get(
+                "git_branch"
+            ),
+
+        "modified_files":
+            active.get(
+                "modified_files",
+                [],
+            ),
+
+        "detection_source":
+            "active_window",
+
+        "open_workspaces":
+            open_workspaces,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Find Workspace By Name
+# ---------------------------------------------------------------------------
+
+def find_open_workspace(
+    requested_name: str,
+):
+    requested = (
+        requested_name.lower()
+    )
+
+    workspaces = (
+        get_open_workspaces()
+    )
+
+    # Exact match.
+    for workspace in workspaces:
+
+        if (
+            workspace[
+                "workspace_name"
+            ].lower()
+            == requested
+        ):
+            return workspace
+
+    # Partial match.
+    for workspace in workspaces:
+
+        name = (
+            workspace[
+                "workspace_name"
+            ].lower()
+        )
+
+        if (
+            requested in name
+            or name in requested
+        ):
+            return workspace
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Other Workspace
+# ---------------------------------------------------------------------------
+
+def get_other_workspace():
+    """
+    If exactly one obvious non-active workspace exists, return it.
+    """
+
+    workspaces = (
+        get_open_workspaces()
+    )
+
+    others = [
+        workspace
+
+        for workspace
+        in workspaces
+
+        if (
+            not workspace.get(
+                "active"
+            )
+        )
+    ]
+
+    if not others:
+        return None
+
+    return others[0]
+
+
+# ---------------------------------------------------------------------------
+# Standalone Test
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    context = (
-        get_workspace_context()
+
+    print(
+        "E.V.I.E. Multi-Workspace Context"
     )
 
     print(
-        "E.V.I.E. Workspace Context"
+        "-------------------------------"
+    )
+
+    workspaces = (
+        get_open_workspaces()
     )
 
     print(
-        "---------------------------"
+        "Detected workspaces:",
+        len(workspaces),
     )
 
-    for key, value in context.items():
+    for workspace in workspaces:
+
+        print()
+
         print(
-            f"{key}: {value}"
+            "Workspace:",
+            workspace[
+                "workspace_name"
+            ]
+        )
+
+        print(
+            "Path:",
+            workspace[
+                "workspace_path"
+            ]
+        )
+
+        print(
+            "Active:",
+            workspace[
+                "active"
+            ]
+        )
+
+        print(
+            "Branch:",
+            workspace[
+                "git_branch"
+            ]
+        )
+
+        print(
+            "Window:",
+            workspace[
+                "window_title"
+            ]
         )

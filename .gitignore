@@ -5,6 +5,7 @@ __pycache__/
 *.wav
 voice-output/
 memory/memory.db
+knowledge/knowledge.db
 tests/
 .env
 .cache/

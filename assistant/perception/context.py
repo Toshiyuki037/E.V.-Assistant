@@ -6,18 +6,26 @@ Last Edited: August 8, 2026
 Author: Max Maehara
 
 Purpose:
-    Collects live computer awareness and selects which information
-    should be supplied to E.V.I.E.'s reasoning model.
+    Collects and formats live computer context for E.V.I.E.
 
 How It Works:
-    Context is collected locally.
+    Receives a single workspace snapshot captured for the current
+    user request.
 
-    Sensitive or noisy context such as clipboard contents and
-    terminal history is only included when relevant to the user's
-    current request.
+    This prevents perception and knowledge systems from observing
+    different active workspaces during the same reasoning cycle.
+
+    Additional context such as:
+        - all open VS Code workspaces
+        - visible applications
+        - terminal history
+        - clipboard
+
+    is included only when relevant.
 
 Most Recent Change:
-    Added context routing and reduced unnecessary context exposure.
+    Added single-snapshot context routing and improved detection of
+    questions about all currently open projects/workspaces.
 """
 
 from datetime import datetime
@@ -40,7 +48,13 @@ from .workspace import (
 def get_clipboard_context(
     max_characters: int = 1500,
 ):
+    """
+    Reads text clipboard content only when explicitly requested
+    by the context router.
+    """
+
     try:
+
         value = pyperclip.paste()
 
         if not isinstance(
@@ -59,35 +73,50 @@ def get_clipboard_context(
         ]
 
     except Exception:
+
         return None
 
 
 # ---------------------------------------------------------------------------
-# Routing
+# Context Routing
 # ---------------------------------------------------------------------------
 
 def determine_context_needs(
     user_message: str,
 ):
     """
-    Returns which live-context sections are relevant.
+    Determines which live context sections are relevant to the
+    current request.
     """
 
     text = user_message.lower()
 
+
+    # -----------------------------------------------------------------------
+    # Clipboard
+    # -----------------------------------------------------------------------
+
     wants_clipboard = any(
         phrase in text
+
         for phrase in (
             "clipboard",
             "copied",
-            "copy",
+            "what did i copy",
+            "what i copied",
             "paste",
             "pasted",
         )
     )
 
+
+    # -----------------------------------------------------------------------
+    # Terminal
+    # -----------------------------------------------------------------------
+
     wants_terminal = any(
         phrase in text
+
         for phrase in (
             "terminal",
             "powershell",
@@ -95,30 +124,49 @@ def determine_context_needs(
             "commands",
             "shell",
             "console",
-            "history",
-            "ran",
-            "run last",
+            "terminal history",
+            "command history",
+            "recently run",
+            "recently ran",
+            "last command",
         )
     )
 
+
+    # -----------------------------------------------------------------------
+    # Visible applications
+    # -----------------------------------------------------------------------
+
     wants_apps = any(
         phrase in text
+
         for phrase in (
             "applications",
             "application",
             "apps",
             "programs",
-            "running",
-            "open app",
+            "what is open",
+            "what's open",
+            "open apps",
             "open applications",
+            "running apps",
+            "running applications",
         )
     )
 
+
+    # -----------------------------------------------------------------------
+    # Workspace / Git
+    # -----------------------------------------------------------------------
+
     wants_workspace = any(
         phrase in text
+
         for phrase in (
             "project",
+            "projects",
             "workspace",
+            "workspaces",
             "repo",
             "repository",
             "branch",
@@ -128,34 +176,88 @@ def determine_context_needs(
             "working on",
             "file",
             "files",
-            "coding",
+            "code",
+            "vscode",
+            "vs code",
         )
     )
 
-    wants_system = any(
-        phrase in text
-        for phrase in (
-            "what am i doing",
-            "right now",
-            "current",
-            "active",
-            "window",
-            "application",
-            "app",
-            "what am i using",
-            "what am i working on",
-            "file",
+
+    # -----------------------------------------------------------------------
+    # Multiple Workspaces
+    # -----------------------------------------------------------------------
+
+    wants_all_workspaces = (
+        any(
+            phrase in text
+
+            for phrase in (
+                "other project",
+                "other workspace",
+                "other repo",
+                "other repository",
+                "other vscode",
+                "other vs code",
+
+                "both projects",
+                "both workspaces",
+                "two projects",
+                "two workspaces",
+
+                "all projects",
+                "all workspaces",
+                "all repos",
+                "all repositories",
+
+                "compare the projects",
+                "compare projects",
+
+                "projects currently open",
+                "workspaces currently open",
+                "repos currently open",
+            )
+        )
+
+        or (
+            (
+                "project" in text
+                or "projects" in text
+            )
+            and "open" in text
+        )
+
+        or (
+            (
+                "workspace" in text
+                or "workspaces" in text
+            )
+            and "open" in text
+        )
+
+        or (
+            (
+                "repo" in text
+                or "repos" in text
+                or "repository" in text
+                or "repositories" in text
+            )
+            and "open" in text
         )
     )
 
-    # Always provide a small core awareness layer.
+
     return {
-        "system": True,
+        "system":
+            True,
 
-        "workspace": (
-            wants_workspace
-            or wants_system
-        ),
+        "workspace":
+            (
+                wants_workspace
+                or wants_all_workspaces
+            ),
+
+        "all_workspaces":
+            wants_all_workspaces,
 
         "applications":
             wants_apps,
@@ -169,31 +271,80 @@ def determine_context_needs(
 
 
 # ---------------------------------------------------------------------------
-# Context Collection
+# Live Context Collection
 # ---------------------------------------------------------------------------
 
 def get_live_context(
     user_message: str,
+    workspace_snapshot: dict | None = None,
+    system_snapshot: dict | None = None,
 ):
+    """
+    Builds live context using snapshots captured for this request.
+
+    If snapshots are not supplied, they are collected here.
+
+    brain.py should normally supply the workspace snapshot so
+    perception and project knowledge use identical workspace state.
+    """
+
     needs = determine_context_needs(
         user_message
     )
 
-    system = (
-        get_system_context()
-    )
 
-    workspace = (
-        get_workspace_context()
-        if needs["workspace"]
-        else None
-    )
+    # -----------------------------------------------------------------------
+    # System snapshot
+    # -----------------------------------------------------------------------
+
+    if system_snapshot is None:
+
+        system = get_system_context()
+
+    else:
+
+        system = system_snapshot
+
+
+    # -----------------------------------------------------------------------
+    # Workspace snapshot
+    # -----------------------------------------------------------------------
+
+    if needs[
+        "workspace"
+    ]:
+
+        if workspace_snapshot is None:
+
+            workspace = (
+                get_workspace_context()
+            )
+
+        else:
+
+            workspace = (
+                workspace_snapshot
+            )
+
+    else:
+
+        workspace = None
+
+
+    # -----------------------------------------------------------------------
+    # Clipboard
+    # -----------------------------------------------------------------------
 
     clipboard = (
         get_clipboard_context()
-        if needs["clipboard"]
+
+        if needs[
+            "clipboard"
+        ]
+
         else None
     )
+
 
     return {
         "timestamp":
@@ -220,23 +371,26 @@ def get_live_context(
 # ---------------------------------------------------------------------------
 
 def format_active_application(
-    system,
+    system: dict,
 ):
     process = system.get(
         "active_process"
     )
 
     if not process:
+
         return "Unknown"
 
     return (
-        process.get("name")
+        process.get(
+            "name"
+        )
         or "Unknown"
     )
 
 
 def format_visible_apps(
-    system,
+    system: dict,
 ):
     applications = (
         system.get(
@@ -246,20 +400,28 @@ def format_visible_apps(
     )
 
     if not applications:
-        return "No visible applications detected."
+
+        return (
+            "No visible applications detected."
+        )
 
     lines = []
 
     seen = set()
 
     for app in applications:
+
         name = (
-            app.get("process")
+            app.get(
+                "process"
+            )
             or "Unknown"
         )
 
         title = (
-            app.get("title")
+            app.get(
+                "title"
+            )
             or ""
         )
 
@@ -271,7 +433,9 @@ def format_visible_apps(
         if key in seen:
             continue
 
-        seen.add(key)
+        seen.add(
+            key
+        )
 
         lines.append(
             f"- {name}: {title}"
@@ -286,7 +450,7 @@ def format_visible_apps(
 
 
 def format_terminal(
-    system,
+    system: dict,
 ):
     history = (
         system.get(
@@ -295,69 +459,145 @@ def format_terminal(
         or []
     )
 
-    development_processes = (
+    processes = (
         system.get(
             "development_processes"
         )
         or []
     )
 
+
     history_text = (
         "\n".join(
             f"- {command}"
-            for command in history
+
+            for command
+            in history
         )
+
         if history
-        else "No recent PowerShell history available."
+
+        else (
+            "No recent PowerShell "
+            "history available."
+        )
     )
 
-    processes_text = (
+
+    process_text = (
         "\n".join(
             (
                 f"- {process['name']} "
                 f"(PID {process['pid']})"
             )
+
             for process
-            in development_processes
+            in processes
         )
-        if development_processes
-        else "No notable development processes detected."
+
+        if processes
+
+        else (
+            "No notable development "
+            "processes detected."
+        )
     )
+
 
     return f"""
 Recent shell history:
 {history_text}
 
 Development processes:
-{processes_text}
+{process_text}
 """.strip()
 
 
+def format_open_workspaces(
+    workspace_context: dict,
+):
+    workspaces = (
+        workspace_context.get(
+            "open_workspaces"
+        )
+        or []
+    )
+
+    if not workspaces:
+
+        return (
+            "No open VS Code workspaces detected."
+        )
+
+    blocks = []
+
+    for workspace in workspaces:
+
+        active_text = (
+            "ACTIVE"
+
+            if workspace.get(
+                "active"
+            )
+
+            else "OPEN"
+        )
+
+        blocks.append(
+            f"""
+[{active_text}]
+
+Workspace:
+{workspace.get("workspace_name") or "Unknown"}
+
+Path:
+{workspace.get("workspace_path") or "Unresolved"}
+
+Git branch:
+{workspace.get("git_branch") or "Unknown"}
+
+Window:
+{workspace.get("window_title") or "Unknown"}
+""".strip()
+        )
+
+    return "\n\n".join(
+        blocks
+    )
+
+
 # ---------------------------------------------------------------------------
-# Human-Readable Context
+# Main Context Formatter
 # ---------------------------------------------------------------------------
 
 def format_live_context(
     context: dict,
 ):
-    system = context.get(
-        "system"
-    ) or {}
-
-    workspace = context.get(
-        "workspace"
+    system = (
+        context.get(
+            "system"
+        )
+        or {}
     )
 
-    needs = context.get(
-        "needs",
-        {},
+    workspace = (
+        context.get(
+            "workspace"
+        )
+    )
+
+    needs = (
+        context.get(
+            "needs",
+            {},
+        )
     )
 
     sections = []
 
 
     # -----------------------------------------------------------------------
-    # Core
+    # Core computer state
     # -----------------------------------------------------------------------
 
     sections.append(
@@ -380,10 +620,11 @@ Likely active file:
 
 
     # -----------------------------------------------------------------------
-    # Workspace
+    # Active workspace
     # -----------------------------------------------------------------------
 
     if workspace:
+
         modified = (
             workspace.get(
                 "modified_files"
@@ -391,18 +632,24 @@ Likely active file:
             or []
         )
 
+
         modified_text = (
             "\n".join(
                 f"- {file}"
-                for file in modified
+
+                for file
+                in modified
             )
+
             if modified
+
             else "None"
         )
 
+
         sections.append(
             f"""
-WORKSPACE CONTEXT
+ACTIVE WORKSPACE
 
 Workspace:
 {workspace.get("workspace_name") or "Unknown"}
@@ -423,12 +670,33 @@ Modified files:
 
 
     # -----------------------------------------------------------------------
+    # All VS Code Workspaces
+    # -----------------------------------------------------------------------
+
+    if (
+        workspace
+        and needs.get(
+            "all_workspaces"
+        )
+    ):
+
+        sections.append(
+            f"""
+OPEN VS CODE WORKSPACES
+
+{format_open_workspaces(workspace)}
+""".strip()
+        )
+
+
+    # -----------------------------------------------------------------------
     # Applications
     # -----------------------------------------------------------------------
 
     if needs.get(
         "applications"
     ):
+
         sections.append(
             f"""
 VISIBLE APPLICATIONS
@@ -445,6 +713,7 @@ VISIBLE APPLICATIONS
     if needs.get(
         "terminal"
     ):
+
         sections.append(
             f"""
 TERMINAL CONTEXT
@@ -461,11 +730,16 @@ TERMINAL CONTEXT
     if needs.get(
         "clipboard"
     ):
+
         clipboard = (
             context.get(
                 "clipboard"
             )
-            or "No text clipboard content."
+
+            or (
+                "No text clipboard "
+                "content."
+            )
         )
 
         sections.append(
@@ -487,12 +761,23 @@ CLIPBOARD CONTEXT
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
+
     test_message = (
-        "What project am I working on right now?"
+        "What projects do I currently have open?"
     )
 
-    context = get_live_context(
-        test_message
+    snapshot = (
+        get_workspace_context()
+    )
+
+    context = (
+        get_live_context(
+            user_message=
+                test_message,
+
+            workspace_snapshot=
+                snapshot,
+        )
     )
 
     print(
