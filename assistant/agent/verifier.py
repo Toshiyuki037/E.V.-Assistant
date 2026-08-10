@@ -2,7 +2,7 @@
 E.V.I.E. - Agent Verifier
 
 Created: August 9, 2026
-Last Edited: August 9, 2026
+Last Edited: August 10, 2026
 Author: Max Maehara
 
 Purpose:
@@ -15,7 +15,10 @@ Capabilities:
     - exact tool-signature awareness
     - failed-step recovery
     - dynamic continuation after successful investigative steps
+    - Phase 8 browser-result preservation
+    - Phase 8 research continuation
     - final goal completion verification
+    - final result synthesis from verified task evidence
 
 Important:
     This module NEVER executes tools.
@@ -23,10 +26,18 @@ Important:
     It only interprets real execution results and determines
     what the agent should do next.
 
+Architecture:
+    Phase 7 remains the reasoning / orchestration layer.
+
+    Every real computer action continues through the existing
+    Phase 6 executor, registry, permission system, and deterministic
+    verification layer.
+
 Most Recent Change:
-    Added continuation planning so successful investigative actions
-    can generate additional steps when the original goal is not yet
-    complete.
+    Added Phase 8 browser evidence to task-history reasoning and fixed
+    research completion so the final verifier generates the user-facing
+    research summary rather than requiring that summary to have already
+    been delivered before verification.
 """
 
 import inspect
@@ -131,6 +142,7 @@ def describe_agent_tools():
 
     blocks = []
 
+
     for tool in list_tools():
 
         try:
@@ -200,6 +212,230 @@ def verify_step_result(
 
 
 # ---------------------------------------------------------------------------
+# Compact Browser Search Results
+# ---------------------------------------------------------------------------
+
+def compact_browser_results(
+    results,
+    limit: int = 15,
+):
+    """
+    Preserves structured browser-search results without allowing a
+    very large result list to flood Phase 7 reasoning context.
+
+    Search titles and canonical URLs remain unchanged.
+    """
+
+    if not isinstance(
+        results,
+        list,
+    ):
+
+        return results
+
+
+    compacted = []
+
+
+    for item in results[
+        :limit
+    ]:
+
+        if isinstance(
+            item,
+            dict,
+        ):
+
+            compacted.append(
+                {
+                    "title":
+                        item.get(
+                            "title"
+                        ),
+
+                    "url":
+                        item.get(
+                            "url"
+                        ),
+                }
+            )
+
+        else:
+
+            compacted.append(
+                item
+            )
+
+
+    return compacted
+
+
+# ---------------------------------------------------------------------------
+# Compact Browser Links
+# ---------------------------------------------------------------------------
+
+def compact_browser_links(
+    links,
+    limit: int = 40,
+):
+    """
+    Preserves useful page links while bounding agent context.
+    """
+
+    if not isinstance(
+        links,
+        list,
+    ):
+
+        return links
+
+
+    compacted = []
+
+
+    for item in links[
+        :limit
+    ]:
+
+        if isinstance(
+            item,
+            dict,
+        ):
+
+            compacted.append(
+                {
+                    "text":
+                        item.get(
+                            "text"
+                        ),
+
+                    "url":
+                        (
+                            item.get(
+                                "url"
+                            )
+                            or item.get(
+                                "href"
+                            )
+                        ),
+                }
+            )
+
+        else:
+
+            compacted.append(
+                item
+            )
+
+
+    return compacted
+
+
+# ---------------------------------------------------------------------------
+# Compact Browser Tabs
+# ---------------------------------------------------------------------------
+
+def compact_browser_tabs(
+    tabs,
+    limit: int = 25,
+):
+    """
+    Preserves managed-browser tab state for Phase 7 reasoning.
+    """
+
+    if not isinstance(
+        tabs,
+        list,
+    ):
+
+        return tabs
+
+
+    compacted = []
+
+
+    for item in tabs[
+        :limit
+    ]:
+
+        if isinstance(
+            item,
+            dict,
+        ):
+
+            compacted.append(
+                {
+                    "index":
+                        item.get(
+                            "index"
+                        ),
+
+                    "active":
+                        item.get(
+                            "active"
+                        ),
+
+                    "title":
+                        item.get(
+                            "title"
+                        ),
+
+                    "url":
+                        item.get(
+                            "url"
+                        ),
+                }
+            )
+
+        else:
+
+            compacted.append(
+                item
+            )
+
+
+    return compacted
+
+
+# ---------------------------------------------------------------------------
+# Compact Browser Text
+# ---------------------------------------------------------------------------
+
+def compact_browser_text(
+    text,
+    limit: int = 30000,
+):
+    """
+    Preserves enough retrieved source text for meaningful research
+    reasoning while bounding continuation / verifier prompt size.
+    """
+
+    if not isinstance(
+        text,
+        str,
+    ):
+
+        return text
+
+
+    if len(text) <= limit:
+
+        return text
+
+
+    return (
+        text[
+            :limit
+        ]
+        + "\n\n"
+        + (
+            "[Browser text truncated "
+            "for agent reasoning]"
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
 # Compact Tool Results
 # ---------------------------------------------------------------------------
 
@@ -207,10 +443,18 @@ def extract_execution_details(
     execution,
 ):
     """
-    Preserves the execution information most useful for agent reasoning.
+    Preserves the execution information most useful for Phase 7
+    reasoning.
 
-    This intentionally includes real stdout, stderr, exit codes,
-    file paths, workspace paths, and application metadata.
+    Existing Phase 6 / Phase 7 fields remain available.
+
+    Phase 8 browser fields are also preserved so continuation and
+    completion reasoning can consume real search results, URLs,
+    page text, links, tabs, and navigation state rather than trying
+    to rediscover them.
+
+    Raw AgentStep.result remains unchanged elsewhere. This function
+    only creates a compact LLM-facing representation.
     """
 
     if not isinstance(
@@ -270,6 +514,10 @@ def extract_execution_details(
     ):
 
         details["result"] = {
+            # ---------------------------------------------------------------
+            # Existing Workspace / Terminal Evidence
+            # ---------------------------------------------------------------
+
             "workspace":
                 result.get(
                     "workspace"
@@ -310,6 +558,10 @@ def extract_execution_details(
                     "timed_out"
                 ),
 
+            # ---------------------------------------------------------------
+            # Existing Filesystem Evidence
+            # ---------------------------------------------------------------
+
             "file":
                 result.get(
                     "file"
@@ -329,6 +581,10 @@ def extract_execution_details(
                 result.get(
                     "content"
                 ),
+
+            # ---------------------------------------------------------------
+            # Existing Application / VS Code Evidence
+            # ---------------------------------------------------------------
 
             "opened":
                 result.get(
@@ -353,6 +609,146 @@ def extract_execution_details(
             "pid":
                 result.get(
                     "pid"
+                ),
+
+            # ---------------------------------------------------------------
+            # Phase 8 Browser Lifecycle / Navigation
+            # ---------------------------------------------------------------
+
+            "connected":
+                result.get(
+                    "connected"
+                ),
+
+            "closed":
+                result.get(
+                    "closed"
+                ),
+
+            "remaining_tabs":
+                result.get(
+                    "remaining_tabs"
+                ),
+
+            "status":
+                result.get(
+                    "status"
+                ),
+
+            "url":
+                result.get(
+                    "url"
+                ),
+
+            "title":
+                result.get(
+                    "title"
+                ),
+
+            # ---------------------------------------------------------------
+            # Phase 8 Browser State
+            # ---------------------------------------------------------------
+
+            "tab_count":
+                result.get(
+                    "tab_count"
+                ),
+
+            "active_tab":
+                result.get(
+                    "active_tab"
+                ),
+
+            "active_title":
+                result.get(
+                    "active_title"
+                ),
+
+            "active_url":
+                result.get(
+                    "active_url"
+                ),
+
+            "tabs":
+                compact_browser_tabs(
+                    result.get(
+                        "tabs"
+                    )
+                ),
+
+            # ---------------------------------------------------------------
+            # Phase 8 Search Evidence
+            # ---------------------------------------------------------------
+
+            "query":
+                result.get(
+                    "query"
+                ),
+
+            "provider":
+                result.get(
+                    "provider"
+                ),
+
+            "search_url":
+                result.get(
+                    "search_url"
+                ),
+
+            "results":
+                compact_browser_results(
+                    result.get(
+                        "results"
+                    )
+                ),
+
+            "attempts":
+                result.get(
+                    "attempts"
+                ),
+
+            # ---------------------------------------------------------------
+            # Phase 8 Page Intelligence
+            # ---------------------------------------------------------------
+
+            "text":
+                compact_browser_text(
+                    result.get(
+                        "text"
+                    )
+                ),
+
+            "visible_text":
+                compact_browser_text(
+                    result.get(
+                        "visible_text"
+                    )
+                ),
+
+            "links":
+                compact_browser_links(
+                    result.get(
+                        "links"
+                    )
+                ),
+
+            "buttons":
+                result.get(
+                    "buttons"
+                ),
+
+            "inputs":
+                result.get(
+                    "inputs"
+                ),
+
+            # ---------------------------------------------------------------
+            # Phase 8 Interaction Evidence
+            # ---------------------------------------------------------------
+
+            "filled":
+                result.get(
+                    "filled"
                 ),
         }
 
@@ -650,6 +1046,20 @@ RULES:
     include the action that actually uses that information when
     possible.
 
+15. Browser failures follow the same evidence rules.
+
+16. If browser_search_web already produced structured search
+    results in task history, those exact returned URLs are real
+    observed evidence.
+
+17. Never invent a browser research URL when an unused real search
+    result is available.
+
+18. If one research source fails but other relevant real search
+    results are available, using another returned result may be
+    appropriate.
+
+
 Example:
 
 Goal:
@@ -734,16 +1144,10 @@ def decide_continuation(
     This prevents investigative actions from incorrectly ending the
     entire task.
 
-    Example:
-
-        search for typewriter.py
-            ↓
-        finds TypewriterTest/typewriter.py
-            ↓
-        current plan ends
-            ↓
-        continuation planner decides:
-            run discovered path
+    Phase 8:
+        Structured browser_search_web results are preserved in history
+        and should be consumed directly rather than rediscovered through
+        redundant search-page inspection.
     """
 
     payload = {
@@ -778,7 +1182,7 @@ A successful investigative action may reveal information that must
 be used in another action.
 
 
-EXAMPLE:
+GENERAL EXAMPLE:
 
 Goal:
 
@@ -804,7 +1208,7 @@ run_python(
 )
 
 
-ANOTHER EXAMPLE:
+ANOTHER GENERAL EXAMPLE:
 
 Goal:
 
@@ -826,6 +1230,131 @@ Correct next actions may be:
 2. run_python again
 
 
+PHASE 8 STRUCTURED BROWSER EVIDENCE
+
+browser_search_web returns structured, real search evidence.
+
+A successful result may contain:
+
+{
+    "query": "...",
+    "provider": "bing",
+    "results": [
+        {
+            "title": "...",
+            "url": "https://..."
+        }
+    ]
+}
+
+These URLs were observed by the real Phase 8 browser-search tool.
+
+They are stronger evidence than model memory, guesses, or assumptions.
+
+
+WHEN SEARCH RESULTS EXIST:
+
+- consume the returned result objects directly
+- use the exact returned URLs
+- never invent a source URL
+- do not repeat browser_search_web with the same query merely because
+  the current plan ended
+- do not repeatedly inspect the search-results page merely to
+  rediscover URLs already present in structured results
+- do not call browser_get_state merely to rediscover the same search
+  page
+- do not call browser_get_page_context merely to rediscover search
+  result links already returned by browser_search_web
+- do not browser_read_page the search-results page merely to rediscover
+  those same URLs
+
+If the original goal requires opening and reading sources, the normal
+next action after a successful search is:
+
+    browser_navigate(
+        url=<exact returned result URL>
+    )
+
+followed by:
+
+    browser_read_page
+
+
+RESEARCH WORKFLOW
+
+For a goal such as:
+
+    Research X.
+    Search the web.
+    Open and read at least three useful sources.
+    Compare them.
+    Give me a concise summary.
+
+A useful adaptive pattern is:
+
+    browser_search_web
+        ↓
+    consume real results[]
+        ↓
+    browser_navigate(source 1)
+        ↓
+    browser_read_page
+        ↓
+    browser_navigate(source 2)
+        ↓
+    browser_read_page
+        ↓
+    browser_navigate(source 3)
+        ↓
+    browser_read_page
+        ↓
+    completion verification / synthesis
+
+Do not perform redundant Bing/search-page inspections between source
+reads.
+
+
+SOURCE SELECTION
+
+1. Select sources from the real browser_search_web results.
+
+2. Prefer relevant and authoritative results when appropriate.
+
+3. Prefer primary sources where they directly answer the user's
+   question.
+
+4. Never invent URLs.
+
+5. Avoid reopening a URL already successfully read unless there is
+   a real reason to revisit it.
+
+6. Respect the requested number of sources.
+
+7. If the user requested at least three sources, three distinct
+   successfully read relevant sources normally satisfy the source
+   count.
+
+8. Search again only when:
+       existing results are insufficient
+       existing results are irrelevant
+       existing results are unusable
+       another query is genuinely needed
+
+
+SOURCE READING
+
+Successful browser_navigate proves navigation occurred.
+
+It does NOT prove the source was actually read.
+
+If the original goal requires understanding, comparing, or
+summarizing a source, follow navigation with:
+
+    browser_read_page
+
+Use the returned real page text as research evidence.
+
+
 RULES:
 
 1. Judge the ORIGINAL GOAL, not merely the current plan.
@@ -836,12 +1365,17 @@ RULES:
 
 4. Never invent stdout or stderr.
 
-5. Use exact registered tool signatures.
+5. Never invent browser URLs.
 
-6. If the history reveals a file path needed for the next action,
+6. Use exact registered tool signatures.
+
+7. If history reveals a file path needed for the next action,
    use that real path.
 
-7. If the user requested:
+8. If browser_search_web reveals result URLs needed for subsequent
+   work, use those exact returned URLs.
+
+9. If the user requested:
        debug until successful
        fix errors
        keep trying
@@ -850,18 +1384,39 @@ RULES:
 
    then keep working until evidence supports completion.
 
-8. Never bypass permissions.
+10. If the user requested research from multiple sources, continue
+    until the requested source-reading requirement is supported by
+    real history.
 
-9. Do not add unnecessary steps.
+11. Never bypass permissions.
 
-10. Return at most four next steps.
+12. Do not add unnecessary steps.
 
-11. If the original goal is already supported by the real history:
+13. Do not repeatedly rediscover information that is already present
+    in structured tool output.
+
+14. Return at most four next steps.
+
+15. Preserve adaptive execution. Do not hard-code imaginary future
+    facts.
+
+16. If future decisions depend on reading the next source, returning:
+
+        browser_navigate
+        browser_read_page
+
+    and then reconsidering afterward is appropriate.
+
+17. If several unused real source URLs are already known and opening
+    them does not depend on an intermediate result, multiple
+    navigate/read steps may be returned up to the four-step limit.
+
+18. If the original goal is already supported by real history:
 
         complete = true
         next_steps = []
 
-12. If more work remains:
+19. If more work remains:
 
         complete = false
         next_steps = concrete actions
@@ -892,7 +1447,20 @@ def verify_goal_completion(
     task: AgentTask,
 ):
     """
-    Performs the final strict verification of the original user goal.
+    Performs final strict verification of the original user goal.
+
+    Important lifecycle rule:
+
+        completion.summary becomes task.final_summary in runner.py.
+
+        runner.py then places task.final_summary into AgentResult.message.
+
+        format_agent_result() subsequently delivers that message to the
+        user.
+
+    Therefore the verifier must NOT require evidence that its own final
+    natural-language response was already delivered before declaring
+    the underlying task complete.
     """
 
     payload = {
@@ -911,11 +1479,45 @@ def verify_goal_completion(
             model="gpt-5.5",
 
             instructions="""
-You are E.V.I.E.'s final Phase 7 completion verifier.
+You are E.V.I.E.'s final Phase 7 completion verifier AND final
+task-summary generator.
 
 Determine whether the ORIGINAL USER GOAL is actually complete.
 
-Judge ONLY from real execution evidence.
+Judge from REAL execution evidence.
+
+
+CRITICAL ARCHITECTURE RULE
+
+Your `summary` field becomes the final AgentResult message returned by
+runner.py.
+
+runner.py delivers that message to the user AFTER this verification.
+
+Therefore:
+
+DO NOT require evidence that the final natural-language summary has
+already been delivered to the user.
+
+That would create a circular requirement.
+
+Instead:
+
+1. verify whether all underlying requested work is complete
+
+2. if the work is complete, generate the requested final user-facing
+   answer in `summary`
+
+3. set:
+
+       complete = true
+
+4. assign confidence based on the real evidence
+
+The runner will deliver your summary afterward.
+
+
+USE ONLY REAL EXECUTION EVIDENCE.
 
 Useful evidence includes:
 
@@ -928,39 +1530,195 @@ Useful evidence includes:
 - VS Code open results
 - new_window metadata
 - application focus results
+- managed-browser state
+- browser navigation results
+- browser search results
+- browser page titles
+- browser URLs
+- browser page text
+- browser links
 - other deterministic tool results
 
 
-RULES:
+GENERAL RULES:
 
 1. Never assume a planned action happened.
 
-2. Never mark success merely because every current step finished.
+2. Never mark success merely because all currently planned steps
+   finished.
 
-3. For programming tasks:
+3. Never invent missing evidence.
 
-       exit code 0 is evidence the program executed successfully.
+4. Judge whether the UNDERLYING WORK requested by the original user
+   goal has been completed.
 
-       expected stdout is evidence the program produced the
-       requested result.
+5. The final natural-language answer does NOT need to appear earlier
+   in task history.
 
-4. For debugging tasks:
+6. YOUR `summary` field is the final natural-language answer that
+   runner.py will deliver.
 
-       the final successful run must occur AFTER the relevant
-       correction.
+7. If the underlying work is complete:
 
-5. If the user explicitly requested a new VS Code window:
+       complete = true
 
-       new_window=True
+   and write the appropriate final response in:
 
-   in the actual VS Code tool result is sufficient evidence that
-   the new-window launch was requested successfully.
+       summary
 
-6. If important evidence is missing:
+8. If important underlying work is still missing:
 
        complete = false
 
-7. Never invent missing evidence.
+   and describe what remains in:
+
+       missing
+
+
+PROGRAMMING TASKS:
+
+9. For programming tasks:
+
+       exit code 0 is evidence that the program executed successfully.
+
+       expected stdout is evidence that the program produced the
+       requested result.
+
+10. For debugging tasks:
+
+        the final successful run must occur AFTER the relevant
+        correction.
+
+11. If the user explicitly requested a new VS Code window:
+
+        new_window=True
+
+    in the actual VS Code tool result is sufficient evidence that the
+    new-window launch was requested successfully.
+
+
+PHASE 8 BROWSER EVIDENCE:
+
+12. A successful browser_search_web result proves that a live search
+    occurred and that its returned result URLs were observed.
+
+13. Search results alone do NOT prove those sources were read.
+
+14. Successful browser_navigate proves navigation to that page occurred.
+
+15. Successful browser_read_page proves the page content was actually
+    retrieved and available for reasoning.
+
+16. If the user requested at least N sources, require evidence that at
+    least N distinct relevant sources were actually read.
+
+17. Do not count repeatedly reading a search-results page as multiple
+    sources.
+
+18. Do not count repeated reads of the same URL as independent sources
+    unless the original user specifically requested revisiting it.
+
+19. If the goal requires comparing sources, require evidence from
+    multiple distinct relevant source reads.
+
+20. Never treat model knowledge or remembered webpages as if they were
+    retrieved in the current task.
+
+21. Use actual URLs, titles, search results, and retrieved page text
+    preserved in task history.
+
+
+RESEARCH SUMMARY GENERATION:
+
+22. When the evidence proves the requested research work is complete,
+    synthesize the findings into `summary`.
+
+23. The summary must answer the original research question rather than
+    merely saying:
+
+        "Research completed successfully."
+
+24. Use actual retrieved source text from task history.
+
+25. Compare the sources when comparison was requested.
+
+26. Explain meaningful agreement, differences, and complementary
+    information when supported by the evidence.
+
+27. Do not invent claims absent from retrieved evidence.
+
+28. Do not claim that a source was read unless task history contains
+    successful browser-read evidence for it.
+
+29. Keep the answer concise when the user requested a concise summary.
+
+30. Include useful source names or URLs when they are supported by the
+    real task history.
+
+31. If the user requested research but did NOT ask to modify anything,
+    the absence of file mutations is normal and does not make the task
+    incomplete.
+
+
+EXAMPLE
+
+Original goal:
+
+    Research Playwright's current Python browser automation
+    capabilities.
+
+    Search the web, open and read at least three useful sources,
+    compare navigation, page interaction, and locators, and give me
+    a concise research summary.
+
+History proves:
+
+    browser_search_web succeeded
+
+    source 1:
+        browser_navigate succeeded
+        browser_read_page succeeded
+
+    source 2:
+        browser_navigate succeeded
+        browser_read_page succeeded
+
+    source 3:
+        browser_navigate succeeded
+        browser_read_page succeeded
+
+
+CORRECT:
+
+    complete = true
+
+    confidence = high
+
+    summary = a concise synthesis of what the three retrieved sources
+              say about navigation, interaction, and locators
+
+
+INCORRECT:
+
+    complete = false
+
+    reason:
+        "The research summary has not already been delivered."
+
+
+Why incorrect:
+
+YOUR summary is what runner.py delivers after this verification.
+
+
+FINAL DECISION
+
+If all required real-world actions and evidence gathering are complete,
+mark the task complete and generate the requested final answer.
+
+Only mark the task incomplete when an underlying action, evidence,
+source count, verification requirement, or requested real-world
+operation is actually missing.
 """.strip(),
 
             input=json.dumps(
@@ -992,6 +1750,14 @@ if __name__ == "__main__":
 
     print(
         "------------------------"
+    )
+
+
+    print()
+
+
+    print(
+        "Phase 7 deterministic verification test:"
     )
 
 
@@ -1030,5 +1796,86 @@ if __name__ == "__main__":
     print(
         verify_step_result(
             sample
+        )
+    )
+
+
+    print()
+
+
+    print(
+        "Phase 8 browser result preservation test:"
+    )
+
+
+    browser_sample = {
+        "success":
+            True,
+
+        "executed":
+            True,
+
+        "tool":
+            "browser_search_web",
+
+        "risk":
+            "low",
+
+        "result": {
+            "query":
+                (
+                    "Playwright Python "
+                    "browser automation"
+                ),
+
+            "provider":
+                "bing",
+
+            "search_url":
+                (
+                    "https://www.bing.com/"
+                    "search?q=Playwright"
+                ),
+
+            "results": [
+                {
+                    "title":
+                        (
+                            "Playwright Python "
+                            "Official Documentation"
+                        ),
+
+                    "url":
+                        (
+                            "https://"
+                            "playwright.dev/python/"
+                        ),
+                },
+
+                {
+                    "title":
+                        (
+                            "Getting started - "
+                            "Library"
+                        ),
+
+                    "url":
+                        (
+                            "https://playwright.dev/"
+                            "python/docs/library"
+                        ),
+                },
+            ],
+        },
+    }
+
+
+    print(
+        json.dumps(
+            extract_execution_details(
+                browser_sample
+            ),
+            indent=2,
+            ensure_ascii=False,
         )
     )
