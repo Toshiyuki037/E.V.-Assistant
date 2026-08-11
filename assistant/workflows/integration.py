@@ -6,6 +6,9 @@ Phase 11G / 11H
 
 from __future__ import annotations
 
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 from assistant.tools.session import (
     parse_approval_response,
 )
@@ -77,6 +80,66 @@ def _format_protocols(
     )
 
 
+def _format_schedule_next_run(
+    schedule,
+):
+    value = (
+        schedule.get(
+            "next_run_at"
+        )
+        or ""
+    )
+
+    if not value:
+        return "none"
+
+    timezone_name = str(
+        schedule.get(
+            "timezone",
+            "UTC",
+        )
+        or "UTC"
+    )
+
+    try:
+        zone = ZoneInfo(
+            timezone_name
+        )
+
+        parsed = datetime.fromisoformat(
+            str(
+                value
+            )
+        )
+
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(
+                tzinfo=ZoneInfo(
+                    "UTC"
+                )
+            )
+
+        local = parsed.astimezone(
+            zone
+        )
+
+    except Exception:
+        return str(
+            value
+        )
+
+    stamp = local.strftime(
+        "%Y-%m-%d %I:%M %p"
+    ).replace(
+        " 0",
+        " ",
+    )
+
+    return (
+        f"{stamp} {timezone_name}"
+    )
+
+
 def _format_schedules(
     schedules,
 ):
@@ -97,11 +160,8 @@ def _format_schedules(
             else "disabled"
         )
 
-        next_run = (
-            schedule.get(
-                "next_run_at"
-            )
-            or "none"
+        next_run = _format_schedule_next_run(
+            schedule
         )
 
         lines.append(
@@ -577,7 +637,7 @@ def handle_workflow_message(
             "response": (
                 f"Scheduled {command.protocol_id} as "
                 f"{schedule['schedule_id']}. "
-                f"Next run: {schedule.get('next_run_at') or 'none'}."
+                f"Next run: {_format_schedule_next_run(schedule)}."
             ),
             "follow_up": "",
         }

@@ -2,6 +2,10 @@
 Phase 11G deterministic natural-language workflow tests.
 """
 
+from assistant.workflows.integration import (
+    _format_schedules,
+)
+
 from assistant.workflows.planner import (
     plan_workflow_command,
 )
@@ -105,3 +109,20 @@ def test_unrelated_message_falls_through():
     )
 
     assert not plan.handled
+
+
+def test_schedule_response_formats_next_run_in_schedule_timezone():
+    response = _format_schedules(
+        [
+            {
+                "schedule_id": "morning-schedule",
+                "protocol_id": "morning",
+                "enabled": True,
+                "timezone": "America/Los_Angeles",
+                "next_run_at": "2026-08-11T14:30:00+00:00",
+            }
+        ]
+    )
+
+    assert "2026-08-11T14:30:00+00:00" not in response
+    assert "2026-08-11 7:30 AM America/Los_Angeles" in response
