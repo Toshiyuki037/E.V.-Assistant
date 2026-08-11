@@ -80,6 +80,54 @@ def _format_protocols(
     )
 
 
+def _format_timezone_suffix(
+    zone: ZoneInfo,
+    local: datetime,
+    *,
+    timezone_name: str,
+):
+    """
+    Display-only helper.
+
+    Keeps scheduling semantics unchanged by:
+    - never writing schedule state
+    - never influencing next_run_at calculations
+
+    Goal:
+    Provide a clearer human-facing timezone suffix than just the IANA
+    name by including an offset.
+
+    Example:
+        "America/Los_Angeles (UTC-07:00)"
+
+    Falls back to the original timezone name when the offset cannot be
+    determined.
+    """
+
+    try:
+        offset = local.utcoffset()
+
+        if offset is None:
+            return timezone_name
+
+        total_minutes = int(
+            offset.total_seconds() // 60
+        )
+
+        sign = "+" if total_minutes >= 0 else "-"
+        total_minutes = abs(total_minutes)
+        hours = total_minutes // 60
+        minutes = total_minutes % 60
+
+        return (
+            f"{timezone_name} "
+            f"(UTC{sign}{hours:02d}:{minutes:02d})"
+        )
+
+    except Exception:
+        return timezone_name
+
+
 def _format_schedule_next_run(
     schedule,
 ):
@@ -135,8 +183,14 @@ def _format_schedule_next_run(
         " ",
     )
 
+    suffix = _format_timezone_suffix(
+        zone,
+        local,
+        timezone_name=timezone_name,
+    )
+
     return (
-        f"{stamp} {timezone_name}"
+        f"{stamp} {suffix}"
     )
 
 

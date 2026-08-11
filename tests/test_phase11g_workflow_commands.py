@@ -125,4 +125,8 @@ def test_schedule_response_formats_next_run_in_schedule_timezone():
     )
 
     assert "2026-08-11T14:30:00+00:00" not in response
-    assert "2026-08-11 7:30 AM America/Los_Angeles" in response
+    assert "2026-08-11 7:30 AM" in response
+
+    # Display-only improvement: include explicit UTC offset in the suffix.
+    # August is DST for America/Los_Angeles, so it should be UTC-07:00.
+    assert "America/Los_Angeles (UTC-07:00)" in response
