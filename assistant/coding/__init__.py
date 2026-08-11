@@ -27,3 +27,7 @@ from .approval import (
 from .documentation import (
     build_engineering_documentation_note,
 )
+
+from .integration import handle_coding_message
+from .request_planner import plan_coding_request
+from .discovery import discover_candidate_paths

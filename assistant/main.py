@@ -79,6 +79,10 @@ from .workflows.integration import (
     handle_workflow_message,
 )
 
+from .coding.integration import (
+    handle_coding_message,
+)
+
 # ---------------------------------------------------------------------------
 # Speak Model Response
 # ---------------------------------------------------------------------------
@@ -1044,6 +1048,74 @@ def process_prompt(
         # Current Phase 7 installation may expose its runtime through
         # another path. Continue into the existing normal pipeline.
         pass
+
+
+    # -----------------------------------------------------------------------
+    # Phase 12N - Self-Engineering Integration
+    # -----------------------------------------------------------------------
+    #
+    # Explicit repository/self-engineering requests are routed here.
+    #
+    # Safety flow:
+    #
+    #     request
+    #         ↓
+    #     read-only discovery
+    #         ↓
+    #     bounded engineering plan
+    #         ↓
+    #     execution approval
+    #         ↓
+    #     branch / edit / validation / regression
+    #         ↓
+    #     commit approval
+    #
+    # Ordinary conversation continues through memory/tools/reasoning.
+    # -----------------------------------------------------------------------
+
+    coding_result = (
+        handle_coding_message(
+            user_text
+        )
+    )
+
+
+    if coding_result.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            coding_result.get(
+                "response"
+            )
+            or "Done."
+        )
+
+
+        follow_up = (
+            coding_result.get(
+                "follow_up",
+                ""
+            )
+            .strip()
+        )
+
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+
+        if follow_up:
+
+            process_prompt(
+                follow_up
+            )
+
+
+        return
 
 
     # -----------------------------------------------------------------------
