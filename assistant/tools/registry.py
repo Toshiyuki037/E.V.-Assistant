@@ -2,7 +2,7 @@
 E.V.I.E. - Tool Registry
 
 Created: August 9, 2026
-Last Edited: August 9, 2026
+Last Edited: August 10, 2026
 Author: Max Maehara
 
 Purpose:
@@ -10,23 +10,30 @@ Purpose:
 
 How It Works:
     Every tool has:
-        - unique name
-        - description
-        - category
-        - base risk level
-        - callable implementation
+    - unique name
+    - description
+    - category
+    - base risk level
+    - callable implementation
 
 Important:
     Tool modules register themselves against the canonical
     assistant.tools.registry module.
 
 Most Recent Change:
-    Fixed Python -m double-module registration issue and added
-    Phase 6 Pass B tools.
+    Added the Phase 9 integration gateway while preserving the existing
+    Phase 6 registry architecture.
 """
 
-from dataclasses import dataclass
-from typing import Callable
+from __future__ import annotations
+
+from dataclasses import (
+    dataclass,
+)
+
+from typing import (
+    Callable,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -36,9 +43,13 @@ from typing import Callable
 @dataclass
 class ToolDefinition:
     name: str
+
     description: str
+
     category: str
+
     risk: str
+
     function: Callable
 
 
@@ -64,14 +75,18 @@ def register_tool(
     function: Callable,
 ):
     normalized_name = (
-        name.strip().lower()
+        name
+        .strip()
+        .lower()
     )
+
 
     if not normalized_name:
 
         raise ValueError(
             "Tool name cannot be empty."
         )
+
 
     if risk not in {
         "low",
@@ -83,12 +98,20 @@ def register_tool(
             f"Invalid tool risk: {risk}"
         )
 
-    # Safe/idempotent registration.
-    if normalized_name in _TOOL_REGISTRY:
+
+    # -----------------------------------------------------------------------
+    # Safe / Idempotent Registration
+    # -----------------------------------------------------------------------
+
+    if (
+        normalized_name
+        in _TOOL_REGISTRY
+    ):
 
         return _TOOL_REGISTRY[
             normalized_name
         ]
+
 
     definition = ToolDefinition(
         name=
@@ -107,9 +130,11 @@ def register_tool(
             function,
     )
 
+
     _TOOL_REGISTRY[
         normalized_name
     ] = definition
+
 
     return definition
 
@@ -122,12 +147,13 @@ def get_tool(
     name: str,
 ):
     return _TOOL_REGISTRY.get(
-        name.strip().lower()
+        name
+        .strip()
+        .lower()
     )
 
 
 def list_tools():
-
     return sorted(
         _TOOL_REGISTRY.values(),
 
@@ -142,7 +168,10 @@ def tool_exists(
     name: str,
 ):
     return (
-        name.strip().lower()
+        name
+        .strip()
+        .lower()
+
         in _TOOL_REGISTRY
     )
 
@@ -152,8 +181,8 @@ def tool_exists(
 # ---------------------------------------------------------------------------
 
 def describe_tools():
-
     tools = list_tools()
+
 
     if not tools:
 
@@ -161,7 +190,9 @@ def describe_tools():
             "No E.V.I.E. tools registered."
         )
 
+
     blocks = []
+
 
     for tool in tools:
 
@@ -174,6 +205,7 @@ def describe_tools():
                 f"{tool.description}"
             )
         )
+
 
     return "\n\n".join(
         blocks
@@ -192,6 +224,10 @@ def load_default_tools():
     each imported module registers itself into this registry.
     """
 
+    # -----------------------------------------------------------------------
+    # Phase 6 Core
+    # -----------------------------------------------------------------------
+
     from . import filesystem
     from . import terminal
 
@@ -199,6 +235,14 @@ def load_default_tools():
     from . import applications
     from . import browser
     from . import vscode
+
+
+    # -----------------------------------------------------------------------
+    # Phase 9 Connected Services
+    # -----------------------------------------------------------------------
+
+    from . import integrations
+
 
     return list_tools()
 
@@ -208,7 +252,6 @@ def load_default_tools():
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-
     """
     Important:
 
@@ -224,31 +267,40 @@ if __name__ == "__main__":
 
     import importlib
 
+
     canonical_registry = (
         importlib.import_module(
             "assistant.tools.registry"
         )
     )
 
+
     tools = (
         canonical_registry
         .load_default_tools()
     )
 
+
     print(
         "E.V.I.E. Tool Registry"
     )
+
 
     print(
         "-----------------------"
     )
 
+
     print(
         "Tools registered:",
-        len(tools),
+        len(
+            tools
+        ),
     )
 
+
     print()
+
 
     print(
         canonical_registry

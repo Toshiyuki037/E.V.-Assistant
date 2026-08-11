@@ -9,6 +9,7 @@ knowledge/knowledge.db
 runtime/vision/
 runtime/tools/
 runtime/agent/
+runtime/integrations/
 tests/
 .env
 .cache/

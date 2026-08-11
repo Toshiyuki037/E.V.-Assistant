@@ -96,6 +96,18 @@ from .tools.verifier import (
     verify_tool_result,
 )
 
+from .integrations.account_router import (
+    route_accounts,
+)
+
+from .integrations.selection import (
+    clear_pending_integration_selection,
+    format_account_choices,
+    get_pending_integration_selection,
+    has_pending_integration_selection,
+    resolve_account_selection,
+    set_pending_integration_selection,
+)
 
 # ---------------------------------------------------------------------------
 # Environment
@@ -818,6 +830,318 @@ Rules:
         f"{verification.summary}"
     )
 
+# ---------------------------------------------------------------------------
+# Integration Write Preflight
+# ---------------------------------------------------------------------------
+
+def preflight_integration_action(
+    user_message: str,
+    tool_name: str,
+    arguments: dict,
+    summary: str = "",
+):
+    """
+    Resolves ambiguous Phase 9 accounts BEFORE requesting write approval.
+
+    Returns:
+        None
+            No special handling needed.
+
+        dict
+            A response that should be returned directly by
+            handle_tool_request().
+    """
+
+    if (
+        tool_name
+        != "integration_execute"
+    ):
+
+        return None
+
+
+    cleaned = dict(
+        arguments
+    )
+
+
+    # Approval belongs to execute_tool(), never the planner.
+    cleaned.pop(
+        "approved",
+        None,
+    )
+
+
+    capability = (
+        str(
+            cleaned.get(
+                "capability",
+                "",
+            )
+        )
+        .strip()
+        .lower()
+    )
+
+
+    if not capability:
+
+        return None
+
+
+    # -----------------------------------------------------------------------
+    # Already Explicit
+    # -----------------------------------------------------------------------
+    #
+    # If the planner/user supplied an account, the request MUST become
+    # explicit-account routing. Never allow account_id + all_available.
+    # -----------------------------------------------------------------------
+
+    if cleaned.get(
+        "account_id"
+    ):
+
+        provider = (
+            cleaned.get(
+                "provider"
+            )
+        )
+
+
+        if provider:
+
+            cleaned[
+                "provider"
+            ] = (
+                str(
+                    provider
+                )
+                .strip()
+                .lower()
+            )
+
+
+        cleaned[
+            "account_id"
+        ] = (
+            str(
+                cleaned[
+                    "account_id"
+                ]
+            )
+            .strip()
+        )
+
+
+        cleaned[
+            "routing_mode"
+        ] = "explicit_account"
+
+
+        arguments.clear()
+
+        arguments.update(
+            cleaned
+        )
+
+
+        return None
+
+
+    # -----------------------------------------------------------------------
+    # Determine Eligible Accounts
+    # -----------------------------------------------------------------------
+
+    provider = (
+        cleaned.get(
+            "provider"
+        )
+    )
+
+
+    if provider:
+
+        provider = (
+            str(
+                provider
+            )
+            .strip()
+            .lower()
+        )
+
+
+        cleaned[
+            "provider"
+        ] = provider
+
+
+    routed = route_accounts(
+        capability=
+            capability,
+
+        mode=
+            "all_available",
+
+        provider=
+            provider,
+
+        account_id=
+            None,
+    )
+
+
+    # -----------------------------------------------------------------------
+    # No Accounts
+    # -----------------------------------------------------------------------
+
+    if not routed:
+
+        arguments.clear()
+
+        arguments.update(
+            cleaned
+        )
+
+        return None
+
+
+    # -----------------------------------------------------------------------
+    # Exactly One Account
+    #
+    # Bind it BEFORE approval.
+    # -----------------------------------------------------------------------
+
+    if len(
+        routed
+    ) == 1:
+
+        selected = (
+            routed[
+                0
+            ]
+        )
+
+
+        cleaned[
+            "provider"
+        ] = selected.provider
+
+
+        cleaned[
+            "account_id"
+        ] = selected.account_id
+
+
+        cleaned[
+            "routing_mode"
+        ] = "explicit_account"
+
+
+        arguments.clear()
+
+        arguments.update(
+            cleaned
+        )
+
+
+        return None
+
+
+    # -----------------------------------------------------------------------
+    # Multiple Accounts
+    #
+    # Reads may legitimately aggregate.
+    # Writes require account selection.
+    # -----------------------------------------------------------------------
+
+    from .integrations.permissions import (
+        get_permission as
+        get_integration_permission,
+    )
+
+
+    permission = (
+        get_integration_permission(
+            capability
+        )
+    )
+
+
+    risk = (
+        getattr(
+            permission,
+            "risk",
+            "high",
+        )
+        if permission
+        is not None
+        else "high"
+    )
+
+
+    if (
+        str(
+            risk
+        )
+        .lower()
+        == "low"
+    ):
+
+        arguments.clear()
+
+        arguments.update(
+            cleaned
+        )
+
+        return None
+
+
+    pending = (
+        set_pending_integration_selection(
+            tool_name=
+                tool_name,
+
+            capability=
+                capability,
+
+            arguments=
+                cleaned,
+
+            routed_accounts=
+                routed,
+
+            summary=
+                summary,
+
+            original_request=
+                user_message,
+        )
+    )
+
+
+    choices = (
+        format_account_choices(
+            pending
+        )
+    )
+
+
+    return {
+        "handled":
+            True,
+
+        "response": (
+            "I can perform that action using more than one "
+            "connected account.\n\n"
+            f"{choices}\n\n"
+            "Which account should I use? "
+            "You can say the number, email address, "
+            "\"personal\", or \"school\"."
+        ),
+
+        "approval_required":
+            False,
+    }
 
 # ---------------------------------------------------------------------------
 # New Tool Requests
@@ -887,6 +1211,46 @@ def handle_tool_request(
                 user_message,
         )
     )
+
+        # -----------------------------------------------------------------------
+    # Planner-Owned Approval Is Forbidden
+    # -----------------------------------------------------------------------
+
+    if (
+        plan.tool_name
+        == "integration_execute"
+    ):
+
+        arguments.pop(
+            "approved",
+            None,
+        )
+
+
+    # -----------------------------------------------------------------------
+    # Phase 9 Account Preflight
+    # -----------------------------------------------------------------------
+
+    preflight = (
+        preflight_integration_action(
+            user_message=
+                user_message,
+
+            tool_name=
+                plan.tool_name,
+
+            arguments=
+                arguments,
+
+            summary=
+                plan.summary,
+        )
+    )
+
+
+    if preflight is not None:
+
+        return preflight
 
     print(
         "\n[Tool Planner]"
@@ -1013,6 +1377,296 @@ def handle_tool_request(
             False,
     }
 
+# ---------------------------------------------------------------------------
+# Pending Integration Account Selection
+# ---------------------------------------------------------------------------
+
+def handle_pending_integration_selection(
+    user_message: str,
+):
+    """
+    Resolves a temporary Phase 9 account-selection request.
+
+    Crucially this runs before memory processing.
+
+    Selecting an account here is NOT interpreted as a durable user
+    preference.
+    """
+
+    if not has_pending_integration_selection():
+
+        return {
+            "handled":
+                False,
+
+            "response":
+                None,
+
+            "follow_up":
+                "",
+        }
+
+
+    pending = (
+        get_pending_integration_selection()
+    )
+
+
+    if pending is None:
+
+        return {
+            "handled":
+                False,
+
+            "response":
+                None,
+
+            "follow_up":
+                "",
+        }
+
+
+    text = (
+        user_message
+        .strip()
+        .lower()
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Cancel
+    # -----------------------------------------------------------------------
+
+    if text in {
+        "no",
+        "cancel",
+        "never mind",
+        "nevermind",
+        "stop",
+    }:
+
+        clear_pending_integration_selection()
+
+
+        return {
+            "handled":
+                True,
+
+            "response":
+                "Cancelled. I did not perform the integration action.",
+
+            "follow_up":
+                "",
+        }
+
+
+    # -----------------------------------------------------------------------
+    # Resolve Account
+    # -----------------------------------------------------------------------
+
+    selected = (
+        resolve_account_selection(
+            pending,
+            user_message,
+        )
+    )
+
+
+    if selected is None:
+
+        choices = (
+            format_account_choices(
+                pending
+            )
+        )
+
+
+        return {
+            "handled":
+                True,
+
+            "response": (
+                "I couldn't match that to one of the available "
+                "accounts.\n\n"
+                f"{choices}\n\n"
+                "Which account should I use?"
+            ),
+
+            "follow_up":
+                "",
+        }
+
+
+    # Selection is resolved.
+    clear_pending_integration_selection()
+
+
+    arguments = dict(
+        pending.arguments
+    )
+
+
+    arguments.pop(
+        "approved",
+        None,
+    )
+
+
+    arguments[
+        "provider"
+    ] = (
+        selected[
+            "provider"
+        ]
+    )
+
+
+    arguments[
+        "account_id"
+    ] = (
+        selected[
+            "account_id"
+        ]
+    )
+
+
+    arguments[
+        "routing_mode"
+    ] = (
+        "explicit_account"
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Run Through Normal Phase 6 Boundary
+    # -----------------------------------------------------------------------
+
+    execution = (
+        execute_tool(
+            tool_name=
+                pending.tool_name,
+
+            arguments=
+                arguments,
+
+            approved=
+                False,
+        )
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Approval Required
+    # -----------------------------------------------------------------------
+
+    if (
+        not execution.get(
+            "executed",
+            False,
+        )
+        and execution.get(
+            "requires_approval",
+            False,
+        )
+    ):
+
+        saved = (
+            set_pending_action(
+                tool_name=
+                    pending.tool_name,
+
+                arguments=
+                    arguments,
+
+                risk=
+                    execution.get(
+                        "risk",
+                        "unknown",
+                    ),
+
+                summary=(
+                    pending.summary
+                    or (
+                        f"Execute "
+                        f"{pending.capability}."
+                    )
+                ),
+
+                original_request=
+                    pending.original_request,
+            )
+        )
+
+
+        account_label = (
+            selected.get(
+                "email"
+            )
+            or selected.get(
+                "account_id"
+            )
+        )
+
+
+        return {
+            "handled":
+                True,
+
+            "response": (
+                f"Using {account_label}.\n\n"
+                f"This action is {saved.risk}-risk and requires "
+                "your approval.\n\n"
+                f"Planned action: {saved.summary}\n"
+                f"Tool: {saved.tool_name}\n\n"
+                "Approve it? Say yes to proceed or no to cancel."
+            ),
+
+            "follow_up":
+                "",
+        }
+
+
+    # -----------------------------------------------------------------------
+    # Unexpected Immediate Execution
+    # -----------------------------------------------------------------------
+
+    verification = (
+        verify_tool_result(
+            execution
+        )
+    )
+
+
+    response = (
+        render_tool_result_response(
+            user_message=
+                pending.original_request,
+
+            tool_name=
+                pending.tool_name,
+
+            arguments=
+                arguments,
+
+            execution=
+                execution,
+
+            verification=
+                verification,
+        )
+    )
+
+
+    return {
+        "handled":
+            True,
+
+        "response":
+            response,
+
+        "follow_up":
+            "",
+    }
 
 # ---------------------------------------------------------------------------
 # Pending Approval

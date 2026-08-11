@@ -753,6 +753,870 @@ Do not try to compress a multi-source research task into one Phase 6
 tool call.
 
 
+PHASE 9 CONNECTED-SERVICE ROUTING
+
+Connected-service questions are real tool requests.
+
+Use integration_execute whenever the user asks for live data or an
+action from a connected service.
+
+Examples:
+
+User:
+    What Google tasks do I have?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = tasks.read
+    provider = google
+
+
+User:
+    What's on my Google Calendar?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = calendar.read
+    provider = google
+
+
+User:
+    Search my Gmail for paperwork.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = email.search
+    provider = google
+
+
+User:
+    What am I listening to on Spotify?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = media.read
+    provider = spotify
+
+
+User:
+    Create a Google task called Finish report.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = tasks.create
+    provider = google
+    arguments = {"title": "Finish report"}
+
+SCHWAB / FINANCE ROUTING
+
+E.V.I.E. has live read-only Charles Schwab access.
+
+User:
+    What stocks do I own?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.positions
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    What are my holdings?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.positions
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    Show me my portfolio.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.positions
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    What's my Schwab balance?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.balances
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    Show my Schwab accounts.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.accounts
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    What is NVDA trading at?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = market.quote
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {"symbol": "NVDA"}
+
+
+User:
+    What's Tesla trading at?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = market.quote
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {"symbol": "TSLA"}
+
+
+User:
+    Get quotes for NVDA and AAPL.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = market.quotes
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {"symbols": ["NVDA", "AAPL"]}
+
+
+User:
+    Show my recent Schwab transactions.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.transactions
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    Show my Schwab orders.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.orders
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+PORTFOLIO PERFORMANCE
+
+User:
+    How much is my portfolio up today?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.performance
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    How much am I up today?
+
+When recent context clearly concerns the connected Schwab portfolio, use:
+    integration_execute
+
+Arguments:
+    capability = finance.performance
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    What's my portfolio's day gain?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.performance
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    How is my portfolio doing today?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = finance.performance
+    provider = schwab
+    account_id = primary
+    routing_mode = explicit_account
+
+
+FINANCIAL ROUTING RULES
+
+1. Questions about what stocks, securities, shares, positions, holdings,
+   investments, or assets the user owns should use:
+
+       finance.positions
+
+2. Questions about brokerage balances, cash, buying power, or account
+   value should use:
+
+       finance.balances
+
+3. Questions about brokerage accounts should use:
+
+       finance.accounts
+
+4. Questions about recent brokerage activity or trades should use:
+
+       finance.transactions
+
+5. Questions about existing or open brokerage orders should use:
+
+       finance.orders
+
+6. Questions about the current market price, share price, live quote,
+   or what a stock/company is "trading at" should use:
+
+       market.quote
+
+   If the user gives a well-known, unambiguous company name instead of a
+   ticker, convert it to the correct ticker symbol.
+
+   Examples:
+       Tesla -> TSLA
+       Apple -> AAPL
+       Nvidia -> NVDA
+       Amazon -> AMZN
+
+   If the company name is ambiguous, do not guess.
+
+7. Questions about current prices for multiple tickers should use:
+
+       market.quotes
+
+8. Historical price requests should use:
+
+       market.history
+
+9. Questions about live portfolio performance, including today's gain/loss,
+   day gain, daily return, or "how much am I up today", should use:
+
+       finance.performance
+
+10. The current Schwab integration is READ ONLY.
+
+11. NEVER invent, plan, or imply support for:
+        finance.trade
+        orders.create
+        orders.replace
+        orders.cancel
+
+12. When the request clearly refers to the connected Schwab brokerage
+    account, use:
+        provider = schwab
+        account_id = primary
+        routing_mode = explicit_account
+
+13. Never answer current portfolio, balance, position, transaction,
+    order, performance, or market-state questions from conversational memory
+    when integration_execute can retrieve live data.
+
+GITHUB ROUTING
+
+E.V.I.E. has a connected read-only GitHub integration.
+
+Provider:
+    github
+
+Account:
+    primary
+
+Routing:
+    explicit_account
+
+
+IMPORTANT CAPABILITY NAMES
+
+Use ONLY these registered GitHub capabilities:
+
+    github.profile
+    github.repos
+    github.repo
+    github.commits
+    github.issues
+    github.pulls
+    github.notifications
+    github.workflows
+    github.actions
+
+NEVER invent aliases such as:
+
+    repos.read
+    repo.read
+    commits.read
+    issues.read
+    pulls.read
+    actions.read
+    github.read
+    github.repositories
+
+
+User:
+    What GitHub repositories do I have?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = github.repos
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    Show me my GitHub profile.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = github.profile
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+
+
+User:
+    What were my latest commits to E.V.-Assistant?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = github.commits
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "repo": "E.V.-Assistant"
+    }
+
+
+User:
+    Are there any open issues on E.V.-Assistant?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = github.issues
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "repo": "E.V.-Assistant"
+    }
+
+
+User:
+    Are there any open pull requests on E.V.-Assistant?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = github.pulls
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "repo": "E.V.-Assistant"
+    }
+
+
+User:
+    Did any GitHub Actions run on E.V.-Assistant?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = github.actions
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "repo": "E.V.-Assistant"
+    }
+
+
+User:
+    What workflows are configured on E.V.-Assistant?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = github.workflows
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "repo": "E.V.-Assistant"
+    }
+
+
+GITHUB ROUTING RULES
+
+1. Repository listing uses:
+       github.repos
+
+2. One repository uses:
+       github.repo
+
+3. Commit history uses:
+       github.commits
+
+4. Issues use:
+       github.issues
+
+5. Pull requests use:
+       github.pulls
+
+6. Notifications use:
+       github.notifications
+
+7. Actions workflow runs use:
+       github.actions
+
+8. Workflow definitions use:
+       github.workflows
+
+9. Profile information uses:
+       github.profile
+
+10. GitHub read operations are low risk and do not require approval.
+
+11. Always use:
+       provider = github
+       account_id = primary
+       routing_mode = explicit_account
+
+12. NEVER invent a GitHub capability name.
+
+WEATHER ROUTING
+
+E.V.I.E. has a public read-only weather provider.
+
+Provider:
+    weather
+
+Account:
+    public
+
+Routing:
+    explicit_account
+
+
+User:
+    What's the weather in Honolulu?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = weather.current
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {"location": "Honolulu"}
+
+
+User:
+    What is the current weather in Corvallis?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = weather.current
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {"location": "Corvallis"}
+
+
+User:
+    What's the forecast for Corvallis this week?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = weather.forecast
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {"location": "Corvallis", "days": 7}
+
+
+User:
+    What's the forecast for Honolulu for the next 3 days?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = weather.forecast
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {"location": "Honolulu", "days": 3}
+
+
+User:
+    What's the hourly forecast in Honolulu?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = weather.hourly
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {"location": "Honolulu"}
+
+
+User:
+    What's the hourly weather in Seattle?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = weather.hourly
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {"location": "Seattle"}
+
+
+User:
+    Will it rain in Seattle tomorrow?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = weather.forecast
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {"location": "Seattle", "days": 2}
+
+
+NOTION ROUTING
+
+E.V.I.E. has a connected Notion integration.
+
+Provider:
+    notion
+
+Account:
+    primary
+
+Routing:
+    explicit_account
+
+
+REGISTERED NOTION CAPABILITIES
+
+Use ONLY:
+
+    notion.search
+    notion.page
+    notion.page_content
+    notion.block_children
+    notion.data_source
+    notion.data_source_query
+    notion.read_document
+    notion.document
+    notion.block_update
+    notion.block_delete
+
+
+NEVER invent aliases such as:
+
+    notion.read
+    notion.write
+    document.read
+    document.write
+    page.read
+    page.write
+    notes.read
+    notes.write
+
+
+User:
+    Search my Notion for FPGA research
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = notion.search
+    provider = notion
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "query": "FPGA research"
+    }
+
+
+User:
+    What did I write in my Documentation page?
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = notion.read_document
+    provider = notion
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "page_title": "Documentation"
+    }
+
+
+User:
+    Read the Phase 9 section of my E.V.I.E. Assistant page.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = notion.read_document
+    provider = notion
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "page_title": "E.V.I.E. Assistant",
+        "section": "Phase 9"
+    }
+
+
+User:
+    Document that GitHub integration passed under Phase 9 in my E.V.I.E. Assistant page.
+
+Use:
+    integration_execute
+
+Arguments:
+    capability = notion.document
+    provider = notion
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "page_title": "E.V.I.E. Assistant",
+        "section": "Phase 9",
+        "content": "GitHub integration passed."
+    }
+
+
+NOTION ROUTING RULES
+
+1. Search/finding pages by title or topic:
+       notion.search
+
+2. Read actual page content by page title:
+       notion.read_document
+
+3. Read a named subsection:
+       notion.read_document
+   with:
+       page_title
+       section
+
+4. Append/document information:
+       notion.document
+
+5. Notion writes are medium risk and require approval.
+
+6. Block deletion is high risk and requires approval.
+
+7. Always use:
+       provider = notion
+       account_id = primary
+       routing_mode = explicit_account
+
+8. NEVER answer "what did I write" from notion.search metadata alone.
+   Use notion.read_document when actual content is requested.
+
+9. NEVER invent capability names.
+
+WEATHER ROUTING RULES
+
+1. Current conditions, current temperature, current humidity, current wind,
+   or "what's the weather" should use:
+
+       weather.current
+
+2. Multi-day, daily, tomorrow, weekend, or "this week" forecast requests
+   should use:
+
+       weather.forecast
+
+3. Hourly weather or hourly forecast requests MUST use:
+
+       weather.hourly
+
+4. Location-resolution-only requests may use:
+
+       weather.location
+
+5. NEVER pass invented arguments such as:
+
+       type
+       forecast_type
+       mode
+
+   The capability name determines whether the request is current,
+   daily forecast, or hourly forecast.
+
+6. weather.current accepts:
+       location
+       latitude
+       longitude
+
+7. weather.forecast accepts:
+       location
+       latitude
+       longitude
+       days
+
+8. weather.hourly accepts:
+       location
+       latitude
+       longitude
+       days
+
+9. When the user gives a location name, preserve it in:
+       arguments.location
+
+10. For "tomorrow", request enough forecast days to include tomorrow.
+    Normally use days = 2.
+
+11. For "this week", normally use days = 7.
+
+12. Weather is public and read-only. It never requires approval.
+
+13. Do not answer live/current/future weather from conversational memory
+    when integration_execute can retrieve fresh data.
+
+14. Do not guess the user's physical location for requests such as
+    "weather near me" unless an approved location source is available.
+
+RULES FOR CONNECTED SERVICES
+
+1. Never answer a live connected-service state question from
+   conversation history when integration_execute can retrieve it.
+
+2. Do not claim an integration is unavailable merely because the
+   information is absent from conversation history.
+
+3. For integration_execute, NEVER provide or infer the approved
+   argument. Approval state belongs exclusively to E.V.I.E.'s executor.
+
+4. Do not invent an account_id when the user did not specify an account.
+
+5. If the user explicitly names an account or email address, preserve
+   that exact account_id.
+
+6. Use normalized lowercase provider identifiers such as:
+       google
+       spotify
+       github
+       notion
+       discord
+       weather
+
+7. For read capabilities, approval is not required unless the registered
+   permission policy says otherwise.
+
+8. If multiple accounts are available and the user did not select one,
+   leave account_id unset. The integration routing layer will resolve or
+   request account selection.
+
+9. A connected-service read such as tasks.read, calendar.read,
+   email.search, contacts.search, media.read, finance.read, or weather
+   retrieval is an immediate Phase 6 tool action when it requires only
+   one integration call.
+
+10. Multi-step connected-service workflows that depend on intermediate
+    results belong to Phase 7.
+
+
 PHASE 6 EXAMPLES
 
 User:
@@ -1214,7 +2078,8 @@ def should_consider_tools(
     This function does NOT choose a tool.
 
     It determines whether a message plausibly requests inspection or
-    control of the real computer/browser environment.
+    control of the real computer/browser environment OR live access to
+    a Phase 9 connected service.
 
     The semantic planner makes the final tool decision.
     """
@@ -1225,7 +2090,9 @@ def should_consider_tools(
 
 
     text = (
-        user_message
+        str(
+            user_message
+        )
         .strip()
         .lower()
     )
@@ -1412,6 +2279,232 @@ def should_consider_tools(
 
 
     # -----------------------------------------------------------------------
+    # Phase 9 Connected Services
+    # -----------------------------------------------------------------------
+    #
+    # This gate does not choose integration_execute itself. It only makes
+    # sure live connected-service questions reach the semantic tool planner.
+    # -----------------------------------------------------------------------
+
+    integration_service_terms = (
+        # Google / communication
+        "gmail",
+        "email",
+        "emails",
+        "mailbox",
+        "inbox",
+
+        # Calendar
+        "calendar",
+        "calendars",
+        "event",
+        "events",
+        "schedule",
+        "scheduled",
+
+        # Tasks
+        "google task",
+        "google tasks",
+        "task",
+        "tasks",
+        "to-do",
+        "todo",
+
+        # Contacts
+        "contact",
+        "contacts",
+
+        # Spotify / media
+        "spotify",
+        "playing",
+        "currently playing",
+        "listening to",
+        "playback",
+        "spotify devices",
+
+        # Finance / Schwab
+        "portfolio",
+        "positions",
+        "position",
+        "holdings",
+        "holding",
+        "schwab",
+        "brokerage",
+        "investment",
+        "investments",
+        "stock",
+        "stocks",
+        "shares",
+        "shares of",
+        "own",
+        "owned",
+        "balance",
+        "balances",
+        "cash balance",
+        "buying power",
+        "account value",
+        "portfolio value",
+        "net liquidation",
+        "portfolio performance",
+        "performance",
+        "day gain",
+        "day gain/loss",
+        "daily gain",
+        "daily return",
+        "today's gain",
+        "todays gain",
+        "up today",
+        "down today",
+        "gain today",
+        "loss today",
+        "transactions",
+        "transaction",
+        "trades",
+        "trade history",
+        "orders",
+        "open orders",
+        "market price",
+        "stock price",
+        "share price",
+        "current price",
+        "live price",
+        "live quote",
+        "market quote",
+        "trading at",
+        "price of",
+        "quote",
+        "ticker",
+
+        # Weather
+        "weather",
+        "forecast",
+        "weather forecast",
+        "hourly forecast",
+        "hourly weather",
+        "temperature",
+        "humidity",
+        "wind",
+        "rain",
+        "raining",
+        "precipitation",
+
+        # GitHub
+        "github",
+        "repository",
+        "repositories",
+        "repo",
+        "repos",
+        "commit",
+        "commits",
+        "issue",
+        "issues",
+        "pull request",
+        "pull requests",
+        "pulls",
+        "github actions",
+        "actions",
+        "workflow",
+        "workflows",
+        "notifications",
+
+        # Notion
+        "notion",
+        "notion page",
+        "notion pages",
+        "notion database",
+        "notion data source",
+        "notion notes",
+        "notion document",
+        "notion documents",
+        "documentation",
+        "document",
+        "document this",
+        "write this",
+        "add this",
+        "page",
+        "section",
+
+        # Phase 9 providers / future connected services
+        "discord",
+    )
+
+
+    integration_query_terms = (
+        "what ",
+        "what's ",
+        "whats ",
+        "which ",
+        "who ",
+        "when ",
+        "where ",
+        "show ",
+        "show me ",
+        "list ",
+        "read ",
+        "search ",
+        "find ",
+        "check ",
+        "get ",
+        "tell me ",
+        "do i have",
+        "do we have",
+        "how many ",
+        "how much ",
+        "will ",
+        "is it ",
+        "are we ",
+    )
+
+
+    integration_action_terms = (
+        "create ",
+        "add ",
+        "send ",
+        "complete ",
+        "mark ",
+        "schedule ",
+        "play ",
+        "pause ",
+        "resume ",
+        "skip ",
+        "next ",
+        "previous ",
+    )
+
+
+    mentions_integration = any(
+        term in text
+        for term
+        in integration_service_terms
+    )
+
+
+    asks_integration_query = any(
+        term in text
+        for term
+        in integration_query_terms
+    )
+
+
+    asks_integration_action = any(
+        term in text
+        for term
+        in integration_action_terms
+    )
+
+
+    if (
+        mentions_integration
+        and (
+            asks_integration_query
+            or asks_integration_action
+        )
+    ):
+
+        return True
+
+
+    # -----------------------------------------------------------------------
     # Existing General Computer Actions
     # -----------------------------------------------------------------------
 
@@ -1452,6 +2545,29 @@ def should_consider_tools(
         "explorer",
         "powershell",
         "terminal",
+                # Phase 9 contextual media controls
+        "skip ",
+        "skip the song",
+        "skip this song",
+        "next song",
+        "next track",
+        "pause ",
+        "pause the song",
+        "pause music",
+        "resume ",
+        "resume music",
+        "unpause ",
+        "go back",
+        "previous song",
+        "previous track",
+        "play ",
+        "queue ",
+        "add to queue",
+        "shuffle ",
+        "repeat ",
+        "volume ",
+        "turn it up",
+        "turn it down",
     )
 
 
@@ -1891,6 +3007,11 @@ if __name__ == "__main__":
 
     gate_tests = (
         "What browser tabs do you have open?",
+        "What stocks do I own?",
+        "How much is my portfolio up today?",
+        "What's the weather in Honolulu?",
+        "What's the forecast for Corvallis this week?",
+        "What's the hourly forecast in Honolulu?",
         (
             "Read the current webpage and "
             "tell me what it contains."
@@ -1953,6 +3074,11 @@ if __name__ == "__main__":
         "What's 2 + 2?",
         "Show me my Git status.",
         "What browser tabs do you have open?",
+        "What stocks do I own?",
+        "How much is my portfolio up today?",
+        "What's the weather in Honolulu?",
+        "What's the forecast for Corvallis this week?",
+        "What's the hourly forecast in Honolulu?",
         "Read the current webpage.",
         (
             "Search the web for Playwright "
