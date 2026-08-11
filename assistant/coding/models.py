@@ -1,11 +1,11 @@
 """
-E.V.I.E. - Coding Transaction Models
+E.V.I.E. - Coding Models
 
-Phase 12I
+Phase 12I / 12M
 
 Purpose:
-Represent one safe repository change transaction from baseline through
-planned edits, verification, rollback, review, and commit preparation.
+Shared data structures for safe coding transactions and repository-level
+self-engineering plans.
 """
 
 from __future__ import annotations
@@ -13,6 +13,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Any
 
+
+# ---------------------------------------------------------------------------
+# Phase 12I Transaction Models
+# ---------------------------------------------------------------------------
 
 @dataclass
 class FileSnapshot:
@@ -86,4 +90,47 @@ def transaction_to_dict(
 ):
     return asdict(
         transaction
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 12M Self-Engineering Models
+# ---------------------------------------------------------------------------
+
+@dataclass
+class EngineeringEdit:
+    path: str
+    content: str
+    reason: str = ""
+
+
+@dataclass
+class EngineeringPlan:
+    goal: str
+    repository: str
+
+    planned_paths: list[str] = field(
+        default_factory=list
+    )
+
+    edits: list[EngineeringEdit] = field(
+        default_factory=list
+    )
+
+    targeted_commands: list[list[str]] = field(
+        default_factory=list
+    )
+
+    regression_command: list[str] = field(
+        default_factory=list
+    )
+
+    commit_message: str = ""
+    documentation_note: str = ""
+
+    confidence: int = 0
+    rationale: str = ""
+
+    metadata: dict[str, Any] = field(
+        default_factory=dict
     )
