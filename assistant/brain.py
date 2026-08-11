@@ -39,6 +39,9 @@ from .memory.retriever import (
     retrieve_memories,
 )
 
+from .intelligence.context import (
+    record_tool_context,
+)
 
 from .perception.context import (
     format_live_context,
@@ -108,6 +111,7 @@ from .integrations.selection import (
     resolve_account_selection,
     set_pending_integration_selection,
 )
+
 
 # ---------------------------------------------------------------------------
 # Environment
@@ -1347,6 +1351,23 @@ def handle_tool_request(
         )
     )
 
+    # -----------------------------------------------------------------------
+    # Phase 10B - Record Successfully Verified Context
+    # -----------------------------------------------------------------------
+
+    if verification.successful:
+
+        record_tool_context(
+            tool_name=
+                plan.tool_name,
+
+            arguments=
+                arguments,
+
+            user_request=
+                user_message,
+        )
+
     response = (
         render_tool_result_response(
             user_message=
@@ -1636,6 +1657,23 @@ def handle_pending_integration_selection(
         )
     )
 
+    # -----------------------------------------------------------------------
+    # Phase 10B - Record Successfully Selected Integration Context
+    # -----------------------------------------------------------------------
+
+    if verification.successful:
+
+        record_tool_context(
+            tool_name=
+                pending.tool_name,
+
+            arguments=
+                arguments,
+
+            user_request=
+                pending.original_request,
+        )
+
 
     response = (
         render_tool_result_response(
@@ -1809,6 +1847,22 @@ def handle_pending_tool_approval(
         )
     )
 
+    # -----------------------------------------------------------------------
+    # Phase 10B - Record Successfully Approved Context
+    # -----------------------------------------------------------------------
+
+    if verification.successful:
+
+        record_tool_context(
+            tool_name=
+                pending.tool_name,
+
+            arguments=
+                pending.arguments,
+
+            user_request=
+                pending.original_request,
+        )
 
     response = (
         render_tool_result_response(

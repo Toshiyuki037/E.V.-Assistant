@@ -508,6 +508,34 @@ def extract_execution_details(
     )
 
 
+    # -----------------------------------------------------------------------
+    # Phase 9 / 10 Integration Evidence
+    # -----------------------------------------------------------------------
+    #
+    # integration_execute already returns bounded structured evidence.
+    # Preserve it intact so Phase 7 continuation and final verification
+    # can synthesize results across Weather, GitHub, Schwab, Google,
+    # Notion, Spotify, and future providers.
+    # -----------------------------------------------------------------------
+
+    if (
+        execution.get(
+            "tool"
+        )
+        == "integration_execute"
+        and isinstance(
+            result,
+            dict,
+        )
+    ):
+
+        details[
+            "result"
+        ] = result
+
+        return details
+
+
     if isinstance(
         result,
         dict,
@@ -1230,6 +1258,30 @@ Correct next actions may be:
 2. run_python again
 
 
+PHASE 9 / 10 CONNECTED-SERVICE EVIDENCE
+
+integration_execute results in task history are REAL connected-service
+evidence.
+
+They may contain structured evidence from:
+    weather
+    github
+    google
+    schwab
+    spotify
+    notion
+    other registered providers
+
+When multiple integration_execute steps succeeded:
+
+- use the actual structured result from each step
+- do not repeat a successful read merely because the current plan ended
+- do not invent missing provider data
+- if all requested independent reads succeeded, the information-gathering
+  portion of the goal is normally complete
+- allow final completion verification to synthesize those real results
+  into one user-facing response
+
 PHASE 8 STRUCTURED BROWSER EVIDENCE
 
 browser_search_web returns structured, real search evidence.
@@ -1596,6 +1648,23 @@ PROGRAMMING TASKS:
     in the actual VS Code tool result is sufficient evidence that the
     new-window launch was requested successfully.
 
+
+PHASE 9 / 10 CONNECTED-SERVICE EVIDENCE:
+
+12. Successful integration_execute results are real external-service
+    evidence.
+
+13. When the goal requested multiple connected-service reads, require
+    successful evidence for each requested read.
+
+14. Use the actual structured integration results when generating the
+    final summary.
+
+15. Do not replace live integration evidence with remembered or assumed
+    values.
+
+16. If all requested integration reads succeeded, synthesize them into
+    one concise user-facing answer.
 
 PHASE 8 BROWSER EVIDENCE:
 

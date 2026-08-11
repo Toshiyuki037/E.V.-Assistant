@@ -47,6 +47,14 @@ from assistant.tools.registry import (
     load_default_tools,
 )
 
+from assistant.intelligence.context import (
+    record_tool_context,
+)
+
+from assistant.intelligence.integration_runtime import (
+    prepare_tool_arguments,
+)
+
 from .models import (
     AgentResult,
     AgentTask,
@@ -961,6 +969,14 @@ def run_task(
             )
 
 
+            arguments = (
+                prepare_tool_arguments(
+                    step.tool_name,
+                    arguments,
+                )
+            )
+
+
             step.arguments = (
                 arguments
             )
@@ -1077,6 +1093,23 @@ def run_task(
                 step.status = "completed"
 
                 step.error = None
+
+
+                # -----------------------------------------------------------
+                # Phase 10E - Preserve Successful Agent Tool Context
+                # -----------------------------------------------------------
+
+                record_tool_context(
+                    tool_name=
+                        step.tool_name,
+
+                    arguments=
+                        arguments,
+
+                    user_request=
+                        task.goal,
+                )
+
 
                 task.current_step_index += 1
 
@@ -1489,6 +1522,16 @@ def resolve_agent_approval(
     )
 
 
+    arguments = (
+        prepare_tool_arguments(
+            pending[
+                "tool_name"
+            ],
+            arguments,
+        )
+    )
+
+
     placeholder_error = (
         detect_placeholder_content(
             pending[
@@ -1627,6 +1670,23 @@ def resolve_agent_approval(
     step.status = "completed"
 
     step.error = None
+
+
+    # -----------------------------------------------------------------------
+    # Phase 10E - Preserve Approved Agent Tool Context
+    # -----------------------------------------------------------------------
+
+    record_tool_context(
+        tool_name=
+            step.tool_name,
+
+        arguments=
+            arguments,
+
+        user_request=
+            task.goal,
+    )
+
 
     task.current_step_index += 1
 

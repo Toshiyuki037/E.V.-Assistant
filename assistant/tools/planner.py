@@ -59,6 +59,22 @@ from .registry import (
     load_default_tools,
 )
 
+from assistant.intelligence.integration_runtime import (
+    prepare_integration_arguments,
+)
+
+from assistant.intelligence.context import (
+    format_planner_conversation_context,
+    looks_like_contextual_followup,
+)
+
+from assistant.intelligence.resolver import (
+    resolve_contextual_request,
+)
+
+from assistant.intelligence.normalize import (
+    normalize_user_input,
+)
 
 # ---------------------------------------------------------------------------
 # Environment
@@ -225,6 +241,107 @@ GENERAL RULES
 18. Requests involving multiple dependent browser actions belong to
     Phase 7.
 
+PHASE 10 SHORT-TERM CONTEXT
+
+You may receive ACTIVE PHASE 10 SHORT-TERM CONTEXT.
+
+This contains structured context from the most recent successfully
+verified tool action.
+
+It may contain:
+
+    last_provider
+    last_capability
+    last_account_id
+    last_arguments
+    active_document
+    active_section
+    active_repo
+    active_location
+    active_symbol
+
+Use this context ONLY when the current message is clearly a follow-up.
+
+Examples:
+
+Earlier successful action:
+    weather.current
+    location = Honolulu
+
+Current:
+    What about tomorrow?
+
+Interpret as:
+    integration_execute
+
+    capability = weather.forecast
+    provider = weather
+    account_id = public
+    routing_mode = explicit_account
+    arguments = {
+        "location": "Honolulu",
+        "days": 2
+    }
+
+
+Earlier successful action:
+    notion.read_document
+    page_title = E.V.I.E. Assistant
+
+Current:
+    What about Phase 9?
+
+Interpret as:
+    integration_execute
+
+    capability = notion.read_document
+    provider = notion
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "page_title": "E.V.I.E. Assistant",
+        "section": "Phase 9"
+    }
+
+
+Earlier successful action:
+    github.commits
+    repo = E.V.-Assistant
+
+Current:
+    What about the open issues?
+
+Interpret as:
+    integration_execute
+
+    capability = github.issues
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments = {
+        "repo": "E.V.-Assistant"
+    }
+
+
+RULES
+
+1. The CURRENT user message always has priority.
+
+2. Inherit only arguments that remain logically relevant.
+
+3. Explicit new arguments replace inherited arguments.
+
+4. Never inherit approval state.
+
+5. Never inherit destructive intent.
+
+6. Never invent an entity when short-term context does not contain one.
+
+7. Never use stale short-term context for an unrelated new request.
+
+8. Short-term context does not change capability permissions.
+
+9. If the reference is ambiguous, do not guess.
 
 CONVERSATIONAL REFERENTS
 
@@ -2089,10 +2206,17 @@ def should_consider_tools(
         return False
 
 
-    text = (
-        str(
-            user_message
+    normalized_message = (
+        normalize_user_input(
+            str(
+                user_message
+            )
         )
+    )
+
+
+    text = (
+        normalized_message
         .strip()
         .lower()
     )
@@ -2102,6 +2226,15 @@ def should_consider_tools(
 
         return False
 
+    # -----------------------------------------------------------------------
+    # Phase 10B Contextual Follow-Up
+    # -----------------------------------------------------------------------
+
+    if looks_like_contextual_followup(
+        normalized_message
+    ):
+
+        return True
 
     # -----------------------------------------------------------------------
     # Conversational Follow-Up Actions
@@ -2726,6 +2859,9 @@ def build_planner_prompt(
         get_reference_context()
     )
 
+    phase10_context = (
+        format_planner_conversation_context()
+    )
 
     workspace_context = (
         get_current_workspace()
@@ -2759,6 +2895,9 @@ def build_planner_prompt(
         + "\n\n"
         + "CURRENT LIVE WORKSPACE CONTEXT:\n\n"
         + workspace_json
+        + "\n\n"
+        + "ACTIVE PHASE 10 SHORT-TERM CONTEXT:\n\n"
+        + phase10_context
         + "\n\n"
         + "RECENT CONVERSATION CONTEXT:\n\n"
         + reference_context
@@ -2813,8 +2952,19 @@ def plan_tool_request(
         )
 
 
+    # -----------------------------------------------------------------------
+    # Phase 10D - Normalize User Input
+    # -----------------------------------------------------------------------
+
+    normalized_user_message = (
+        normalize_user_input(
+            user_message
+        )
+    )
+
+
     prompt = build_planner_prompt(
-        user_message
+        normalized_user_message
     )
 
 
@@ -2930,7 +3080,55 @@ def plan_tool_request(
         )
     )
 
+    # -----------------------------------------------------------------------
+    # Phase 10C - Contextual Reference Resolution
+    # -----------------------------------------------------------------------
 
+    if (
+        tool_name
+        == "integration_execute"
+        and looks_like_contextual_followup(
+            normalized_user_message
+        )
+    ):
+
+        resolved = (
+            resolve_contextual_request(
+                normalized_user_message
+            )
+        )
+
+
+        if resolved is not None:
+
+            # For a clearly contextual follow-up, the deterministic
+            # resolver is authoritative.
+            #
+            # It begins from the last successfully verified tool state
+            # and applies only explicit changes found in the current
+            # follow-up request.
+            #
+            # Do not allow independently generated planner arguments
+            # to overwrite inherited entities such as the active
+            # Notion page, GitHub repository, location, or symbol.
+
+            arguments = resolved
+
+    # -----------------------------------------------------------------------
+    # Phase 10A / 10E - Prepare Integration Arguments
+    # -----------------------------------------------------------------------
+
+    if (
+        tool_name
+        == "integration_execute"
+    ):
+
+        arguments = (
+            prepare_integration_arguments(
+                arguments
+            )
+        )
+        
     # -----------------------------------------------------------------------
     # Inject Workspace
     # -----------------------------------------------------------------------

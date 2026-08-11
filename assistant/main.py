@@ -70,6 +70,10 @@ from .agent.integration import (
     handle_agent_message,
 )
 
+from .intelligence.preferences import (
+    handle_preference_command,
+)
+
 # ---------------------------------------------------------------------------
 # Speak Model Response
 # ---------------------------------------------------------------------------
@@ -840,6 +844,25 @@ def process_prompt(
 
         return
 
+    # -----------------------------------------------------------------------
+    # Phase 10E - Explicit Preference Commands
+    # -----------------------------------------------------------------------
+
+    preference_response = (
+        handle_preference_command(
+            user_text
+        )
+    )
+
+
+    if preference_response:
+
+        complete_response(
+            user_text,
+            preference_response,
+        )
+
+        return
 
     # -----------------------------------------------------------------------
     # Phase 7 Unified Agent Routing / Continuation

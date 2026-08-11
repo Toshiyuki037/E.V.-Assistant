@@ -44,6 +44,14 @@ from assistant.tools.registry import (
     load_default_tools,
 )
 
+from assistant.intelligence.integration_runtime import (
+    prepare_integration_arguments,
+)
+
+from assistant.intelligence.normalize import (
+    normalize_user_input,
+)
+
 from .models import (
     AgentPlan,
     AgentStep,
@@ -119,6 +127,11 @@ PHASE 7 SHOULD BE USED WHEN:
 - the user asks E.V.I.E. to retry or keep working until success
 - the task is adaptive or iterative
 - the next action cannot be known until a real execution result exists
+- the user asks for two or more independent connected-service actions
+  in one request
+- the user combines information from multiple connected providers
+- the user asks for multiple independent integration capabilities even
+  when the actions do not depend on each other
 
 
 DO NOT USE PHASE 7 FOR:
@@ -295,6 +308,103 @@ Do NOT assume what the error will be.
 
 The recovery controller will inspect the real stderr/stdout and create
 new corrective steps dynamically.
+
+
+PHASE 10 MULTI-INTENT CONNECTED SERVICES:
+
+Multiple independent connected-service requests in one user message
+belong to Phase 7.
+
+Each requested connected-service capability becomes its own
+integration_execute step.
+
+Example:
+
+User:
+
+    Check the weather in Honolulu and show my latest GitHub commits
+    to E.V.-Assistant.
+
+Correct plan:
+
+Step 1:
+    Tool:
+        integration_execute
+
+    Arguments:
+        {
+            "capability": "weather.current",
+            "provider": "weather",
+            "account_id": "public",
+            "routing_mode": "explicit_account",
+            "arguments": {
+                "location": "Honolulu"
+            }
+        }
+
+Step 2:
+    Tool:
+        integration_execute
+
+    Arguments:
+        {
+            "capability": "github.commits",
+            "provider": "github",
+            "account_id": "primary",
+            "routing_mode": "explicit_account",
+            "arguments": {
+                "repo": "E.V.-Assistant"
+            }
+        }
+
+Another example:
+
+User:
+
+    Show my latest commits and open issues for E.V.-Assistant.
+
+Correct plan:
+
+Step 1:
+    integration_execute
+    capability = github.commits
+
+Step 2:
+    integration_execute
+    capability = github.issues
+
+Both steps preserve:
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments.repo = E.V.-Assistant
+
+
+PHASE 10 MULTI-INTENT RULES:
+
+1. Each integration_execute step performs exactly one capability.
+
+2. Use canonical registered capability names when possible.
+
+3. Never combine multiple capabilities into one integration_execute call.
+
+4. Never bypass Phase 6 permissions.
+
+5. Never include or invent an approved argument.
+
+6. Do not invent accounts.
+
+7. Preserve explicit entities such as repository, location, page title,
+   section, symbol, dates, and account identifiers.
+
+8. Multiple independent connected-service reads are Phase 7 even when
+   the second read does not depend on the first.
+
+9. Use the smallest number of steps required.
+
+10. The final verifier should synthesize all successful integration
+    results into one user-facing answer.
+
 
 
 MULTI-STEP EXAMPLE:
@@ -543,6 +653,17 @@ def plan_task(
         )
 
 
+    # -----------------------------------------------------------------------
+    # Phase 10D - Normalize User Input
+    # -----------------------------------------------------------------------
+
+    normalized_user_message = (
+        normalize_user_input(
+            user_message
+        )
+    )
+
+
     prompt = (
         f"{PLANNER_SYSTEM_PROMPT}\n\n"
 
@@ -552,7 +673,7 @@ def plan_task(
 
         "USER GOAL:\n"
 
-        f"{user_message}"
+        f"{normalized_user_message}"
     )
 
 
@@ -668,6 +789,22 @@ def plan_task(
                 planned.arguments_json
             )
         )
+
+
+        # -------------------------------------------------------------------
+        # Phase 10A / 10E - Prepare Integration Arguments
+        # -------------------------------------------------------------------
+
+        if (
+            tool_name
+            == "integration_execute"
+        ):
+
+            arguments = (
+                prepare_integration_arguments(
+                    arguments
+                )
+            )
 
 
         steps.append(
