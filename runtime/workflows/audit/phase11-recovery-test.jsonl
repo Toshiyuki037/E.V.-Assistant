@@ -1,0 +1,2 @@
+{"time": "2026-08-10T19:55:00-10:00", "run_id": "phase11-recovery-test", "workflow_id": "phase11-data-test", "step_id": "step_1", "event_type": "step_recovered", "message": "Interrupted running step reset to pending after restart.", "data": {}}
+{"time": "2026-08-10T19:55:00-10:00", "run_id": "phase11-recovery-test", "workflow_id": "phase11-data-test", "step_id": "", "event_type": "run_recovered", "message": "Workflow run repaired after restart.", "data": {}}

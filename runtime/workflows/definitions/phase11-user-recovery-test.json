@@ -1,0 +1,41 @@
+{
+  "workflow_id": "phase11-user-recovery-test",
+  "name": "User Recovery Test",
+  "goal": "Verify workflow request-user recovery",
+  "description": "",
+  "steps": [
+    {
+      "step_id": "broken",
+      "step_number": 1,
+      "description": "Intentionally call a missing integration capability",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "not.real",
+        "provider": "weather",
+        "account_id": "public",
+        "routing_mode": "explicit_account"
+      },
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "request_user",
+        "retry_on": []
+      },
+      "status": "pending",
+      "attempts": 0,
+      "result": null,
+      "error": null,
+      "started_at": "",
+      "completed_at": "",
+      "last_attempt_at": "",
+      "recovery_note": ""
+    }
+  ],
+  "enabled": true,
+  "created_at": "2026-08-10T20:03:33-10:00",
+  "updated_at": "2026-08-10T20:03:33-10:00"
+}

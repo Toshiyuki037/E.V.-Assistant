@@ -1,0 +1,29 @@
+{
+  "protocol_id": "morning",
+  "name": "Morning Protocol",
+  "goal": "Collect the user's morning context for a concise briefing.",
+  "description": "Reusable morning workflow. Phase 11F can schedule this; Phase 11G will add natural-language protocol control.",
+  "enabled": true,
+  "default_variables": {
+    "location": "Honolulu"
+  },
+  "steps": [
+    {
+      "step_id": "weather",
+      "description": "Read current weather.",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "weather.current",
+        "provider": "weather",
+        "account_id": "public",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "location": "{{ variables.location }}"
+        }
+      },
+      "output_key": "weather"
+    }
+  ],
+  "created_at": "2026-08-11T06:12:05.778689+00:00",
+  "updated_at": "2026-08-11T06:12:05.780700+00:00"
+}

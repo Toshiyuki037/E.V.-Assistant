@@ -1,0 +1,25 @@
+{
+  "schedule_id": "morning-weekdays",
+  "protocol_id": "morning",
+  "schedule_type": "weekly",
+  "timezone": "America/Los_Angeles",
+  "run_at": "",
+  "hour": 7,
+  "minute": 30,
+  "weekdays": [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday"
+  ],
+  "variables": {},
+  "enabled": true,
+  "missed_run_policy": "run_once",
+  "created_at": "2026-08-11T06:37:10.157724+00:00",
+  "updated_at": "2026-08-11T06:37:10.157724+00:00",
+  "last_run_at": "",
+  "last_run_id": "",
+  "last_status": "",
+  "next_run_at": "2026-08-11T14:30:00+00:00"
+}

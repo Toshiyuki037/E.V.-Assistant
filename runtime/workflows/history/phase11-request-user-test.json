@@ -1,0 +1,51 @@
+{
+  "run_id": "phase11-request-user-test",
+  "workflow_id": "phase11-test",
+  "workflow_name": "11D Recovery Test",
+  "goal": "Verify request-user recovery",
+  "steps": [
+    {
+      "step_id": "broken",
+      "step_number": 1,
+      "description": "Simulated recoverable failure",
+      "tool_name": "integration_execute",
+      "arguments": {},
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "request_user",
+        "retry_on": []
+      },
+      "status": "skipped",
+      "attempts": 0,
+      "result": {
+        "skipped": true,
+        "reason": "Step skipped by user during recovery."
+      },
+      "error": null,
+      "started_at": "",
+      "completed_at": "2026-08-10T20:06:31-10:00",
+      "last_attempt_at": "",
+      "recovery_note": "Simulated connection failure"
+    }
+  ],
+  "status": "completed",
+  "variables": {},
+  "outputs": {},
+  "pending_action": null,
+  "failure_reason": "",
+  "final_summary": "Workflow completed successfully.",
+  "created_at": "2026-08-10T20:06:06-10:00",
+  "started_at": "2026-08-10T20:06:31-10:00",
+  "updated_at": "2026-08-10T20:06:31-10:00",
+  "completed_at": "2026-08-10T20:06:31-10:00",
+  "resume_count": 0,
+  "replan_count": 0,
+  "max_replans": 3,
+  "awaiting_user_reason": "",
+  "recovery_context": {}
+}

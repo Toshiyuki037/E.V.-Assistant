@@ -74,6 +74,11 @@ from .intelligence.preferences import (
     handle_preference_command,
 )
 
+from .workflows.integration import (
+    handle_pending_workflow_approval,
+    handle_workflow_message,
+)
+
 # ---------------------------------------------------------------------------
 # Speak Model Response
 # ---------------------------------------------------------------------------
@@ -703,13 +708,16 @@ def process_prompt(
 
     Priority:
 
-        1. pending integration account selection
-        2. pending Phase 6 tool approval
-        3. Phase 7 agent continuation / new agent tasks
-        4. explicit memory commands
-        5. immediate Phase 6 tool actions
-        6. intelligent memory
-        7. normal reasoning
+        1. pending Phase 11 workflow approval
+        2. pending integration account selection
+        3. pending Phase 6 tool approval
+        4. Phase 10 preference commands
+        5. Phase 11 workflow / protocol commands
+        6. Phase 7 agent continuation / new agent tasks
+        7. explicit memory commands
+        8. immediate Phase 6 tool actions
+        9. intelligent memory
+        10. normal reasoning
 
     Temporary integration account selections never reach long-term
     memory processing.
@@ -730,6 +738,53 @@ def process_prompt(
         f"\nYou: {user_text}"
     )
 
+    # -----------------------------------------------------------------------
+    # Phase 11 - Pending Workflow Approval
+    # -----------------------------------------------------------------------
+
+    workflow_approval = (
+        handle_pending_workflow_approval(
+            user_text
+        )
+    )
+
+
+    if workflow_approval.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            workflow_approval.get(
+                "response"
+            )
+            or "Done."
+        )
+
+
+        follow_up = (
+            workflow_approval.get(
+                "follow_up",
+                ""
+            )
+            .strip()
+        )
+
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+
+        if follow_up:
+
+            process_prompt(
+                follow_up
+            )
+
+
+        return
 
     # -----------------------------------------------------------------------
     # Pending Integration Account Selection
@@ -864,6 +919,56 @@ def process_prompt(
 
         return
 
+    # -----------------------------------------------------------------------
+    # Phase 11 - Workflow / Protocol Commands
+    # -----------------------------------------------------------------------
+
+    workflow_result = (
+        handle_workflow_message(
+            user_text,
+            default_timezone=
+                "America/Los_Angeles",
+        )
+    )
+
+
+    if workflow_result.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            workflow_result.get(
+                "response"
+            )
+            or "Done."
+        )
+
+
+        follow_up = (
+            workflow_result.get(
+                "follow_up",
+                ""
+            )
+            .strip()
+        )
+
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+
+        if follow_up:
+
+            process_prompt(
+                follow_up
+            )
+
+
+        return
+    
     # -----------------------------------------------------------------------
     # Phase 7 Unified Agent Routing / Continuation
     # -----------------------------------------------------------------------

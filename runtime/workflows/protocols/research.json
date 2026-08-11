@@ -1,0 +1,29 @@
+{
+  "protocol_id": "research",
+  "name": "Research Protocol",
+  "goal": "Collect current engineering project context for research planning.",
+  "description": "Reusable research context workflow. Add Notion/project-specific steps as desired without changing the protocol subsystem.",
+  "enabled": true,
+  "default_variables": {
+    "repo": "E.V.-Assistant"
+  },
+  "steps": [
+    {
+      "step_id": "commits",
+      "description": "Read latest repository commits.",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "github.commits",
+        "provider": "github",
+        "account_id": "primary",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "repo": "{{ variables.repo }}"
+        }
+      },
+      "output_key": "github_commits"
+    }
+  ],
+  "created_at": "2026-08-11T06:12:05.781216+00:00",
+  "updated_at": "2026-08-11T06:12:05.783777+00:00"
+}

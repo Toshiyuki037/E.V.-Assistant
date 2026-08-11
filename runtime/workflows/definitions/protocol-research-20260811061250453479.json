@@ -1,0 +1,44 @@
+{
+  "workflow_id": "protocol-research-20260811061250453479",
+  "name": "Research Protocol",
+  "goal": "Collect current engineering project context for research planning.",
+  "description": "Reusable research context workflow. Add Notion/project-specific steps as desired without changing the protocol subsystem.",
+  "steps": [
+    {
+      "step_id": "commits",
+      "step_number": 1,
+      "description": "Read latest repository commits.",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "github.commits",
+        "provider": "github",
+        "account_id": "primary",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "repo": "{{ variables.repo }}"
+        }
+      },
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "github_commits",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow",
+        "retry_on": []
+      },
+      "status": "pending",
+      "attempts": 0,
+      "result": null,
+      "error": null,
+      "started_at": "",
+      "completed_at": "",
+      "last_attempt_at": "",
+      "recovery_note": ""
+    }
+  ],
+  "enabled": true,
+  "created_at": "2026-08-10T20:12:50-10:00",
+  "updated_at": "2026-08-10T20:12:50-10:00"
+}

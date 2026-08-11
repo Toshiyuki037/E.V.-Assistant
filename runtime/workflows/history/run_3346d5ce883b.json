@@ -1,0 +1,174 @@
+{
+  "run_id": "run_3346d5ce883b",
+  "workflow_id": "phase11-variable-test",
+  "workflow_name": "Variable Test",
+  "goal": "Use workflow variable as weather location",
+  "steps": [
+    {
+      "step_id": "weather",
+      "step_number": 1,
+      "description": "Read configured weather",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "weather.current",
+        "provider": "weather",
+        "account_id": "public",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "location": "Honolulu"
+        }
+      },
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "weather",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow"
+      },
+      "status": "completed",
+      "attempts": 1,
+      "result": {
+        "success": true,
+        "executed": true,
+        "tool": "integration_execute",
+        "risk": "low",
+        "result": {
+          "success": true,
+          "capability": "weather.current",
+          "routing_mode": "explicit_account",
+          "sources_attempted": 1,
+          "sources_succeeded": 1,
+          "evidence": [
+            {
+              "provider": "weather",
+              "account_id": "public",
+              "capability": "weather.current",
+              "success": true,
+              "data": {
+                "location": "Honolulu, Hawaii, United States",
+                "latitude": 21.335676,
+                "longitude": -157.88991,
+                "timezone": "Pacific/Honolulu",
+                "current": {
+                  "time": "2026-08-10T19:45",
+                  "interval": 900,
+                  "temperature_2m": 77.2,
+                  "apparent_temperature": 81.6,
+                  "relative_humidity_2m": 80,
+                  "precipitation": 0.0,
+                  "rain": 0.0,
+                  "showers": 0.0,
+                  "snowfall": 0.0,
+                  "weather_code": 0,
+                  "cloud_cover": 9,
+                  "wind_speed_10m": 8.9,
+                  "wind_direction_10m": 52,
+                  "wind_gusts_10m": 23.0
+                },
+                "units": {
+                  "time": "iso8601",
+                  "interval": "seconds",
+                  "temperature_2m": "°F",
+                  "apparent_temperature": "°F",
+                  "relative_humidity_2m": "%",
+                  "precipitation": "inch",
+                  "rain": "inch",
+                  "showers": "inch",
+                  "snowfall": "inch",
+                  "weather_code": "wmo code",
+                  "cloud_cover": "%",
+                  "wind_speed_10m": "mp/h",
+                  "wind_direction_10m": "°",
+                  "wind_gusts_10m": "mp/h"
+                }
+              },
+              "error": "",
+              "executed": true,
+              "requires_approval": false,
+              "risk": "low"
+            }
+          ],
+          "requires_approval": false,
+          "approval_reason": ""
+        }
+      },
+      "error": null,
+      "started_at": "2026-08-10T19:50:07-10:00",
+      "completed_at": "2026-08-10T19:50:10-10:00"
+    }
+  ],
+  "status": "completed",
+  "variables": {
+    "location": "Honolulu"
+  },
+  "outputs": {
+    "weather": {
+      "success": true,
+      "capability": "weather.current",
+      "routing_mode": "explicit_account",
+      "sources_attempted": 1,
+      "sources_succeeded": 1,
+      "evidence": [
+        {
+          "provider": "weather",
+          "account_id": "public",
+          "capability": "weather.current",
+          "success": true,
+          "data": {
+            "location": "Honolulu, Hawaii, United States",
+            "latitude": 21.335676,
+            "longitude": -157.88991,
+            "timezone": "Pacific/Honolulu",
+            "current": {
+              "time": "2026-08-10T19:45",
+              "interval": 900,
+              "temperature_2m": 77.2,
+              "apparent_temperature": 81.6,
+              "relative_humidity_2m": 80,
+              "precipitation": 0.0,
+              "rain": 0.0,
+              "showers": 0.0,
+              "snowfall": 0.0,
+              "weather_code": 0,
+              "cloud_cover": 9,
+              "wind_speed_10m": 8.9,
+              "wind_direction_10m": 52,
+              "wind_gusts_10m": 23.0
+            },
+            "units": {
+              "time": "iso8601",
+              "interval": "seconds",
+              "temperature_2m": "°F",
+              "apparent_temperature": "°F",
+              "relative_humidity_2m": "%",
+              "precipitation": "inch",
+              "rain": "inch",
+              "showers": "inch",
+              "snowfall": "inch",
+              "weather_code": "wmo code",
+              "cloud_cover": "%",
+              "wind_speed_10m": "mp/h",
+              "wind_direction_10m": "°",
+              "wind_gusts_10m": "mp/h"
+            }
+          },
+          "error": "",
+          "executed": true,
+          "requires_approval": false,
+          "risk": "low"
+        }
+      ],
+      "requires_approval": false,
+      "approval_reason": ""
+    }
+  },
+  "pending_action": null,
+  "failure_reason": "",
+  "final_summary": "Workflow completed successfully.",
+  "created_at": "2026-08-10T19:50:07-10:00",
+  "started_at": "2026-08-10T19:50:07-10:00",
+  "updated_at": "2026-08-10T19:50:10-10:00",
+  "completed_at": "2026-08-10T19:50:10-10:00"
+}

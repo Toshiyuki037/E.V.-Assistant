@@ -1,0 +1,44 @@
+{
+  "workflow_id": "protocol-morning-20260811065546103448",
+  "name": "Morning Protocol",
+  "goal": "Collect the user's morning context for a concise briefing.",
+  "description": "Reusable morning workflow. Phase 11F can schedule this; Phase 11G will add natural-language protocol control.",
+  "steps": [
+    {
+      "step_id": "weather",
+      "step_number": 1,
+      "description": "Read current weather.",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "weather.current",
+        "provider": "weather",
+        "account_id": "public",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "location": "{{ variables.location }}"
+        }
+      },
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "weather",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow",
+        "retry_on": []
+      },
+      "status": "pending",
+      "attempts": 0,
+      "result": null,
+      "error": null,
+      "started_at": "",
+      "completed_at": "",
+      "last_attempt_at": "",
+      "recovery_note": ""
+    }
+  ],
+  "enabled": true,
+  "created_at": "2026-08-10T20:55:46-10:00",
+  "updated_at": "2026-08-10T20:55:46-10:00"
+}

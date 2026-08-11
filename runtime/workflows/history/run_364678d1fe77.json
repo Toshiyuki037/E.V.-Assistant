@@ -1,0 +1,3034 @@
+{
+  "run_id": "run_364678d1fe77",
+  "workflow_id": "phase11-data-test",
+  "workflow_name": "Phase 11 Data Test",
+  "goal": "Test workflow outputs and conditions",
+  "steps": [
+    {
+      "step_id": "weather",
+      "step_number": 1,
+      "description": "Read Honolulu weather",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "weather.current",
+        "provider": "weather",
+        "account_id": "public",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "location": "Honolulu"
+        }
+      },
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "weather_result",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow"
+      },
+      "status": "completed",
+      "attempts": 1,
+      "result": {
+        "success": true,
+        "executed": true,
+        "tool": "integration_execute",
+        "risk": "low",
+        "result": {
+          "success": true,
+          "capability": "weather.current",
+          "routing_mode": "explicit_account",
+          "sources_attempted": 1,
+          "sources_succeeded": 1,
+          "evidence": [
+            {
+              "provider": "weather",
+              "account_id": "public",
+              "capability": "weather.current",
+              "success": true,
+              "data": {
+                "location": "Honolulu, Hawaii, United States",
+                "latitude": 21.335676,
+                "longitude": -157.88991,
+                "timezone": "Pacific/Honolulu",
+                "current": {
+                  "time": "2026-08-10T19:45",
+                  "interval": 900,
+                  "temperature_2m": 77.2,
+                  "apparent_temperature": 81.6,
+                  "relative_humidity_2m": 80,
+                  "precipitation": 0.0,
+                  "rain": 0.0,
+                  "showers": 0.0,
+                  "snowfall": 0.0,
+                  "weather_code": 0,
+                  "cloud_cover": 9,
+                  "wind_speed_10m": 8.9,
+                  "wind_direction_10m": 52,
+                  "wind_gusts_10m": 23.0
+                },
+                "units": {
+                  "time": "iso8601",
+                  "interval": "seconds",
+                  "temperature_2m": "°F",
+                  "apparent_temperature": "°F",
+                  "relative_humidity_2m": "%",
+                  "precipitation": "inch",
+                  "rain": "inch",
+                  "showers": "inch",
+                  "snowfall": "inch",
+                  "weather_code": "wmo code",
+                  "cloud_cover": "%",
+                  "wind_speed_10m": "mp/h",
+                  "wind_direction_10m": "°",
+                  "wind_gusts_10m": "mp/h"
+                }
+              },
+              "error": "",
+              "executed": true,
+              "requires_approval": false,
+              "risk": "low"
+            }
+          ],
+          "requires_approval": false,
+          "approval_reason": ""
+        }
+      },
+      "error": null,
+      "started_at": "2026-08-10T19:49:57-10:00",
+      "completed_at": "2026-08-10T19:50:02-10:00"
+    },
+    {
+      "step_id": "github",
+      "step_number": 2,
+      "description": "Read GitHub commits only if weather result exists",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "github.commits",
+        "provider": "github",
+        "account_id": "primary",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "repo": "E.V.-Assistant"
+        }
+      },
+      "dependencies": [
+        "weather"
+      ],
+      "condition": {
+        "value": "{{ outputs.weather_result }}",
+        "operator": "exists"
+      },
+      "input_bindings": {},
+      "output_key": "github_result",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow"
+      },
+      "status": "completed",
+      "attempts": 1,
+      "result": {
+        "success": true,
+        "executed": true,
+        "tool": "integration_execute",
+        "risk": "low",
+        "result": {
+          "success": true,
+          "capability": "github.commits",
+          "routing_mode": "explicit_account",
+          "sources_attempted": 1,
+          "sources_succeeded": 1,
+          "evidence": [
+            {
+              "provider": "github",
+              "account_id": "primary",
+              "capability": "github.commits",
+              "success": true,
+              "data": [
+                {
+                  "sha": "2854468e8f0d4b66a492400ac0e0f8d196a80352",
+                  "node_id": "C_kwDOTyCTgtoAKDI4NTQ0NjhlOGYwZDRiNjZhNDkyNDAwYWMwZTBmOGQxOTZhODAzNTI",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-11T02:29:59Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-11T02:29:59Z"
+                    },
+                    "message": "Complete Phase 10 unified command and context intelligence",
+                    "tree": {
+                      "sha": "ad996a28a210855a4276642f7960bc6620a180c4",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/ad996a28a210855a4276642f7960bc6620a180c4"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/2854468e8f0d4b66a492400ac0e0f8d196a80352",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2854468e8f0d4b66a492400ac0e0f8d196a80352",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/2854468e8f0d4b66a492400ac0e0f8d196a80352",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2854468e8f0d4b66a492400ac0e0f8d196a80352/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/69c950c68122b0c90eb8b7e5fb5048bf7d3df755"
+                    }
+                  ]
+                },
+                {
+                  "sha": "69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                  "node_id": "C_kwDOTyCTgtoAKDY5Yzk1MGM2ODEyMmIwYzkwZWI4YjdlNWZiNTA0OGJmN2QzZGY3NTU",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-11T00:45:45Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-11T00:45:45Z"
+                    },
+                    "message": "Complete Phase 9 connected service integrations",
+                    "tree": {
+                      "sha": "9db75c00ba12f2b7052fe479fa27a43f56f84cfc",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/9db75c00ba12f2b7052fe479fa27a43f56f84cfc"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01"
+                    }
+                  ]
+                },
+                {
+                  "sha": "fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                  "node_id": "C_kwDOTyCTgtoAKGZjMmVhOWZhY2VhY2ViNmYyNDg3Yjc4M2U3NGU2YTJiNTk3ZTVlMDE",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-10T04:46:19Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-10T04:46:19Z"
+                    },
+                    "message": "Complete Phase 8 browser intelligence and web research",
+                    "tree": {
+                      "sha": "6c4240b2a6756567bb73f9a866fd52ec53e904f9",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/6c4240b2a6756567bb73f9a866fd52ec53e904f9"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "17d004b02332afdc36459802bc15f7b6a777bc0b",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/17d004b02332afdc36459802bc15f7b6a777bc0b",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/17d004b02332afdc36459802bc15f7b6a777bc0b"
+                    }
+                  ]
+                },
+                {
+                  "sha": "17d004b02332afdc36459802bc15f7b6a777bc0b",
+                  "node_id": "C_kwDOTyCTgtoAKDE3ZDAwNGIwMjMzMmFmZGMzNjQ1OTgwMmJjMTVmN2I2YTc3N2JjMGI",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T23:44:12Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T23:44:12Z"
+                    },
+                    "message": "Checkpoint working Phase 7 before Phase 8 research integration",
+                    "tree": {
+                      "sha": "a0390f530ab82aca14905362cc5748e4da0572c0",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/a0390f530ab82aca14905362cc5748e4da0572c0"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/17d004b02332afdc36459802bc15f7b6a777bc0b",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/17d004b02332afdc36459802bc15f7b6a777bc0b",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/17d004b02332afdc36459802bc15f7b6a777bc0b",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/17d004b02332afdc36459802bc15f7b6a777bc0b/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "7d5251c2d640e3eb7eea153ac16ced048444abca",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/7d5251c2d640e3eb7eea153ac16ced048444abca",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/7d5251c2d640e3eb7eea153ac16ced048444abca"
+                    }
+                  ]
+                },
+                {
+                  "sha": "7d5251c2d640e3eb7eea153ac16ced048444abca",
+                  "node_id": "C_kwDOTyCTgtoAKDdkNTI1MWMyZDY0MGUzZWI3ZWVhMTUzYWMxNmNlZDA0ODQ0NGFiY2E",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T22:25:45Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T22:25:45Z"
+                    },
+                    "message": "Complete Phase 7 adaptive agent execution",
+                    "tree": {
+                      "sha": "3b9876c303456223194a9b8fb49e5bb301f6d926",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/3b9876c303456223194a9b8fb49e5bb301f6d926"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/7d5251c2d640e3eb7eea153ac16ced048444abca",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/7d5251c2d640e3eb7eea153ac16ced048444abca",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/7d5251c2d640e3eb7eea153ac16ced048444abca",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/7d5251c2d640e3eb7eea153ac16ced048444abca/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "88ee2ec030a799a45f5b103a527c53d645746035",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/88ee2ec030a799a45f5b103a527c53d645746035",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/88ee2ec030a799a45f5b103a527c53d645746035"
+                    }
+                  ]
+                },
+                {
+                  "sha": "88ee2ec030a799a45f5b103a527c53d645746035",
+                  "node_id": "C_kwDOTyCTgtoAKDg4ZWUyZWMwMzBhNzk5YTQ1ZjViMTAzYTUyN2M1M2Q2NDU3NDYwMzU",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T10:22:57Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T10:22:57Z"
+                    },
+                    "message": "Improve Phase 6 compound tool approval flow",
+                    "tree": {
+                      "sha": "b24c6cb3d6da5762ed7a8a4b613a6f6c927031b3",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/b24c6cb3d6da5762ed7a8a4b613a6f6c927031b3"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/88ee2ec030a799a45f5b103a527c53d645746035",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/88ee2ec030a799a45f5b103a527c53d645746035",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/88ee2ec030a799a45f5b103a527c53d645746035",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/88ee2ec030a799a45f5b103a527c53d645746035/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/2ed288314c662ddf73b44e769bfcfaaa178a56aa"
+                    }
+                  ]
+                },
+                {
+                  "sha": "2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                  "node_id": "C_kwDOTyCTgtoAKDJlZDI4ODMxNGM2NjJkZGY3M2I0NGU3NjliZmNmYWFhMTc4YTU2YWE",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T10:15:12Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T10:15:12Z"
+                    },
+                    "message": "Complete Phase 6 tool integration and approval workflow",
+                    "tree": {
+                      "sha": "44fbbef5ca6ff3c36d79fab4b0949ac299566619",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/44fbbef5ca6ff3c36d79fab4b0949ac299566619"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "1f785877d45b6347469d85bc6e7acb06a5240542",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/1f785877d45b6347469d85bc6e7acb06a5240542",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/1f785877d45b6347469d85bc6e7acb06a5240542"
+                    }
+                  ]
+                },
+                {
+                  "sha": "1f785877d45b6347469d85bc6e7acb06a5240542",
+                  "node_id": "C_kwDOTyCTgtoAKDFmNzg1ODc3ZDQ1YjYzNDc0NjlkODViYzZlN2FjYjA2YTUyNDA1NDI",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T10:10:56Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T10:10:56Z"
+                    },
+                    "message": "Complete Phase 6 controlled computer tools and execution",
+                    "tree": {
+                      "sha": "4733e9fba986d68f89af8e8ba0936765bbe14d00",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/4733e9fba986d68f89af8e8ba0936765bbe14d00"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/1f785877d45b6347469d85bc6e7acb06a5240542",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/1f785877d45b6347469d85bc6e7acb06a5240542",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/1f785877d45b6347469d85bc6e7acb06a5240542",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/1f785877d45b6347469d85bc6e7acb06a5240542/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "024c1f27ebb5675d5821867bd740293e2be65436",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/024c1f27ebb5675d5821867bd740293e2be65436",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/024c1f27ebb5675d5821867bd740293e2be65436"
+                    }
+                  ]
+                },
+                {
+                  "sha": "024c1f27ebb5675d5821867bd740293e2be65436",
+                  "node_id": "C_kwDOTyCTgtoAKDAyNGMxZjI3ZWJiNTY3NWQ1ODIxODY3YmQ3NDAyOTNlMmJlNjU0MzY",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T09:17:04Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T09:17:04Z"
+                    },
+                    "message": "Complete Phase 5 vision and screen intelligence",
+                    "tree": {
+                      "sha": "b19dcdaeff9c7d2d17c9fccb8134c0342dae23ee",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/b19dcdaeff9c7d2d17c9fccb8134c0342dae23ee"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/024c1f27ebb5675d5821867bd740293e2be65436",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/024c1f27ebb5675d5821867bd740293e2be65436",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/024c1f27ebb5675d5821867bd740293e2be65436",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/024c1f27ebb5675d5821867bd740293e2be65436/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "d238864a4f73451fa29473f2a21628c470c785bc",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/d238864a4f73451fa29473f2a21628c470c785bc",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/d238864a4f73451fa29473f2a21628c470c785bc"
+                    }
+                  ]
+                },
+                {
+                  "sha": "d238864a4f73451fa29473f2a21628c470c785bc",
+                  "node_id": "C_kwDOTyCTgtoAKGQyMzg4NjRhNGY3MzQ1MWZhMjk0NzNmMmEyMTYyOGM0NzBjNzg1YmM",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T07:46:15Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T07:46:15Z"
+                    },
+                    "message": "Complete Phase 4 file and project intelligence",
+                    "tree": {
+                      "sha": "f455fa15098579aff6f21f647133cbd2b9181ac8",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/f455fa15098579aff6f21f647133cbd2b9181ac8"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/d238864a4f73451fa29473f2a21628c470c785bc",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/d238864a4f73451fa29473f2a21628c470c785bc",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/d238864a4f73451fa29473f2a21628c470c785bc",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/d238864a4f73451fa29473f2a21628c470c785bc/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/b7b5428019fca190f2ba0a5d87cf221da3aebfc5"
+                    }
+                  ]
+                },
+                {
+                  "sha": "b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                  "node_id": "C_kwDOTyCTgtoAKGI3YjU0MjgwMTlmY2ExOTBmMmJhMGE1ZDg3Y2YyMjFkYTNhZWJmYzU",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T02:06:41Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-09T02:06:41Z"
+                    },
+                    "message": "Complete Phase 3 computer awareness",
+                    "tree": {
+                      "sha": "f38cb75e9eaf1920bfdf4fd641377917ed3177dd",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/f38cb75e9eaf1920bfdf4fd641377917ed3177dd"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "28de54e603f443231a9effe75f6eeffe358b50c9",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/28de54e603f443231a9effe75f6eeffe358b50c9",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/28de54e603f443231a9effe75f6eeffe358b50c9"
+                    }
+                  ]
+                },
+                {
+                  "sha": "28de54e603f443231a9effe75f6eeffe358b50c9",
+                  "node_id": "C_kwDOTyCTgtoAKDI4ZGU1NGU2MDNmNDQzMjMxYTllZmZlNzVmNmVlZmZlMzU4YjUwYzk",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T22:36:09Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T22:36:09Z"
+                    },
+                    "message": "Complete Phase 2 intelligent memory system",
+                    "tree": {
+                      "sha": "1d415909f8970030355f27ee11d962a4db7dd513",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/1d415909f8970030355f27ee11d962a4db7dd513"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/28de54e603f443231a9effe75f6eeffe358b50c9",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/28de54e603f443231a9effe75f6eeffe358b50c9",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/28de54e603f443231a9effe75f6eeffe358b50c9",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/28de54e603f443231a9effe75f6eeffe358b50c9/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9"
+                    }
+                  ]
+                },
+                {
+                  "sha": "a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                  "node_id": "C_kwDOTyCTgtoAKGEyMTI3ZjdiNmQ5ZGNmY2NiZDBlMDA4MGY4M2Y2MWMwMGNlMTU4Yzk",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T20:38:59Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T20:38:59Z"
+                    },
+                    "message": "Implement Memory V1: persistent conversations and long-term memory",
+                    "tree": {
+                      "sha": "5b39c869a3f16a97cd2aa7e74ab2ceca588d8fc7",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/5b39c869a3f16a97cd2aa7e74ab2ceca588d8fc7"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0"
+                    }
+                  ]
+                },
+                {
+                  "sha": "cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                  "node_id": "C_kwDOTyCTgtoAKGNjOWIyOTA1Y2NjNGQ4YmJiZTk0YzYwNWVjNjhkNjZiZDg0YzM0ZjA",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T10:20:53Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T10:20:53Z"
+                    },
+                    "message": "Add persistent conversation memory",
+                    "tree": {
+                      "sha": "7a31812aa35a8953f4a6670b243256a72cb88522",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/7a31812aa35a8953f4a6670b243256a72cb88522"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/575d6fb4de62cc82e87a5372da265a95f5e2f480"
+                    }
+                  ]
+                },
+                {
+                  "sha": "575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                  "node_id": "C_kwDOTyCTgtoAKDU3NWQ2ZmI0ZGU2MmNjODJlODdhNTM3MmRhMjY1YTk1ZjVlMmY0ODA",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T09:40:24Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T09:40:24Z"
+                    },
+                    "message": "Play synthesized speech directly and remove temp audio",
+                    "tree": {
+                      "sha": "57a60d7e2ad9da44a0afb66cc53d133cbcc10c0f",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/57a60d7e2ad9da44a0afb66cc53d133cbcc10c0f"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/9ab05edc28beed43e9e31dcb84771f0d5df222bc"
+                    }
+                  ]
+                },
+                {
+                  "sha": "9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                  "node_id": "C_kwDOTyCTgtoAKDlhYjA1ZWRjMjhiZWVkNDNlOWUzMWRjYjg0NzcxZjBkNWRmMjIyYmM",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T08:46:57Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T08:46:57Z"
+                    },
+                    "message": "Add terminal and voice input modes with AI capabilities",
+                    "tree": {
+                      "sha": "d9136fd9cd1e3f4239008959f4c9289114d0df49",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/d9136fd9cd1e3f4239008959f4c9289114d0df49"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": [
+                    {
+                      "sha": "421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                      "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff"
+                    }
+                  ]
+                },
+                {
+                  "sha": "421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                  "node_id": "C_kwDOTyCTgtoAKDQyMWEyYjY1ZDlmOWUxOTBkMmY4ODdiMzMyY2Q3YjlhNWY1YTU0ZmY",
+                  "commit": {
+                    "author": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T07:56:00Z"
+                    },
+                    "committer": {
+                      "name": "Toshiyuki037",
+                      "email": "patronus037@gmail.com",
+                      "date": "2026-08-08T07:56:00Z"
+                    },
+                    "message": "Initial E.V. assistant voice prototype",
+                    "tree": {
+                      "sha": "d514d9884342a96812154f906b5afd88f262165a",
+                      "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/d514d9884342a96812154f906b5afd88f262165a"
+                    },
+                    "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                    "comment_count": 0,
+                    "verification": {
+                      "verified": false,
+                      "reason": "unsigned",
+                      "signature": null,
+                      "payload": null,
+                      "verified_at": null
+                    }
+                  },
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                  "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff/comments",
+                  "author": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "committer": {
+                    "login": "Toshiyuki037",
+                    "id": 133077400,
+                    "node_id": "U_kgDOB-6ZmA",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                    "gravatar_id": "",
+                    "url": "https://api.github.com/users/Toshiyuki037",
+                    "html_url": "https://github.com/Toshiyuki037",
+                    "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                    "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                    "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                    "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                    "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                    "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                    "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                    "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                    "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                    "type": "User",
+                    "user_view_type": "public",
+                    "site_admin": false
+                  },
+                  "parents": []
+                }
+              ],
+              "error": "",
+              "executed": true,
+              "requires_approval": false,
+              "risk": "low"
+            }
+          ],
+          "requires_approval": false,
+          "approval_reason": ""
+        }
+      },
+      "error": null,
+      "started_at": "2026-08-10T19:50:02-10:00",
+      "completed_at": "2026-08-10T19:50:03-10:00"
+    }
+  ],
+  "status": "completed",
+  "variables": {},
+  "outputs": {
+    "weather_result": {
+      "success": true,
+      "capability": "weather.current",
+      "routing_mode": "explicit_account",
+      "sources_attempted": 1,
+      "sources_succeeded": 1,
+      "evidence": [
+        {
+          "provider": "weather",
+          "account_id": "public",
+          "capability": "weather.current",
+          "success": true,
+          "data": {
+            "location": "Honolulu, Hawaii, United States",
+            "latitude": 21.335676,
+            "longitude": -157.88991,
+            "timezone": "Pacific/Honolulu",
+            "current": {
+              "time": "2026-08-10T19:45",
+              "interval": 900,
+              "temperature_2m": 77.2,
+              "apparent_temperature": 81.6,
+              "relative_humidity_2m": 80,
+              "precipitation": 0.0,
+              "rain": 0.0,
+              "showers": 0.0,
+              "snowfall": 0.0,
+              "weather_code": 0,
+              "cloud_cover": 9,
+              "wind_speed_10m": 8.9,
+              "wind_direction_10m": 52,
+              "wind_gusts_10m": 23.0
+            },
+            "units": {
+              "time": "iso8601",
+              "interval": "seconds",
+              "temperature_2m": "°F",
+              "apparent_temperature": "°F",
+              "relative_humidity_2m": "%",
+              "precipitation": "inch",
+              "rain": "inch",
+              "showers": "inch",
+              "snowfall": "inch",
+              "weather_code": "wmo code",
+              "cloud_cover": "%",
+              "wind_speed_10m": "mp/h",
+              "wind_direction_10m": "°",
+              "wind_gusts_10m": "mp/h"
+            }
+          },
+          "error": "",
+          "executed": true,
+          "requires_approval": false,
+          "risk": "low"
+        }
+      ],
+      "requires_approval": false,
+      "approval_reason": ""
+    },
+    "github_result": {
+      "success": true,
+      "capability": "github.commits",
+      "routing_mode": "explicit_account",
+      "sources_attempted": 1,
+      "sources_succeeded": 1,
+      "evidence": [
+        {
+          "provider": "github",
+          "account_id": "primary",
+          "capability": "github.commits",
+          "success": true,
+          "data": [
+            {
+              "sha": "2854468e8f0d4b66a492400ac0e0f8d196a80352",
+              "node_id": "C_kwDOTyCTgtoAKDI4NTQ0NjhlOGYwZDRiNjZhNDkyNDAwYWMwZTBmOGQxOTZhODAzNTI",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-11T02:29:59Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-11T02:29:59Z"
+                },
+                "message": "Complete Phase 10 unified command and context intelligence",
+                "tree": {
+                  "sha": "ad996a28a210855a4276642f7960bc6620a180c4",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/ad996a28a210855a4276642f7960bc6620a180c4"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/2854468e8f0d4b66a492400ac0e0f8d196a80352",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2854468e8f0d4b66a492400ac0e0f8d196a80352",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/2854468e8f0d4b66a492400ac0e0f8d196a80352",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2854468e8f0d4b66a492400ac0e0f8d196a80352/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/69c950c68122b0c90eb8b7e5fb5048bf7d3df755"
+                }
+              ]
+            },
+            {
+              "sha": "69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+              "node_id": "C_kwDOTyCTgtoAKDY5Yzk1MGM2ODEyMmIwYzkwZWI4YjdlNWZiNTA0OGJmN2QzZGY3NTU",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-11T00:45:45Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-11T00:45:45Z"
+                },
+                "message": "Complete Phase 9 connected service integrations",
+                "tree": {
+                  "sha": "9db75c00ba12f2b7052fe479fa27a43f56f84cfc",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/9db75c00ba12f2b7052fe479fa27a43f56f84cfc"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/69c950c68122b0c90eb8b7e5fb5048bf7d3df755",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/69c950c68122b0c90eb8b7e5fb5048bf7d3df755/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01"
+                }
+              ]
+            },
+            {
+              "sha": "fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+              "node_id": "C_kwDOTyCTgtoAKGZjMmVhOWZhY2VhY2ViNmYyNDg3Yjc4M2U3NGU2YTJiNTk3ZTVlMDE",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-10T04:46:19Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-10T04:46:19Z"
+                },
+                "message": "Complete Phase 8 browser intelligence and web research",
+                "tree": {
+                  "sha": "6c4240b2a6756567bb73f9a866fd52ec53e904f9",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/6c4240b2a6756567bb73f9a866fd52ec53e904f9"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/fc2ea9faceaceb6f2487b783e74e6a2b597e5e01/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "17d004b02332afdc36459802bc15f7b6a777bc0b",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/17d004b02332afdc36459802bc15f7b6a777bc0b",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/17d004b02332afdc36459802bc15f7b6a777bc0b"
+                }
+              ]
+            },
+            {
+              "sha": "17d004b02332afdc36459802bc15f7b6a777bc0b",
+              "node_id": "C_kwDOTyCTgtoAKDE3ZDAwNGIwMjMzMmFmZGMzNjQ1OTgwMmJjMTVmN2I2YTc3N2JjMGI",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T23:44:12Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T23:44:12Z"
+                },
+                "message": "Checkpoint working Phase 7 before Phase 8 research integration",
+                "tree": {
+                  "sha": "a0390f530ab82aca14905362cc5748e4da0572c0",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/a0390f530ab82aca14905362cc5748e4da0572c0"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/17d004b02332afdc36459802bc15f7b6a777bc0b",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/17d004b02332afdc36459802bc15f7b6a777bc0b",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/17d004b02332afdc36459802bc15f7b6a777bc0b",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/17d004b02332afdc36459802bc15f7b6a777bc0b/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "7d5251c2d640e3eb7eea153ac16ced048444abca",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/7d5251c2d640e3eb7eea153ac16ced048444abca",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/7d5251c2d640e3eb7eea153ac16ced048444abca"
+                }
+              ]
+            },
+            {
+              "sha": "7d5251c2d640e3eb7eea153ac16ced048444abca",
+              "node_id": "C_kwDOTyCTgtoAKDdkNTI1MWMyZDY0MGUzZWI3ZWVhMTUzYWMxNmNlZDA0ODQ0NGFiY2E",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T22:25:45Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T22:25:45Z"
+                },
+                "message": "Complete Phase 7 adaptive agent execution",
+                "tree": {
+                  "sha": "3b9876c303456223194a9b8fb49e5bb301f6d926",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/3b9876c303456223194a9b8fb49e5bb301f6d926"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/7d5251c2d640e3eb7eea153ac16ced048444abca",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/7d5251c2d640e3eb7eea153ac16ced048444abca",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/7d5251c2d640e3eb7eea153ac16ced048444abca",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/7d5251c2d640e3eb7eea153ac16ced048444abca/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "88ee2ec030a799a45f5b103a527c53d645746035",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/88ee2ec030a799a45f5b103a527c53d645746035",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/88ee2ec030a799a45f5b103a527c53d645746035"
+                }
+              ]
+            },
+            {
+              "sha": "88ee2ec030a799a45f5b103a527c53d645746035",
+              "node_id": "C_kwDOTyCTgtoAKDg4ZWUyZWMwMzBhNzk5YTQ1ZjViMTAzYTUyN2M1M2Q2NDU3NDYwMzU",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T10:22:57Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T10:22:57Z"
+                },
+                "message": "Improve Phase 6 compound tool approval flow",
+                "tree": {
+                  "sha": "b24c6cb3d6da5762ed7a8a4b613a6f6c927031b3",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/b24c6cb3d6da5762ed7a8a4b613a6f6c927031b3"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/88ee2ec030a799a45f5b103a527c53d645746035",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/88ee2ec030a799a45f5b103a527c53d645746035",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/88ee2ec030a799a45f5b103a527c53d645746035",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/88ee2ec030a799a45f5b103a527c53d645746035/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/2ed288314c662ddf73b44e769bfcfaaa178a56aa"
+                }
+              ]
+            },
+            {
+              "sha": "2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+              "node_id": "C_kwDOTyCTgtoAKDJlZDI4ODMxNGM2NjJkZGY3M2I0NGU3NjliZmNmYWFhMTc4YTU2YWE",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T10:15:12Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T10:15:12Z"
+                },
+                "message": "Complete Phase 6 tool integration and approval workflow",
+                "tree": {
+                  "sha": "44fbbef5ca6ff3c36d79fab4b0949ac299566619",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/44fbbef5ca6ff3c36d79fab4b0949ac299566619"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/2ed288314c662ddf73b44e769bfcfaaa178a56aa",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/2ed288314c662ddf73b44e769bfcfaaa178a56aa/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "1f785877d45b6347469d85bc6e7acb06a5240542",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/1f785877d45b6347469d85bc6e7acb06a5240542",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/1f785877d45b6347469d85bc6e7acb06a5240542"
+                }
+              ]
+            },
+            {
+              "sha": "1f785877d45b6347469d85bc6e7acb06a5240542",
+              "node_id": "C_kwDOTyCTgtoAKDFmNzg1ODc3ZDQ1YjYzNDc0NjlkODViYzZlN2FjYjA2YTUyNDA1NDI",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T10:10:56Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T10:10:56Z"
+                },
+                "message": "Complete Phase 6 controlled computer tools and execution",
+                "tree": {
+                  "sha": "4733e9fba986d68f89af8e8ba0936765bbe14d00",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/4733e9fba986d68f89af8e8ba0936765bbe14d00"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/1f785877d45b6347469d85bc6e7acb06a5240542",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/1f785877d45b6347469d85bc6e7acb06a5240542",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/1f785877d45b6347469d85bc6e7acb06a5240542",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/1f785877d45b6347469d85bc6e7acb06a5240542/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "024c1f27ebb5675d5821867bd740293e2be65436",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/024c1f27ebb5675d5821867bd740293e2be65436",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/024c1f27ebb5675d5821867bd740293e2be65436"
+                }
+              ]
+            },
+            {
+              "sha": "024c1f27ebb5675d5821867bd740293e2be65436",
+              "node_id": "C_kwDOTyCTgtoAKDAyNGMxZjI3ZWJiNTY3NWQ1ODIxODY3YmQ3NDAyOTNlMmJlNjU0MzY",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T09:17:04Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T09:17:04Z"
+                },
+                "message": "Complete Phase 5 vision and screen intelligence",
+                "tree": {
+                  "sha": "b19dcdaeff9c7d2d17c9fccb8134c0342dae23ee",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/b19dcdaeff9c7d2d17c9fccb8134c0342dae23ee"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/024c1f27ebb5675d5821867bd740293e2be65436",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/024c1f27ebb5675d5821867bd740293e2be65436",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/024c1f27ebb5675d5821867bd740293e2be65436",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/024c1f27ebb5675d5821867bd740293e2be65436/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "d238864a4f73451fa29473f2a21628c470c785bc",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/d238864a4f73451fa29473f2a21628c470c785bc",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/d238864a4f73451fa29473f2a21628c470c785bc"
+                }
+              ]
+            },
+            {
+              "sha": "d238864a4f73451fa29473f2a21628c470c785bc",
+              "node_id": "C_kwDOTyCTgtoAKGQyMzg4NjRhNGY3MzQ1MWZhMjk0NzNmMmEyMTYyOGM0NzBjNzg1YmM",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T07:46:15Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T07:46:15Z"
+                },
+                "message": "Complete Phase 4 file and project intelligence",
+                "tree": {
+                  "sha": "f455fa15098579aff6f21f647133cbd2b9181ac8",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/f455fa15098579aff6f21f647133cbd2b9181ac8"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/d238864a4f73451fa29473f2a21628c470c785bc",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/d238864a4f73451fa29473f2a21628c470c785bc",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/d238864a4f73451fa29473f2a21628c470c785bc",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/d238864a4f73451fa29473f2a21628c470c785bc/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/b7b5428019fca190f2ba0a5d87cf221da3aebfc5"
+                }
+              ]
+            },
+            {
+              "sha": "b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+              "node_id": "C_kwDOTyCTgtoAKGI3YjU0MjgwMTlmY2ExOTBmMmJhMGE1ZDg3Y2YyMjFkYTNhZWJmYzU",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T02:06:41Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-09T02:06:41Z"
+                },
+                "message": "Complete Phase 3 computer awareness",
+                "tree": {
+                  "sha": "f38cb75e9eaf1920bfdf4fd641377917ed3177dd",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/f38cb75e9eaf1920bfdf4fd641377917ed3177dd"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/b7b5428019fca190f2ba0a5d87cf221da3aebfc5",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/b7b5428019fca190f2ba0a5d87cf221da3aebfc5/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "28de54e603f443231a9effe75f6eeffe358b50c9",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/28de54e603f443231a9effe75f6eeffe358b50c9",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/28de54e603f443231a9effe75f6eeffe358b50c9"
+                }
+              ]
+            },
+            {
+              "sha": "28de54e603f443231a9effe75f6eeffe358b50c9",
+              "node_id": "C_kwDOTyCTgtoAKDI4ZGU1NGU2MDNmNDQzMjMxYTllZmZlNzVmNmVlZmZlMzU4YjUwYzk",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T22:36:09Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T22:36:09Z"
+                },
+                "message": "Complete Phase 2 intelligent memory system",
+                "tree": {
+                  "sha": "1d415909f8970030355f27ee11d962a4db7dd513",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/1d415909f8970030355f27ee11d962a4db7dd513"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/28de54e603f443231a9effe75f6eeffe358b50c9",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/28de54e603f443231a9effe75f6eeffe358b50c9",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/28de54e603f443231a9effe75f6eeffe358b50c9",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/28de54e603f443231a9effe75f6eeffe358b50c9/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9"
+                }
+              ]
+            },
+            {
+              "sha": "a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+              "node_id": "C_kwDOTyCTgtoAKGEyMTI3ZjdiNmQ5ZGNmY2NiZDBlMDA4MGY4M2Y2MWMwMGNlMTU4Yzk",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T20:38:59Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T20:38:59Z"
+                },
+                "message": "Implement Memory V1: persistent conversations and long-term memory",
+                "tree": {
+                  "sha": "5b39c869a3f16a97cd2aa7e74ab2ceca588d8fc7",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/5b39c869a3f16a97cd2aa7e74ab2ceca588d8fc7"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/a2127f7b6d9dcfccbd0e0080f83f61c00ce158c9/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0"
+                }
+              ]
+            },
+            {
+              "sha": "cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+              "node_id": "C_kwDOTyCTgtoAKGNjOWIyOTA1Y2NjNGQ4YmJiZTk0YzYwNWVjNjhkNjZiZDg0YzM0ZjA",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T10:20:53Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T10:20:53Z"
+                },
+                "message": "Add persistent conversation memory",
+                "tree": {
+                  "sha": "7a31812aa35a8953f4a6670b243256a72cb88522",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/7a31812aa35a8953f4a6670b243256a72cb88522"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/cc9b2905ccc4d8bbbe94c605ec68d66bd84c34f0/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/575d6fb4de62cc82e87a5372da265a95f5e2f480"
+                }
+              ]
+            },
+            {
+              "sha": "575d6fb4de62cc82e87a5372da265a95f5e2f480",
+              "node_id": "C_kwDOTyCTgtoAKDU3NWQ2ZmI0ZGU2MmNjODJlODdhNTM3MmRhMjY1YTk1ZjVlMmY0ODA",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T09:40:24Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T09:40:24Z"
+                },
+                "message": "Play synthesized speech directly and remove temp audio",
+                "tree": {
+                  "sha": "57a60d7e2ad9da44a0afb66cc53d133cbcc10c0f",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/57a60d7e2ad9da44a0afb66cc53d133cbcc10c0f"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/575d6fb4de62cc82e87a5372da265a95f5e2f480",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/575d6fb4de62cc82e87a5372da265a95f5e2f480/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/9ab05edc28beed43e9e31dcb84771f0d5df222bc"
+                }
+              ]
+            },
+            {
+              "sha": "9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+              "node_id": "C_kwDOTyCTgtoAKDlhYjA1ZWRjMjhiZWVkNDNlOWUzMWRjYjg0NzcxZjBkNWRmMjIyYmM",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T08:46:57Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T08:46:57Z"
+                },
+                "message": "Add terminal and voice input modes with AI capabilities",
+                "tree": {
+                  "sha": "d9136fd9cd1e3f4239008959f4c9289114d0df49",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/d9136fd9cd1e3f4239008959f4c9289114d0df49"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/9ab05edc28beed43e9e31dcb84771f0d5df222bc",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/9ab05edc28beed43e9e31dcb84771f0d5df222bc/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": [
+                {
+                  "sha": "421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                  "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff"
+                }
+              ]
+            },
+            {
+              "sha": "421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+              "node_id": "C_kwDOTyCTgtoAKDQyMWEyYjY1ZDlmOWUxOTBkMmY4ODdiMzMyY2Q3YjlhNWY1YTU0ZmY",
+              "commit": {
+                "author": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T07:56:00Z"
+                },
+                "committer": {
+                  "name": "Toshiyuki037",
+                  "email": "patronus037@gmail.com",
+                  "date": "2026-08-08T07:56:00Z"
+                },
+                "message": "Initial E.V. assistant voice prototype",
+                "tree": {
+                  "sha": "d514d9884342a96812154f906b5afd88f262165a",
+                  "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/trees/d514d9884342a96812154f906b5afd88f262165a"
+                },
+                "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/git/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+                "comment_count": 0,
+                "verification": {
+                  "verified": false,
+                  "reason": "unsigned",
+                  "signature": null,
+                  "payload": null,
+                  "verified_at": null
+                }
+              },
+              "url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+              "html_url": "https://github.com/Toshiyuki037/E.V.-Assistant/commit/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff",
+              "comments_url": "https://api.github.com/repos/Toshiyuki037/E.V.-Assistant/commits/421a2b65d9f9e190d2f887b332cd7b9a5f5a54ff/comments",
+              "author": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "committer": {
+                "login": "Toshiyuki037",
+                "id": 133077400,
+                "node_id": "U_kgDOB-6ZmA",
+                "avatar_url": "https://avatars.githubusercontent.com/u/133077400?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/Toshiyuki037",
+                "html_url": "https://github.com/Toshiyuki037",
+                "followers_url": "https://api.github.com/users/Toshiyuki037/followers",
+                "following_url": "https://api.github.com/users/Toshiyuki037/following{/other_user}",
+                "gists_url": "https://api.github.com/users/Toshiyuki037/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/Toshiyuki037/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/Toshiyuki037/subscriptions",
+                "organizations_url": "https://api.github.com/users/Toshiyuki037/orgs",
+                "repos_url": "https://api.github.com/users/Toshiyuki037/repos",
+                "events_url": "https://api.github.com/users/Toshiyuki037/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/Toshiyuki037/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "parents": []
+            }
+          ],
+          "error": "",
+          "executed": true,
+          "requires_approval": false,
+          "risk": "low"
+        }
+      ],
+      "requires_approval": false,
+      "approval_reason": ""
+    }
+  },
+  "pending_action": null,
+  "failure_reason": "",
+  "final_summary": "Workflow completed successfully.",
+  "created_at": "2026-08-10T19:49:57-10:00",
+  "started_at": "2026-08-10T19:49:57-10:00",
+  "updated_at": "2026-08-10T19:50:03-10:00",
+  "completed_at": "2026-08-10T19:50:03-10:00"
+}

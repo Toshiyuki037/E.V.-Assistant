@@ -1,0 +1,41 @@
+{
+  "workflow_id": "phase11-variable-test",
+  "name": "Variable Test",
+  "goal": "Use workflow variable as weather location",
+  "description": "",
+  "steps": [
+    {
+      "step_id": "weather",
+      "step_number": 1,
+      "description": "Read configured weather",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "weather.current",
+        "provider": "weather",
+        "account_id": "public",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "location": "{{ variables.location }}"
+        }
+      },
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "weather",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow"
+      },
+      "status": "pending",
+      "attempts": 0,
+      "result": null,
+      "error": null,
+      "started_at": "",
+      "completed_at": ""
+    }
+  ],
+  "enabled": true,
+  "created_at": "2026-08-10T19:50:07-10:00",
+  "updated_at": "2026-08-10T19:50:07-10:00"
+}

@@ -1,0 +1,5 @@
+{"time": "2026-08-10T20:06:06-10:00", "run_id": "phase11-request-user-test", "workflow_id": "phase11-test", "step_id": "broken", "event_type": "user_action_required", "message": "Simulated connection failure", "data": {"source": "failure_policy", "failed_step": "broken"}}
+{"time": "2026-08-10T20:06:31-10:00", "run_id": "phase11-request-user-test", "workflow_id": "phase11-test", "step_id": "broken", "event_type": "step_skipped", "message": "Step skipped by user during recovery.", "data": {}}
+{"time": "2026-08-10T20:06:31-10:00", "run_id": "phase11-request-user-test", "workflow_id": "phase11-test", "step_id": "broken", "event_type": "user_skip", "message": "", "data": {}}
+{"time": "2026-08-10T20:06:31-10:00", "run_id": "phase11-request-user-test", "workflow_id": "phase11-test", "step_id": "", "event_type": "run_started", "message": "Verify request-user recovery", "data": {}}
+{"time": "2026-08-10T20:06:31-10:00", "run_id": "phase11-request-user-test", "workflow_id": "phase11-test", "step_id": "", "event_type": "run_completed", "message": "Workflow completed successfully.", "data": {}}

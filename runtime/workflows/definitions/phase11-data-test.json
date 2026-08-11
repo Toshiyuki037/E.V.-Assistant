@@ -1,0 +1,76 @@
+{
+  "workflow_id": "phase11-data-test",
+  "name": "Phase 11 Data Test",
+  "goal": "Test workflow outputs and conditions",
+  "description": "",
+  "steps": [
+    {
+      "step_id": "weather",
+      "step_number": 1,
+      "description": "Read Honolulu weather",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "weather.current",
+        "provider": "weather",
+        "account_id": "public",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "location": "Honolulu"
+        }
+      },
+      "dependencies": [],
+      "condition": null,
+      "input_bindings": {},
+      "output_key": "weather_result",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow"
+      },
+      "status": "pending",
+      "attempts": 0,
+      "result": null,
+      "error": null,
+      "started_at": "",
+      "completed_at": ""
+    },
+    {
+      "step_id": "github",
+      "step_number": 2,
+      "description": "Read GitHub commits only if weather result exists",
+      "tool_name": "integration_execute",
+      "arguments": {
+        "capability": "github.commits",
+        "provider": "github",
+        "account_id": "primary",
+        "routing_mode": "explicit_account",
+        "arguments": {
+          "repo": "E.V.-Assistant"
+        }
+      },
+      "dependencies": [
+        "weather"
+      ],
+      "condition": {
+        "value": "{{ outputs.weather_result }}",
+        "operator": "exists"
+      },
+      "input_bindings": {},
+      "output_key": "github_result",
+      "retry_policy": {
+        "max_attempts": 1,
+        "retry_delay_seconds": 0,
+        "failure_behavior": "stop_workflow"
+      },
+      "status": "pending",
+      "attempts": 0,
+      "result": null,
+      "error": null,
+      "started_at": "",
+      "completed_at": ""
+    }
+  ],
+  "enabled": true,
+  "created_at": "2026-08-10T19:49:29-10:00",
+  "updated_at": "2026-08-10T19:49:29-10:00"
+}
