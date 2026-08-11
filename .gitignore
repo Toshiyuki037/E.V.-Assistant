@@ -10,7 +10,9 @@ runtime/vision/
 runtime/tools/
 runtime/agent/
 runtime/integrations/
-tests/
+runtime/coding/
+runtime/workspace/repositories/
+# tests/
 .env
 .cache/
 .idea/
