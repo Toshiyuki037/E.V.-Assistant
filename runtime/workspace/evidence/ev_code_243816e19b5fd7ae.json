@@ -1,0 +1,22 @@
+{
+  "evidence_id": "ev:code:243816e19b5fd7ae",
+  "source_type": "code",
+  "source_name": "local_workspace",
+  "source_id": "assistant/workspace/ingestion.py",
+  "title": "ingestion.py",
+  "content": "\"\"\"\nE.V.I.E. - Workspace Source Ingestion\n\nPhase 12B\n\nPurpose:\nRun one or more source adapters and persist normalized evidence into the\nPhase 12 workspace store.\n\"\"\"\n\nfrom __future__ import annotations\n\nfrom .adapters.base import AdapterContext\nfrom .adapters.registry import (\n    get_adapter,\n    load_default_adapters,\n)\nfrom .evidence import save_evidence\n\n\ndef ingest_from_adapter(\n    adapter_name: str,\n    query: str,\n    *,\n    project: str = \"\",\n    repository: str = \"\",\n    workspace_path: str = \"\",\n    arguments: dict | None = None,\n):\n    load_default_adapters()\n\n    adapter = get_adapter(\n        adapter_name\n    )\n\n    if adapter is None:\n        raise RuntimeError(\n            (\n                \"Workspace adapter \"\n                f\"does not exist: {adapter_name}\"\n            )\n        )\n\n    context = AdapterContext(\n        project=project,\n        repository=repository,\n        workspace_path=workspace_path,\n        arguments=arguments or {},\n    )\n\n    evidence = adapter.search(\n        query,\n        context,\n    )\n\n    for item in evidence:\n        save_evidence(\n            item\n        )\n\n    return evidence\n\n\ndef ingest_many(\n    adapter_names: list[str],\n    query: str,\n    **kwargs,\n):\n    results = []\n\n    for adapter_name in adapter_names:\n        results.extend(\n            ingest_from_adapter(\n                adapter_name,\n                query,\n                **kwargs,\n            )\n        )\n\n    return results\n",
+  "uri": "",
+  "project": "phase12-live",
+  "repository": "E.V.-Assistant",
+  "path": "assistant/workspace/ingestion.py",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 10.0,
+  "confidence": 1.0,
+  "metadata": {
+    "absolute_path": "C:\\Users\\patro\\OneDrive\\Desktop\\eve-assistant\\assistant\\workspace\\ingestion.py",
+    "extension": ".py",
+    "token_overlap": 5
+  }
+}

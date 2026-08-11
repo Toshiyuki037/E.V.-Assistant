@@ -1,0 +1,44 @@
+{
+  "project_id": "phase12-live",
+  "name": "E.V.I.E. Research Test",
+  "goal": "Understand Phase 12 workspace intelligence.",
+  "description": "",
+  "status": "active",
+  "repository": "E.V.-Assistant",
+  "workspace_path": ".",
+  "paper_ids": [],
+  "hypothesis_ids": [
+    "hyp_0eb6e825f9b9"
+  ],
+  "experiment_ids": [],
+  "result_ids": [],
+  "decision_ids": [],
+  "timeline_event_ids": [
+    "event_aa7504c8ea14"
+  ],
+  "evidence_ids": [
+    "ev:code:9bd41a68627ad474",
+    "ev:code:243816e19b5fd7ae",
+    "ev:code:5024323d910412e1",
+    "ev:code:f5424fabc20c5223",
+    "ev:code:d9d57d6c56f93fad",
+    "ev:code:73a69c2f43c0e4b6",
+    "ev:code:7c8e5c73a5f69eb8",
+    "ev:code:366285c3d52149ee",
+    "ev:code:09a71c0aabe64db1",
+    "ev:code:04831fa452b16339",
+    "ev:code:b0f72593652f6278",
+    "ev:notion:2b3218047766e71f",
+    "ev:knowledge_index:96cd800a60929a16",
+    "ev:knowledge_index:c5d0b9e77ba349f8",
+    "ev:github:55bdda1254048701",
+    "ev:notion:d48ce67d43ff0b2f",
+    "ev:repository:39698aaa01643c9d",
+    "ev:repository:df3dbd01ca9d66d4",
+    "ev:memory:91c14401a956335f",
+    "ev:memory:982acbbac0dff0f8"
+  ],
+  "created_at": "2026-08-11T08:55:06.123317+00:00",
+  "updated_at": "2026-08-11T08:55:48.215748+00:00",
+  "metadata": {}
+}

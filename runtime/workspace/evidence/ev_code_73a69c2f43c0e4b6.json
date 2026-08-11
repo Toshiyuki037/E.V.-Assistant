@@ -1,0 +1,22 @@
+{
+  "evidence_id": "ev:code:73a69c2f43c0e4b6",
+  "source_type": "code",
+  "source_name": "local_workspace",
+  "source_id": "assistant/research/models.py",
+  "title": "models.py",
+  "content": "\"\"\"\nE.V.I.E. - Research Intelligence Models\n\nPhase 12F:\nStructured research projects, papers, hypotheses, experiments,\nresults, decisions, timelines, and workspace evidence links.\n\"\"\"\n\nfrom dataclasses import dataclass, field, asdict\nfrom typing import Any\n\n\n@dataclass\nclass ResearchPaper:\n    paper_id: str\n    title: str\n    authors: list[str] = field(default_factory=list)\n    year: int | None = None\n    doi: str = \"\"\n    url: str = \"\"\n    local_path: str = \"\"\n    citation: str = \"\"\n    notes: str = \"\"\n    tags: list[str] = field(default_factory=list)\n    evidence_ids: list[str] = field(default_factory=list)\n    metadata: dict[str, Any] = field(default_factory=dict)\n\n\n@dataclass\nclass ResearchHypothesis:\n    hypothesis_id: str\n    statement: str\n    status: str = \"open\"\n    rationale: str = \"\"\n    supporting_evidence_ids: list[str] = field(default_factory=list)\n    contradicting_evidence_ids: list[str] = field(default_factory=list)\n    experiment_ids: list[str] = field(default_factory=list)\n    metadata: dict[str, Any] = field(default_factory=dict)\n\n\n@dataclass\nclass ExperimentResult:\n    result_id: str\n    experiment_id: str\n    summary: str\n    outcome: str = \"unknown\"\n    metrics: dict[str, Any] = field(default_factory=dict)\n    artifact_paths: list[str] = field(default_factory=list)\n    evidence_ids: list[str] = field(default_factory=list)\n    created_at: str = \"\"\n\n\n@dataclass\nclass ResearchExperiment:\n    experiment_id: str\n    title: str\n    objective: str = \"\"\n    hypothesis_ids: list[str] = field(default_factory=list)\n    independent_variables: list[str] = field(default_factory=list)\n    dependent_variables: list[str] = field(default_factory=list)\n    controls: list[str] = field(default_factory=list)\n    procedure: str = \"\"\n    code_paths: list[str] = field(default_factory=list)\n    dataset_paths: list[str] = field(default_factory=list)\n    status: str = \"planned\"\n    result_ids: list[str] = field(default_factory=list)\n    evidence_ids: list[str] = field(default_factory=list)\n    metadata: dict[str, Any] = field(default_factory=dict)\n\n\n@dataclass\nclass ResearchDecision:\n    decision_id: str\n    decision: str\n    rationale: str = \"\"\n    alternatives: list[str] = field(default_factory=list)\n    evidence_ids: list[str] = field(default_factory=list)\n    created_at: str = \"\"\n\n\n@dataclass\nclass ResearchTimelineEvent:\n    event_id: str\n    title: str\n    description: str = \"\"\n    event_at: str = \"\"\n    related_ids: list[str] = field(default_factory=list)\n    evidence_ids: list[str] = field(default_factory=list)\n\n\n@dataclass\nclass ResearchProject:\n    project_id: str\n    name: str\n    goal: str\n    description: str = \"\"\n    status: str = \"active\"\n    repository: str = \"\"\n    workspace_path: str = \"\"\n    paper_ids: list[str] = field(default_factory=list)\n    hypothesis_ids: list[str] = field(default_factory=list)\n    experiment_ids: list[str] = field(default_factory=list)\n    result_ids: list[str] = field(default_factory=list)\n    decision_ids: list[str] = field(default_factory=list)\n    timeline_event_ids: list[str] = field(default_factory=list)\n    evidence_ids: list[str] = field(default_factory=list)\n    created_at: str = \"\"\n    updated_at: str = \"\"\n    metadata: dict[str, Any] = field(default_factory=dict)\n\n\ndef to_dict(value):\n    return asdict(value)\n",
+  "uri": "",
+  "project": "phase12-live",
+  "repository": "E.V.-Assistant",
+  "path": "assistant/research/models.py",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 9.0,
+  "confidence": 1.0,
+  "metadata": {
+    "absolute_path": "C:\\Users\\patro\\OneDrive\\Desktop\\eve-assistant\\assistant\\research\\models.py",
+    "extension": ".py",
+    "token_overlap": 5
+  }
+}

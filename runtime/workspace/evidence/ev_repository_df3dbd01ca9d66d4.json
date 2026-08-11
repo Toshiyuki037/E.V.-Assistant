@@ -1,0 +1,23 @@
+{
+  "evidence_id": "ev:repository:df3dbd01ca9d66d4",
+  "source_type": "repository",
+  "source_name": "repository_graph",
+  "source_id": "repo-node:test:5d8bc1d030b76ffd",
+  "title": "tests/test_phase10_regression.py",
+  "content": "Repository node type: test\nName: test_phase10_regression.py\nPath: tests/test_phase10_regression.py\nModule: tests.test_phase10_regression\nPackage: tests",
+  "uri": "",
+  "project": "",
+  "repository": "E.V.-Assistant",
+  "path": "tests/test_phase10_regression.py",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 3.0,
+  "confidence": 1.0,
+  "metadata": {
+    "node_id": "repo-node:test:5d8bc1d030b76ffd",
+    "node_type": "test",
+    "module": "tests.test_phase10_regression",
+    "package": "tests"
+  }
+}

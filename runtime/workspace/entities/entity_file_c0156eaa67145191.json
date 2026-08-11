@@ -1,0 +1,12 @@
+{
+  "entity_id": "entity:file:c0156eaa67145191",
+  "entity_type": "file",
+  "name": "engine.py",
+  "canonical_name": "engine.py",
+  "project": "",
+  "repository": "E.V.-Assistant",
+  "path": "assistant/workflows/engine.py",
+  "aliases": [],
+  "evidence_ids": [],
+  "metadata": {}
+}

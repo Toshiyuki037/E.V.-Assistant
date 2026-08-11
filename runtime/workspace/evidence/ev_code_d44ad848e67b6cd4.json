@@ -1,0 +1,21 @@
+{
+  "evidence_id": "ev:code:d44ad848e67b6cd4",
+  "source_type": "code",
+  "source_name": "local_workspace",
+  "source_id": "assistant/workflows/__init__.py",
+  "title": "__init__.py",
+  "content": "\"\"\"\nE.V.I.E. - Workflow Package\n\nPhase 11\n\nImportant:\nThis package intentionally performs no eager imports.\n\nBackground services such as the scheduler must be able to start\nwithout loading:\n    - E.V.I.E. reasoning\n    - semantic memory\n    - sentence transformers\n    - speech systems\n    - browser systems\n\nImport workflow functionality directly from the required module.\n\nExamples:\n\n    from assistant.workflows.protocols import run_protocol\n\n    from assistant.workflows.controller import run_workflow\n\n    from assistant.workflows.schedules import create_schedule\n\"\"\"",
+  "uri": "",
+  "project": "",
+  "repository": "E.V.-Assistant",
+  "path": "assistant/workflows/__init__.py",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 1.0,
+  "confidence": 1.0,
+  "metadata": {
+    "absolute_path": "C:\\Users\\patro\\OneDrive\\Desktop\\eve-assistant\\assistant\\workflows\\__init__.py",
+    "extension": ".py"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "relationship_id": "rel:84f06afef039af7e",
+  "source_entity_id": "entity:repository:0e6312d3a6e80a1c",
+  "target_entity_id": "entity:file:c0156eaa67145191",
+  "relationship_type": "contains",
+  "confidence": 1.0,
+  "evidence_ids": [
+    "ev:code:0b9002c404c2057e"
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,86 @@
+{
+  "evidence_id": "ev:notion:2b3218047766e71f",
+  "source_type": "notion",
+  "source_name": "notion",
+  "source_id": "notion.search:Phase 12 workspace repository evidence",
+  "title": "Notion search: Phase 12 workspace repository evidence",
+  "content": "{\n  \"object\": \"list\",\n  \"results\": [\n    {\n      \"object\": \"page\",\n      \"id\": \"3b985464-87d3-808a-af96-e62e24b6fd1a\",\n      \"created_time\": \"2026-08-11T05:28:00.000Z\",\n      \"last_edited_time\": \"2026-08-11T05:28:00.000Z\",\n      \"created_by\": {\n        \"object\": \"user\",\n        \"id\": \"858c90a3-5500-4a7e-b5a6-8e5c54e1a8c8\"\n      },\n      \"last_edited_by\": {\n        \"object\": \"user\",\n        \"id\": \"858c90a3-5500-4a7e-b5a6-8e5c54e1a8c8\"\n      },\n      \"cover\": null,\n      \"icon\": {\n        \"type\": \"emoji\",\n        \"emoji\": \"🛣️\"\n      },\n      \"parent\": {\n        \"type\": \"page_id\",\n        \"page_id\": \"3b385464-87d3-806c-8a04-ca88f9fb1548\"\n      },\n      \"in_trash\": false,\n      \"is_archived\": false,\n      \"is_locked\": false,\n      \"properties\": {\n        \"title\": {\n          \"id\": \"title\",\n          \"type\": \"title\",\n          \"title\": [\n            {\n              \"type\": \"text\",\n              \"text\": {\n                \"content\": \"Phase Workflows\",\n                \"link\": null\n              },\n              \"annotations\": {\n                \"bold\": false,\n                \"italic\": false,\n                \"strikethrough\": false,\n                \"underline\": false,\n                \"code\": false,\n                \"color\": \"default\"\n              },\n              \"plain_text\": \"Phase Workflows\",\n              \"href\": null\n            }\n          ]\n        }\n      },\n      \"url\": \"https://app.notion.com/p/Phase-Workflows-3b98546487d3808aaf96e62e24b6fd1a\",\n      \"public_url\": null\n    }\n  ],\n  \"next_cursor\": null,\n  \"has_more\": false,\n  \"type\": \"page_or_data_source\",\n  \"page_or_data_source\": {},\n  \"request_id\": \"cc1a3bae-75b2-4567-ba32-8ccc16ad5ab6\"\n}",
+  "uri": "",
+  "project": "phase12-live",
+  "repository": "E.V.-Assistant",
+  "path": "",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 6.0,
+  "confidence": 1.0,
+  "metadata": {
+    "provider": "notion",
+    "account_id": "primary",
+    "search_query": "Phase 12 workspace repository evidence",
+    "raw": {
+      "object": "list",
+      "results": [
+        {
+          "object": "page",
+          "id": "3b985464-87d3-808a-af96-e62e24b6fd1a",
+          "created_time": "2026-08-11T05:28:00.000Z",
+          "last_edited_time": "2026-08-11T05:28:00.000Z",
+          "created_by": {
+            "object": "user",
+            "id": "858c90a3-5500-4a7e-b5a6-8e5c54e1a8c8"
+          },
+          "last_edited_by": {
+            "object": "user",
+            "id": "858c90a3-5500-4a7e-b5a6-8e5c54e1a8c8"
+          },
+          "cover": null,
+          "icon": {
+            "type": "emoji",
+            "emoji": "🛣️"
+          },
+          "parent": {
+            "type": "page_id",
+            "page_id": "3b385464-87d3-806c-8a04-ca88f9fb1548"
+          },
+          "in_trash": false,
+          "is_archived": false,
+          "is_locked": false,
+          "properties": {
+            "title": {
+              "id": "title",
+              "type": "title",
+              "title": [
+                {
+                  "type": "text",
+                  "text": {
+                    "content": "Phase Workflows",
+                    "link": null
+                  },
+                  "annotations": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "underline": false,
+                    "code": false,
+                    "color": "default"
+                  },
+                  "plain_text": "Phase Workflows",
+                  "href": null
+                }
+              ]
+            }
+          },
+          "url": "https://app.notion.com/p/Phase-Workflows-3b98546487d3808aaf96e62e24b6fd1a",
+          "public_url": null
+        }
+      ],
+      "next_cursor": null,
+      "has_more": false,
+      "type": "page_or_data_source",
+      "page_or_data_source": {},
+      "request_id": "cc1a3bae-75b2-4567-ba32-8ccc16ad5ab6"
+    },
+    "evidence_kind": "search_metadata"
+  }
+}

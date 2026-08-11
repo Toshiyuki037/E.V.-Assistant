@@ -1,0 +1,21 @@
+{
+  "evidence_id": "ev:code:a6c651d626201e24",
+  "source_type": "code",
+  "source_name": "local_workspace",
+  "source_id": "tests/test_phase11g_workflow_commands.py",
+  "title": "test_phase11g_workflow_commands.py",
+  "content": "\"\"\"\nPhase 11G deterministic natural-language workflow tests.\n\"\"\"\n\nfrom assistant.workflows.planner import (\n    plan_workflow_command,\n)\n\n\ndef test_run_protocol_command():\n    plan = plan_workflow_command(\n        \"Run my morning protocol.\"\n    )\n\n    assert plan.handled\n    assert plan.action == \"run_protocol\"\n    assert plan.protocol_id == \"morning\"\n\n\ndef test_list_protocols_command():\n    plan = plan_workflow_command(\n        \"What protocols do I have?\"\n    )\n\n    assert plan.handled\n    assert plan.action == \"list_protocols\"\n\n\ndef test_disable_protocol_command():\n    plan = plan_workflow_command(\n        \"Disable my research protocol.\"\n    )\n\n    assert plan.handled\n    assert plan.action == \"disable_protocol\"\n    assert plan.protocol_id == \"research\"\n\n\ndef test_weekday_schedule_command():\n    plan = plan_workflow_command(\n        (\n            \"Schedule my morning protocol \"\n            \"every weekday at 7:30 AM.\"\n        ),\n        default_timezone=(\n            \"America/Los_Angeles\"\n        ),\n    )\n\n    assert plan.handled\n    assert plan.action == \"create_schedule\"\n    assert plan.protocol_id == \"morning\"\n    assert plan.arguments[\"schedule_type\"] == \"weekly\"\n    assert plan.arguments[\"hour\"] == 7\n    assert plan.arguments[\"minute\"] == 30\n    assert len(\n        plan.arguments[\n            \"weekdays\"\n        ]\n    ) == 5\n\n\ndef test_daily_schedule_command():\n    plan = plan_workflow_command(\n        (\n            \"Schedule my research protocol \"\n            \"every day at 6 PM.\"\n        )\n    )\n\n    assert plan.handled\n    assert plan.action == \"create_schedule\"\n    assert plan.arguments[\"schedule_type\"] == \"daily\"\n    assert plan.arguments[\"hour\"] == 18\n    assert plan.arguments[\"minute\"] == 0\n\n\ndef test_list_running_workflows():\n    plan = plan_workflow_command(\n        \"What workflows are running?\"\n    )\n\n    assert plan.handled\n    assert plan.action == \"list_active_runs\"\n\n\ndef test_retry_workflow_step():\n    plan = plan_workflow_command(\n        \"Retry that workflow step.\"\n    )\n\n    assert plan.handled\n    assert plan.action == \"recover_active_run\"\n    assert (\n        plan.arguments[\n            \"recovery_action\"\n        ]\n        == \"retry\"\n    )\n\n\ndef test_unrelated_message_falls_through():\n    plan = plan_workflow_command(\n        \"Explain FPGA timing closure.\"\n    )\n\n    assert not plan.handled\n",
+  "uri": "",
+  "project": "",
+  "repository": "E.V.-Assistant",
+  "path": "tests/test_phase11g_workflow_commands.py",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 1.0,
+  "confidence": 1.0,
+  "metadata": {
+    "absolute_path": "C:\\Users\\patro\\OneDrive\\Desktop\\eve-assistant\\tests\\test_phase11g_workflow_commands.py",
+    "extension": ".py"
+  }
+}

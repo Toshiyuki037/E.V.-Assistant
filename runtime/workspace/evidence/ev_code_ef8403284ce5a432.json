@@ -1,0 +1,21 @@
+{
+  "evidence_id": "ev:code:ef8403284ce5a432",
+  "source_type": "code",
+  "source_name": "local_workspace",
+  "source_id": "assistant/workflows/recovery.py",
+  "title": "recovery.py",
+  "content": "\"\"\"\nE.V.I.E. - Workflow Recovery\n\nPhase 11C\n\nPurpose:\nRepair interrupted workflow runs after process or machine restart.\n\nSafety rule:\nA stale step marked \"running\" is never assumed successful.\nIt is reset to pending so the workflow resumes from the last verified\ncheckpoint.\n\nApproval-paused runs remain approval-paused.\nCompleted/failed/cancelled runs are not modified.\n\"\"\"\n\nfrom __future__ import annotations\n\nfrom .audit import (\n    record_audit_event,\n)\n\nfrom .models import (\n    RUN_AWAITING_APPROVAL,\n    RUN_CANCELLED,\n    RUN_COMPLETED,\n    RUN_FAILED,\n    RUN_PAUSED,\n    RUN_RUNNING,\n    STEP_AWAITING_APPROVAL,\n    STEP_PENDING,\n    STEP_RUNNING,\n)\n\nfrom .state import (\n    list_active_runs,\n    save_run,\n)\n\n\nTERMINAL_RUN_STATUSES = {\n    RUN_COMPLETED,\n    RUN_FAILED,\n    RUN_CANCELLED,\n}\n\n\ndef repair_interrupted_run(\n    run,\n):\n    if (\n        run.status\n        in TERMINAL_RUN_STATUSES\n    ):\n\n        return run\n\n\n    changed = False\n\n\n    for step in run.steps:\n\n        if (\n            step.status\n            == STEP_RUNNING\n        ):\n\n            step.status = (\n                STEP_PENDING\n            )\n\n            step.error = (\n                None\n            )\n\n            changed = True\n\n\n            record_audit_event(\n                run.run_id,\n                \"step_recovered\",\n\n                workflow_id=\n                    run.workflow_id,\n\n                step_id=\n                    step.step_id,\n\n                message=(\n                    \"Interrupted running step reset \"\n                    \"to pending after restart.\"\n                ),\n            )\n\n\n    if run.pending_action:\n\n        run.status = (\n            RUN_AWAITING_APPROVAL\n        )\n\n    elif (\n        run.status\n        in {\n            RUN_RUNNING,\n            RUN_PAUSED,\n        }\n    ):\n\n        run.status = (\n            RUN_PAUSED\n        )\n\n\n    if changed:\n\n        save_run(\n            run\n        )\n\n\n        record_audit_event(\n            run.run_id,\n            \"run_recovered\",\n\n            workflow_id=\n                run.workflow_id,\n\n            message=(\n                \"Workflow run repaired after restart.\"\n            ),\n        )\n\n\n    return run\n\n\ndef recover_active_runs():\n    recovered = []\n\n\n    for run in (\n        list_active_runs()\n    ):\n\n        recovered.append(\n            repair_interrupted_run(\n                run\n            )\n        )\n\n\n    return recovered\n",
+  "uri": "",
+  "project": "",
+  "repository": "E.V.-Assistant",
+  "path": "assistant/workflows/recovery.py",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 1.0,
+  "confidence": 1.0,
+  "metadata": {
+    "absolute_path": "C:\\Users\\patro\\OneDrive\\Desktop\\eve-assistant\\assistant\\workflows\\recovery.py",
+    "extension": ".py"
+  }
+}

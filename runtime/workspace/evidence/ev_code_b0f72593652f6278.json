@@ -1,0 +1,22 @@
+{
+  "evidence_id": "ev:code:b0f72593652f6278",
+  "source_type": "code",
+  "source_name": "local_workspace",
+  "source_id": "assistant/workspace/synthesis.py",
+  "title": "synthesis.py",
+  "content": "\"\"\"\nE.V.I.E. - Source-Backed Workspace Synthesis\n\nPhase 12D\n\nUses the existing E.V.I.E. reasoning client lazily so repository indexing\nand workspace search remain lightweight when synthesis is not requested.\n\"\"\"\n\nfrom __future__ import annotations\n\nimport json\n\nfrom pydantic import (\n    BaseModel,\n    Field,\n)\n\nfrom assistant.workspace.models import (\n    WorkspaceClaim,\n)\n\nfrom assistant.workspace.provenance import (\n    build_claim,\n)\n\n\nSYSTEM_PROMPT = \"\"\"\nYou are E.V.I.E.'s unified workspace reasoning layer.\n\nAnswer only from the evidence supplied to you.\n\nYou must:\n- combine relevant information across sources\n- distinguish facts from uncertainty\n- never invent a source\n- attach evidence IDs to every substantive claim\n- prefer multiple supporting sources when available\n- explain source disagreement if present\n- stay focused on the user's actual question\n\nReturn a concise but technically useful answer plus claims.\n\"\"\"\n\n\nclass SynthesizedClaim(\n    BaseModel\n):\n    text: str\n\n    evidence_ids: list[str] = Field(\n        default_factory=list\n    )\n\n    confidence: float = 0.0\n\n\nclass WorkspaceSynthesis(\n    BaseModel\n):\n    answer: str\n\n    claims: list[SynthesizedClaim] = Field(\n        default_factory=list\n    )\n\n    confidence: float = 0.0\n\n\ndef _get_client():\n    from assistant.brain import (\n        client,\n    )\n\n    return client\n\n\ndef synthesize_workspace_result(\n    result,\n):\n    if not result.evidence:\n        result.answer = (\n            \"I could not find workspace evidence \"\n            \"for that question.\"\n        )\n        result.confidence = 0.0\n        return result\n\n    evidence_payload = []\n\n    for item in result.evidence:\n        evidence_payload.append(\n            {\n                \"evidence_id\":\n                    item.evidence_id,\n                \"source_type\":\n                    item.source_type,\n                \"source_name\":\n                    item.source_name,\n                \"title\":\n                    item.title,\n                \"path\":\n                    item.path,\n                \"repository\":\n                    item.repository,\n                \"content\":\n                    item.content[\n                        :12000\n                    ],\n            }\n        )\n\n    prompt = (\n        \"QUESTION:\\n\"\n        f\"{result.query}\\n\\n\"\n        \"EVIDENCE:\\n\"\n        + json.dumps(\n            evidence_payload,\n            indent=2,\n            ensure_ascii=False,\n            default=str,\n        )\n    )\n\n    client = _get_client()\n\n    response = client.responses.parse(\n        model=\"gpt-5.2\",\n        instructions=SYSTEM_PROMPT,\n        input=prompt,\n        text_format=WorkspaceSynthesis,\n    )\n\n    parsed = response.output_parsed\n\n    result.answer = (\n        parsed.answer\n        or \"\"\n    )\n\n    result.confidence = float(\n        parsed.confidence\n        or 0.0\n    )\n\n    valid_ids = {\n        item.evidence_id\n        for item in result.evidence\n    }\n\n    claims = []\n\n    for index, claim in enumerate(\n        parsed.claims,\n        start=1,\n    ):\n        evidence_ids = [\n            evidence_id\n            for evidence_id\n            in claim.evidence_ids\n            if evidence_id\n            in valid_ids\n        ]\n\n        claims.append(\n            build_claim(\n                claim_id=(\n                    f\"claim:{index}\"\n                ),\n                text=claim.text,\n                evidence_ids=evidence_ids,\n                confidence=claim.confidence,\n            )\n        )\n\n    result.claims = claims\n\n    return result\n",
+  "uri": "",
+  "project": "phase12-live",
+  "repository": "E.V.-Assistant",
+  "path": "assistant/workspace/synthesis.py",
+  "timestamp": "",
+  "entity_ids": [],
+  "tags": [],
+  "relevance": 9.0,
+  "confidence": 1.0,
+  "metadata": {
+    "absolute_path": "C:\\Users\\patro\\OneDrive\\Desktop\\eve-assistant\\assistant\\workspace\\synthesis.py",
+    "extension": ".py",
+    "token_overlap": 5
+  }
+}
