@@ -1,20 +1,4 @@
-"""
-E.V.I.E. - Self-Engineering Request Planner
-
-Phase 12N
-
-Purpose:
-Detect explicit repository/self-engineering requests without hijacking
-ordinary conversation.
-
-This is deliberately conservative. Merely mentioning a bug or file does
-not trigger repository modification. The user must clearly ask E.V.I.E.
-to inspect/diagnose/fix/implement/refactor/test its code or repository.
-"""
-
 from __future__ import annotations
-
-import re
 
 from .request_models import CodingRequest
 
@@ -32,6 +16,7 @@ ENGINEERING_VERBS = {
     "improve",
     "test",
     "investigate",
+    "prepare",
 }
 
 REPOSITORY_TERMS = {
@@ -42,107 +27,121 @@ REPOSITORY_TERMS = {
     "source code",
     "your code",
     "yourself",
+    "your own",
     "evie",
     "e.v.i.e.",
     "assistant",
 }
 
-PLAN_TERMS = {
-    "plan",
-    "analyze",
-    "analyse",
-    "inspect",
-    "diagnose",
-    "investigate",
+RECOVERY_PHRASES = {
+    "continue the pending self-engineering transaction",
+    "continue pending self-engineering transaction",
+    "resume the pending self-engineering transaction",
+    "resume pending self-engineering transaction",
+    "continue the self-engineering transaction",
+    "resume the self-engineering transaction",
+    "continue self-engineering",
+    "resume self-engineering",
+    "rerun its targeted validation",
+    "rerun targeted validation",
+    "retry self-engineering validation",
+    "recover the coding transaction",
+    "recover coding transaction",
 }
 
-COMMIT_APPROVAL_PATTERNS = (
-    r"\bapprove (?:the )?commit\b",
-    r"\bcommit (?:it|the change|the changes)\b",
-    r"\byes[, ]+commit\b",
-)
+COMMIT_APPROVAL_PHRASES = {
+    "approve commit",
+    "approve the commit",
+    "commit it",
+    "commit the change",
+    "commit the changes",
+    "yes commit",
+}
 
-REJECT_COMMIT_PATTERNS = (
-    r"\breject (?:the )?commit\b",
-    r"\bdon'?t commit\b",
-    r"\bdo not commit\b",
-    r"\bdiscard (?:the )?change",
-)
+COMMIT_REJECTION_PHRASES = {
+    "reject commit",
+    "reject the commit",
+    "don't commit",
+    "do not commit",
+    "discard the change",
+    "discard the changes",
+}
 
-STATUS_PATTERNS = (
-    r"\bengineering status\b",
-    r"\bcoding status\b",
-    r"\bwhat(?:'s| is) the (?:engineering|coding) status\b",
-)
-
-
-def _normalized(
-    text: str,
-):
-    return (
-        str(text or "")
-        .strip()
-        .lower()
-    )
+STATUS_PHRASES = {
+    "engineering status",
+    "coding status",
+    "self-engineering status",
+}
 
 
-def _contains_any(
-    text: str,
-    values,
-):
-    return any(
-        value in text
-        for value in values
-    )
+def _normalized(text: str):
+    return str(text or "").strip().lower()
 
 
-def plan_coding_request(
-    user_message: str,
-):
-    text = _normalized(
-        user_message
-    )
+def _contains_any(text: str, values):
+    return any(value in text for value in values)
+
+
+def plan_coding_request(user_message: str):
+    text = _normalized(user_message)
 
     if not text:
+        return CodingRequest(handled=False)
+
+    if _contains_any(
+        text,
+        COMMIT_APPROVAL_PHRASES,
+    ):
         return CodingRequest(
-            handled=False
+            handled=True,
+            action="approve_commit",
+            confidence=100,
+            summary=(
+                "Approve the pending "
+                "self-engineering commit."
+            ),
         )
 
-    for pattern in COMMIT_APPROVAL_PATTERNS:
-        if re.search(
-            pattern,
-            text,
-        ):
-            return CodingRequest(
-                handled=True,
-                action="approve_commit",
-                confidence=100,
-                summary="Approve the pending self-engineering commit.",
-            )
+    if _contains_any(
+        text,
+        COMMIT_REJECTION_PHRASES,
+    ):
+        return CodingRequest(
+            handled=True,
+            action="reject_commit",
+            confidence=100,
+            summary=(
+                "Reject the pending "
+                "self-engineering commit."
+            ),
+        )
 
-    for pattern in REJECT_COMMIT_PATTERNS:
-        if re.search(
-            pattern,
-            text,
-        ):
-            return CodingRequest(
-                handled=True,
-                action="reject_commit",
-                confidence=100,
-                summary="Reject the pending self-engineering commit.",
-            )
+    if _contains_any(
+        text,
+        RECOVERY_PHRASES,
+    ):
+        return CodingRequest(
+            handled=True,
+            action="resume_transaction",
+            confidence=100,
+            summary=(
+                "Resume the latest recoverable "
+                "self-engineering transaction."
+            ),
+        )
 
-    for pattern in STATUS_PATTERNS:
-        if re.search(
-            pattern,
-            text,
-        ):
-            return CodingRequest(
-                handled=True,
-                action="status",
-                confidence=100,
-                summary="Show self-engineering state.",
-            )
+    if _contains_any(
+        text,
+        STATUS_PHRASES,
+    ):
+        return CodingRequest(
+            handled=True,
+            action="status",
+            confidence=100,
+            summary=(
+                "Show self-engineering state."
+            ),
+        )
 
     has_engineering_verb = _contains_any(
         text,
@@ -154,9 +153,6 @@ def plan_coding_request(
         REPOSITORY_TERMS,
     )
 
-    # Strong explicit forms such as:
-    # "Fix your protocol time display."
-    # "Diagnose the bug in your own code."
     explicit_self_reference = any(
         phrase in text
         for phrase in (
@@ -171,6 +167,7 @@ def plan_coding_request(
             "your own code",
             "your repository",
             "your codebase",
+            "your own e.v.i.e. repository",
         )
     )
 
@@ -185,10 +182,15 @@ def plan_coding_request(
             handled=True,
             action="plan_change",
             goal=user_message.strip(),
-            confidence=100 if explicit_self_reference else 92,
-            summary="Plan a bounded repository-level engineering change.",
+            confidence=(
+                100
+                if explicit_self_reference
+                else 92
+            ),
+            summary=(
+                "Plan a bounded repository-level "
+                "engineering change."
+            ),
         )
 
-    return CodingRequest(
-        handled=False
-    )
+    return CodingRequest(handled=False)

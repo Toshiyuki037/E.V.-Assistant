@@ -1,29 +1,13 @@
-"""
-E.V.I.E. - Pending Self-Engineering State
-
-Phase 12N
-
-Persists the read-only EngineeringPlan awaiting execution approval and
-the transaction awaiting commit approval.
-"""
-
 from __future__ import annotations
 
 from dataclasses import asdict
 import json
 from pathlib import Path
 
-from .models import (
-    EngineeringEdit,
-    EngineeringPlan,
-)
+from .models import EngineeringEdit, EngineeringPlan
 
 
-PROJECT_ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[2]
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 PENDING_FILE = (
     PROJECT_ROOT
@@ -38,37 +22,11 @@ def clear_pending_engineering():
         PENDING_FILE.unlink()
 
 
-def save_pending_plan(
-    plan: EngineeringPlan,
-    *,
-    root_path: str,
-    candidate_paths: list[str],
-):
+def _write(payload):
     PENDING_FILE.parent.mkdir(
         parents=True,
         exist_ok=True,
     )
-
-    payload = {
-        "state":
-            "awaiting_execution_approval",
-
-        "root_path":
-            root_path,
-
-        "candidate_paths":
-            list(
-                candidate_paths
-            ),
-
-        "plan":
-            asdict(
-                plan
-            ),
-
-        "transaction_id":
-            "",
-    }
 
     PENDING_FILE.write_text(
         json.dumps(
@@ -83,47 +41,56 @@ def save_pending_plan(
     return payload
 
 
+def save_pending_plan(
+    plan: EngineeringPlan,
+    *,
+    root_path: str,
+    candidate_paths: list[str],
+):
+    return _write(
+        {
+            "state": "awaiting_execution_approval",
+            "root_path": root_path,
+            "candidate_paths": list(candidate_paths),
+            "plan": asdict(plan),
+            "transaction_id": "",
+        }
+    )
+
+
+def save_pending_recovery(
+    transaction_id: str,
+    *,
+    root_path: str,
+):
+    return _write(
+        {
+            "state": "awaiting_recovery",
+            "root_path": root_path,
+            "candidate_paths": [],
+            "plan": {},
+            "transaction_id": transaction_id,
+        }
+    )
+
+
 def save_pending_transaction(
     transaction_id: str,
     *,
     root_path: str,
     suggested_commit_message: str,
 ):
-    PENDING_FILE.parent.mkdir(
-        parents=True,
-        exist_ok=True,
-    )
-
-    payload = {
-        "state":
-            "awaiting_commit_approval",
-
-        "root_path":
-            root_path,
-
-        "candidate_paths":
-            [],
-
-        "plan":
-            {
-                "commit_message":
-                    suggested_commit_message,
+    return _write(
+        {
+            "state": "awaiting_commit_approval",
+            "root_path": root_path,
+            "candidate_paths": [],
+            "plan": {
+                "commit_message": suggested_commit_message,
             },
-
-        "transaction_id":
-            transaction_id,
-    }
-
-    PENDING_FILE.write_text(
-        json.dumps(
-            payload,
-            indent=2,
-            ensure_ascii=False,
-        ),
-        encoding="utf-8",
+            "transaction_id": transaction_id,
+        }
     )
-
-    return payload
 
 
 def load_pending_engineering():
@@ -140,57 +107,31 @@ def load_pending_engineering():
         return None
 
 
-def pending_plan_from_payload(
-    payload,
-):
-    plan = (
-        payload.get(
-            "plan",
-            {}
-        )
-        or {}
-    )
+def pending_plan_from_payload(payload):
+    plan = payload.get("plan", {}) or {}
 
     edits = [
-        EngineeringEdit(
-            **item
-        )
-        for item
-        in (
-            plan.get(
-                "edits",
-                []
-            )
+        EngineeringEdit(**item)
+        for item in (
+            plan.get("edits", [])
             or []
         )
     ]
 
     return EngineeringPlan(
-        goal=plan.get(
-            "goal",
-            "",
-        ),
-        repository=plan.get(
-            "repository",
-            "",
-        ),
+        goal=plan.get("goal", ""),
+        repository=plan.get("repository", ""),
         planned_paths=list(
-            plan.get(
-                "planned_paths",
-                []
-            )
+            plan.get("planned_paths", [])
             or []
         ),
         edits=edits,
         targeted_commands=[
-            list(
-                command
-            )
-            for command
-            in (
+            list(command)
+            for command in (
                 plan.get(
                     "targeted_commands",
-                    []
+                    [],
                 )
                 or []
             )
@@ -198,7 +139,7 @@ def pending_plan_from_payload(
         regression_command=list(
             plan.get(
                 "regression_command",
-                []
+                [],
             )
             or []
         ),
@@ -224,7 +165,7 @@ def pending_plan_from_payload(
         metadata=dict(
             plan.get(
                 "metadata",
-                {}
+                {},
             )
             or {}
         ),

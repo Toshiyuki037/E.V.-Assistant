@@ -1,67 +1,104 @@
-"""
-E.V.I.E. - Self-Engineering Conversation Integration
-
-Phase 12N
-
-Purpose:
-Expose the Phase 12M repository engineering system through normal E.V.I.E.
-conversation while preserving two explicit gates:
-
-Gate 1:
-    read-only plan -> user approves execution
-
-Gate 2:
-    validated diff -> user approves commit
-
-This module does not auto-commit.
-"""
-
 from __future__ import annotations
 
-from assistant.tools.session import (
-    parse_approval_response,
-)
+from assistant.tools.session import parse_approval_response
 
 from .approval import (
     approve_and_commit_engineering_transaction,
 )
-
-from .controller import (
-    execute_engineering_plan,
-)
-
-from .discovery import (
-    discover_candidate_paths,
-)
-
+from .controller import execute_engineering_plan
+from .discovery import discover_candidate_paths
 from .documentation import (
     build_engineering_documentation_note,
 )
-
 from .pending import (
     clear_pending_engineering,
     load_pending_engineering,
     pending_plan_from_payload,
     save_pending_plan,
+    save_pending_recovery,
     save_pending_transaction,
 )
-
-from .planner import (
-    plan_engineering_change,
-)
-
+from .planner import plan_engineering_change
 from .presentation import (
     format_engineering_plan,
     format_execution_result,
 )
-
-from .request_planner import (
-    plan_coding_request,
+from .recovery import (
+    find_latest_recoverable_transaction,
+    resume_engineering_transaction,
 )
+from .request_planner import plan_coding_request
 
 
 DEFAULT_REPOSITORY = "E.V.-Assistant"
 DEFAULT_ROOT = "."
+
+
+def _result_to_pending_state(
+    result,
+    *,
+    root_path: str,
+):
+    status = result.get("status", "")
+    transaction_id = result.get(
+        "transaction_id",
+        "",
+    )
+
+    if not transaction_id:
+        clear_pending_engineering()
+        return
+
+    if status == "awaiting_commit_approval":
+        save_pending_transaction(
+            transaction_id,
+            root_path=root_path,
+            suggested_commit_message=(
+                result.get(
+                    "suggested_commit_message",
+                    "",
+                )
+                or "E.V.I.E. self-engineering change"
+            ),
+        )
+        return
+
+    if status in {
+        "awaiting_user",
+        "validation_failed",
+        "repair_exhausted",
+        "regression_failed",
+    }:
+        save_pending_recovery(
+            transaction_id,
+            root_path=root_path,
+        )
+        return
+
+    clear_pending_engineering()
+
+
+def _resume_transaction(
+    transaction_id: str,
+    *,
+    root_path: str,
+):
+    result = resume_engineering_transaction(
+        transaction_id
+    )
+
+    _result_to_pending_state(
+        result,
+        root_path=root_path,
+    )
+
+    return {
+        "handled": True,
+        "response": format_execution_result(
+            result
+        ),
+        "follow_up": "",
+    }
 
 
 def _handle_pending(
@@ -70,30 +107,24 @@ def _handle_pending(
 ):
     state = pending.get(
         "state",
-        ""
+        "",
     )
 
     approval = parse_approval_response(
         user_message
     )
 
-    # -----------------------------------------------------------------------
-    # Plan execution approval
-    # -----------------------------------------------------------------------
-
     if state == "awaiting_execution_approval":
         if approval.decision == "reject":
             clear_pending_engineering()
 
             return {
-                "handled":
-                    True,
-
-                "response":
-                    "Self-engineering execution cancelled.",
-
-                "follow_up":
-                    approval.remainder,
+                "handled": True,
+                "response": (
+                    "Self-engineering execution "
+                    "cancelled."
+                ),
+                "follow_up": approval.remainder,
             }
 
         if approval.decision == "approve":
@@ -109,108 +140,121 @@ def _handle_pending(
                 ),
             )
 
-            if (
-                result.get(
-                    "status"
-                )
-                == "awaiting_commit_approval"
-            ):
-                save_pending_transaction(
-                    result[
-                        "transaction_id"
-                    ],
-                    root_path=pending.get(
-                        "root_path",
-                        DEFAULT_ROOT,
-                    ),
-                    suggested_commit_message=(
-                        result.get(
-                            "suggested_commit_message",
-                            ""
-                        )
-                        or "E.V.I.E. self-engineering change"
-                    ),
-                )
-
-            else:
-                clear_pending_engineering()
+            _result_to_pending_state(
+                result,
+                root_path=pending.get(
+                    "root_path",
+                    DEFAULT_ROOT,
+                ),
+            )
 
             return {
-                "handled":
-                    True,
-
-                "response":
-                    format_execution_result(
-                        result
-                    ),
-
-                "follow_up":
-                    approval.remainder,
+                "handled": True,
+                "response": format_execution_result(
+                    result
+                ),
+                "follow_up": approval.remainder,
             }
 
         return {
-            "handled":
-                True,
-
-            "response":
-                (
-                    "A self-engineering plan is waiting for execution "
-                    "approval. Say yes/approve to execute it, or no/reject "
-                    "to cancel it."
-                ),
-
-            "follow_up":
-                "",
+            "handled": True,
+            "response": (
+                "A self-engineering plan is waiting "
+                "for execution approval. Say "
+                "yes/approve to execute it, or "
+                "no/reject to cancel it."
+            ),
+            "follow_up": "",
         }
 
-    # -----------------------------------------------------------------------
-    # Commit approval
-    # -----------------------------------------------------------------------
+    if state == "awaiting_recovery":
+        request = plan_coding_request(
+            user_message
+        )
+
+        wants_resume = (
+            request.handled
+            and request.action
+            == "resume_transaction"
+        )
+
+        if approval.decision == "approve":
+            wants_resume = True
+
+        if approval.decision == "reject":
+            clear_pending_engineering()
+
+            return {
+                "handled": True,
+                "response": (
+                    "Self-engineering recovery "
+                    "cancelled. The transaction "
+                    "remains persisted on its branch."
+                ),
+                "follow_up": approval.remainder,
+            }
+
+        if wants_resume:
+            return _resume_transaction(
+                pending.get(
+                    "transaction_id",
+                    "",
+                ),
+                root_path=pending.get(
+                    "root_path",
+                    DEFAULT_ROOT,
+                ),
+            )
+
+        return {
+            "handled": True,
+            "response": (
+                "A self-engineering transaction is "
+                "paused and waiting for recovery. "
+                "Say 'continue the pending "
+                "self-engineering transaction' "
+                "after the external issue is fixed."
+            ),
+            "follow_up": "",
+        }
 
     if state == "awaiting_commit_approval":
         request = plan_coding_request(
             user_message
         )
 
-        explicit_commit_approval = (
+        commit_yes = (
             request.handled
             and request.action
             == "approve_commit"
         )
 
-        explicit_commit_reject = (
+        commit_no = (
             request.handled
             and request.action
             == "reject_commit"
         )
 
-        # Also accept ordinary approval only because a coding commit is
-        # already pending and has already passed review/regression.
         if approval.decision == "approve":
-            explicit_commit_approval = True
+            commit_yes = True
 
         if approval.decision == "reject":
-            explicit_commit_reject = True
+            commit_no = True
 
-        if explicit_commit_reject:
+        if commit_no:
             clear_pending_engineering()
 
             return {
-                "handled":
-                    True,
-
-                "response":
-                    (
-                        "Commit approval rejected. "
-                        "The validated transaction remains on its branch "
-                        "but will not be committed automatically."
-                    ),
-
-                "follow_up":
-                    approval.remainder,
+                "handled": True,
+                "response": (
+                    "Commit approval rejected. "
+                    "The validated transaction "
+                    "remains on its branch."
+                ),
+                "follow_up": approval.remainder,
             }
 
-        if explicit_commit_approval:
+        if commit_yes:
             transaction_id = pending.get(
                 "transaction_id",
                 "",
@@ -220,7 +264,7 @@ def _handle_pending(
                 (
                     pending.get(
                         "plan",
-                        {}
+                        {},
                     )
                     or {}
                 ).get(
@@ -246,35 +290,28 @@ def _handle_pending(
             clear_pending_engineering()
 
             return {
-                "handled":
-                    True,
-
-                "response":
-                    (
-                        "Self-engineering commit completed.\n"
-                        f"Commit: "
-                        f"{transaction.metadata.get('commit_sha', '')}\n\n"
-                        "Documentation note:\n"
-                        + note
-                    ),
-
-                "follow_up":
-                    approval.remainder,
+                "handled": True,
+                "response": (
+                    "Self-engineering commit "
+                    "completed.\n"
+                    f"Commit: "
+                    f"{transaction.metadata.get('commit_sha', '')}"
+                    "\n\nDocumentation note:\n"
+                    + note
+                ),
+                "follow_up": approval.remainder,
             }
 
         return {
-            "handled":
-                True,
-
-            "response":
-                (
-                    "A validated self-engineering change is waiting for "
-                    "commit approval. Say 'approve commit' to commit it "
-                    "or 'reject commit' to leave it uncommitted."
-                ),
-
-            "follow_up":
-                "",
+            "handled": True,
+            "response": (
+                "A validated self-engineering change "
+                "is waiting for commit approval. "
+                "Say 'approve commit' to commit it "
+                "or 'reject commit' to leave it "
+                "uncommitted."
+            ),
+            "follow_up": "",
         }
 
     return None
@@ -286,15 +323,6 @@ def handle_coding_message(
     repository: str = DEFAULT_REPOSITORY,
     root_path: str = DEFAULT_ROOT,
 ):
-    """
-    Return:
-        {
-            "handled": bool,
-            "response": str | None,
-            "follow_up": str,
-        }
-    """
-
     pending = load_pending_engineering()
 
     if pending is not None:
@@ -312,41 +340,53 @@ def handle_coding_message(
 
     if not request.handled:
         return {
-            "handled":
-                False,
-
-            "response":
-                None,
-
-            "follow_up":
-                "",
+            "handled": False,
+            "response": None,
+            "follow_up": "",
         }
 
-    if request.action == "status":
-        pending = load_pending_engineering()
+    if request.action == "resume_transaction":
+        transaction = (
+            find_latest_recoverable_transaction()
+        )
 
-        if pending is None:
+        if transaction is None:
+            return {
+                "handled": True,
+                "response": (
+                    "There is no recoverable "
+                    "self-engineering transaction."
+                ),
+                "follow_up": "",
+            }
+
+        return _resume_transaction(
+            transaction.transaction_id,
+            root_path=transaction.root_path,
+        )
+
+    if request.action == "status":
+        transaction = (
+            find_latest_recoverable_transaction()
+        )
+
+        if transaction is None:
             response = (
-                "There is no pending self-engineering plan or commit."
+                "There is no pending or recoverable "
+                "self-engineering transaction."
             )
         else:
             response = (
-                "Self-engineering state: "
-                + pending.get(
-                    "state",
-                    "unknown",
-                )
+                "Recoverable self-engineering "
+                f"transaction: "
+                f"{transaction.transaction_id} "
+                f"[{transaction.status}]"
             )
 
         return {
-            "handled":
-                True,
-
-            "response":
-                response,
-
-            "follow_up":
-                "",
+            "handled": True,
+            "response": response,
+            "follow_up": "",
         }
 
     if request.action in {
@@ -354,14 +394,9 @@ def handle_coding_message(
         "reject_commit",
     }:
         return {
-            "handled":
-                False,
-
-            "response":
-                None,
-
-            "follow_up":
-                "",
+            "handled": False,
+            "response": None,
+            "follow_up": "",
         }
 
     if request.action == "plan_change":
@@ -375,18 +410,13 @@ def handle_coding_message(
 
         if not candidate_paths:
             return {
-                "handled":
-                    True,
-
-                "response":
-                    (
-                        "I could not identify a bounded set of repository "
-                        "files for that engineering request, so I did not "
-                        "make any changes."
-                    ),
-
-                "follow_up":
-                    "",
+                "handled": True,
+                "response": (
+                    "I could not identify a bounded "
+                    "set of repository files for "
+                    "that engineering request."
+                ),
+                "follow_up": "",
             }
 
         plan = plan_engineering_change(
@@ -403,27 +433,16 @@ def handle_coding_message(
         )
 
         return {
-            "handled":
-                True,
-
-            "response":
-                format_engineering_plan(
-                    plan,
-                    candidate_paths=
-                        candidate_paths,
-                ),
-
-            "follow_up":
-                "",
+            "handled": True,
+            "response": format_engineering_plan(
+                plan,
+                candidate_paths=candidate_paths,
+            ),
+            "follow_up": "",
         }
 
     return {
-        "handled":
-            False,
-
-        "response":
-            None,
-
-        "follow_up":
-            "",
+        "handled": False,
+        "response": None,
+        "follow_up": "",
     }
