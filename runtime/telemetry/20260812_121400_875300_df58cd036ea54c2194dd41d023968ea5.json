@@ -1,0 +1,60 @@
+{
+  "request_id": "df58cd036ea54c2194dd41d023968ea5",
+  "user_text": "How realistic is it that I get into Brun University? I'm very interested in what applies for next year.",
+  "total_seconds": 37.9535,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 22.8247,
+    "response_ready": 31.553,
+    "tts_started": 31.5759,
+    "speech_finished": 37.9535
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0022,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0054,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0013,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 14.889,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 4.5576,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 12.0614,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0219,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 6.3775,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

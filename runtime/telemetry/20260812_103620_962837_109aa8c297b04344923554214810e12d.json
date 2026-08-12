@@ -1,0 +1,82 @@
+{
+  "request_id": "109aa8c297b04344923554214810e12d",
+  "user_text": "howd my schwab portfolio perform today",
+  "total_seconds": 35.409,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 8.5374,
+    "tts_started": 8.5609,
+    "tts_generation_started": 8.5621,
+    "tts_generation_finished": 17.621,
+    "audio_playback_started": 17.6469,
+    "audio_playback_finished": 35.4075,
+    "speech_finished": 35.409
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 2.1932,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 6.3401,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0218,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 26.848,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 9.0589,
+      "metadata": {
+        "characters": 257
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.0258,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 17.7606,
+      "metadata": {
+        "audio_seconds": 16.757
+      }
+    }
+  ],
+  "metadata": {}
+}

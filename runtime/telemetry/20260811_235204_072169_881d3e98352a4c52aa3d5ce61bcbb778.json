@@ -1,0 +1,82 @@
+{
+  "request_id": "881d3e98352a4c52aa3d5ce61bcbb778",
+  "user_text": "What is a transistor?",
+  "total_seconds": 22.6007,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 3.87,
+    "tts_started": 3.8959,
+    "tts_generation_started": 3.8976,
+    "tts_generation_finished": 8.8757,
+    "audio_playback_started": 8.8909,
+    "audio_playback_finished": 22.5997,
+    "speech_finished": 22.6007
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.8682,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0256,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 18.7048,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 4.9781,
+      "metadata": {
+        "characters": 190
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.0152,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 13.7087,
+      "metadata": {
+        "audio_seconds": 12.523
+      }
+    }
+  ],
+  "metadata": {}
+}

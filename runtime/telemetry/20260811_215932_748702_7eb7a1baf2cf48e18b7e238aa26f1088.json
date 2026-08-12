@@ -1,0 +1,59 @@
+{
+  "request_id": "7eb7a1baf2cf48e18b7e238aa26f1088",
+  "user_text": "What was my FPGA research idea?",
+  "total_seconds": 53.8274,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 16.9531,
+    "tts_started": 16.9762,
+    "speech_finished": 53.8274
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 16.9492,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0226,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 36.8511,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

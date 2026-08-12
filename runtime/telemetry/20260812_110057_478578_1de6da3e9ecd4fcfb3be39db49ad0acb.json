@@ -1,0 +1,60 @@
+{
+  "request_id": "1de6da3e9ecd4fcfb3be39db49ad0acb",
+  "user_text": "What is a transister and what is a transistimatic?",
+  "total_seconds": 26.9791,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 4.7688,
+    "response_ready": 9.2423,
+    "tts_started": 9.2752,
+    "speech_finished": 26.9791
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0018,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0041,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0012,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0014,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 9.2257,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0315,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 17.7039,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

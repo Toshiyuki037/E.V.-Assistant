@@ -1,418 +1,280 @@
 """
 E.V.I.E. - Speech Recognition Module
 
-Phase 14B - Voice Input 2.0
+Phase 14H addition:
+    exposes on_speech_started callback from the VAD boundary.
 
-Purpose:
-Provides natural-length microphone listening for E.V.I.E.
+This callback is intentionally fired immediately when VAD confirms speech,
+before final transcription exists.
 
-Features:
-- GPU Faster-Whisper transcription
-- voice activity detection
-- automatic speech start detection
-- automatic end-of-speech detection
-- no fixed six-second recording window
-- maximum recording safety timeout
-- local microphone processing
-- temporary audio cleanup
-
-This is the foundation for:
-- partial transcription
-- streaming transcription
-- interruption
-- barge-in
-- wake-word operation
+It is the correct low-latency hook for interrupting E.V.I.E. playback.
 """
 
 from __future__ import annotations
 
 import os
 import tempfile
+import threading
 import time
 import wave
-from collections import deque
+
+from collections import (
+    deque,
+)
 
 import numpy as np
 import sounddevice as sd
-from faster_whisper import WhisperModel
 
+from faster_whisper import (
+    WhisperModel,
+)
 
-# ---------------------------------------------------------------------------
-# Audio Configuration
-# ---------------------------------------------------------------------------
+from .voice.stt_config import (
+    CONDITION_ON_PREVIOUS_TEXT,
+    FINAL_BEAM_SIZE,
+    PARTIAL_BEAM_SIZE,
+    WHISPER_HOTWORDS,
+    WHISPER_LANGUAGE,
+    WHISPER_MODEL_NAME,
+    WHISPER_VAD_FILTER,
+)
 
-SAMPLE_RATE = 16000
-CHANNELS = 1
+from .voice.transcription import (
+    PartialTranscriber,
+    TranscriptEvent,
+    TranscriptionResult,
+)
 
-BLOCK_DURATION = 0.10
+from .voice.transcript_state import (
+    TranscriptState,
+)
 
-BLOCK_SIZE = int(
-    SAMPLE_RATE
-    * BLOCK_DURATION
+from .voice.streaming_input import (
+    StreamingInputCoordinator,
+)
+
+from .voice.vad import (
+    DEFAULT_FRAME_DURATION_MS,
+    DEFAULT_SAMPLE_RATE,
+    VoiceActivityDetector,
+    frame_samples,
 )
 
 
-# ---------------------------------------------------------------------------
-# Voice Activity Detection
-# ---------------------------------------------------------------------------
+SAMPLE_RATE = DEFAULT_SAMPLE_RATE
+CHANNELS = 1
 
-# RMS threshold for considering a block speech.
-#
-# This intentionally starts conservative. It can later be calibrated
-# automatically for the user's microphone/environment.
+FRAME_DURATION_MS = DEFAULT_FRAME_DURATION_MS
 
-VOICE_THRESHOLD = 350.0
-
-
-# Amount of speech required before recording officially begins.
-
-SPEECH_START_SECONDS = 0.20
+FRAME_SAMPLES = (
+    frame_samples(
+        sample_rate=SAMPLE_RATE,
+        frame_duration_ms=FRAME_DURATION_MS,
+    )
+)
 
 
-# Silence required after speech before the utterance is considered finished.
-
-SILENCE_END_SECONDS = 0.85
-
-
-# Keep a small amount of audio before speech detection so the beginning
-# of the first word is not clipped.
-
-PRE_ROLL_SECONDS = 0.40
-
-
-# Stop waiting if nobody speaks.
+PRE_ROLL_SECONDS = 0.50
 
 LISTEN_TIMEOUT_SECONDS = 12.0
 
-
-# Safety limit for one utterance.
-
 MAX_UTTERANCE_SECONDS = 45.0
 
+PARTIAL_INITIAL_DELAY_SECONDS = 1.25
 
-# ---------------------------------------------------------------------------
-# Derived Block Counts
-# ---------------------------------------------------------------------------
+PARTIAL_INTERVAL_SECONDS = 1.20
 
-SPEECH_START_BLOCKS = max(
+VAD_SPEECH_THRESHOLD = 0.010
+
+VAD_START_FRAMES = 2
+
+VAD_END_SILENCE_MS = 2000
+
+VAD_MINIMUM_UTTERANCE_MS = 180
+
+
+PRE_ROLL_FRAMES = max(
     1,
     int(
-        SPEECH_START_SECONDS
-        / BLOCK_DURATION
+        round(
+            (
+                PRE_ROLL_SECONDS
+                * 1000.0
+            )
+            / FRAME_DURATION_MS
+        )
     ),
 )
 
-SILENCE_END_BLOCKS = max(
-    1,
-    int(
-        SILENCE_END_SECONDS
-        / BLOCK_DURATION
-    ),
-)
-
-PRE_ROLL_BLOCKS = max(
-    1,
-    int(
-        PRE_ROLL_SECONDS
-        / BLOCK_DURATION
-    ),
-)
-
-
-# ---------------------------------------------------------------------------
-# Whisper
-# ---------------------------------------------------------------------------
 
 print(
     "Loading speech recognition..."
 )
 
-whisper = WhisperModel(
-    "small.en",
-    device="cuda",
-    compute_type="float16",
+print(
+    (
+        "STT model: "
+        f"{WHISPER_MODEL_NAME}"
+    )
 )
+
+print(
+    "STT language: English only"
+)
+
+
+whisper = (
+    WhisperModel(
+        WHISPER_MODEL_NAME,
+        device="cuda",
+        compute_type="float16",
+    )
+)
+
+
+_WHISPER_LOCK = (
+    threading.Lock()
+)
+
 
 print(
     "Speech recognition ready."
 )
 
 
-# ---------------------------------------------------------------------------
-# Audio Helpers
-# ---------------------------------------------------------------------------
-
-def audio_level(
-    audio: np.ndarray,
-) -> float:
-    """
-    Returns the RMS amplitude of an int16 audio block.
-    """
-
-    if audio.size == 0:
-        return 0.0
-
-    samples = (
-        audio
-        .astype(
-            np.float32
-        )
-    )
-
-    rms = np.sqrt(
-        np.mean(
-            samples * samples
-        )
-    )
-
-    return float(
-        rms
-    )
-
-
-def contains_voice(
-    audio: np.ndarray,
-) -> bool:
-    """
-    Lightweight local voice activity detector.
-
-    Phase 14B intentionally uses amplitude-based VAD so no additional
-    model dependency is required.
-
-    A neural VAD can replace this later without changing listen().
-    """
+def create_vad():
 
     return (
-        audio_level(
-            audio
+        VoiceActivityDetector(
+            sample_rate=SAMPLE_RATE,
+            frame_duration_ms=FRAME_DURATION_MS,
+            speech_threshold=VAD_SPEECH_THRESHOLD,
+            start_frames=VAD_START_FRAMES,
+            end_silence_ms=VAD_END_SILENCE_MS,
+            minimum_utterance_ms=VAD_MINIMUM_UTTERANCE_MS,
         )
-        >= VOICE_THRESHOLD
     )
 
 
-# ---------------------------------------------------------------------------
-# Recording
-# ---------------------------------------------------------------------------
+class UtteranceBuffer:
 
-def record_utterance():
-    """
-    Record one natural-length spoken utterance.
+    def __init__(
+        self,
+        *,
+        pre_roll_frames: int = PRE_ROLL_FRAMES,
+    ):
 
-    Recording begins only after speech is detected and ends after
-    sustained silence.
-
-    Returns:
-        numpy.ndarray | None
-    """
-
-    print(
-        "\nListening..."
-    )
-
-    pre_roll = deque(
-        maxlen=PRE_ROLL_BLOCKS
-    )
-
-    recorded_blocks = []
-
-    speech_started = False
-
-    consecutive_voice = 0
-    consecutive_silence = 0
-
-    listen_started = (
-        time.monotonic()
-    )
-
-    speech_started_at = None
-
-
-    # -----------------------------------------------------------------------
-    # Audio Callback
-    # -----------------------------------------------------------------------
-
-    with sd.InputStream(
-        samplerate=SAMPLE_RATE,
-        channels=CHANNELS,
-        dtype="int16",
-        blocksize=BLOCK_SIZE,
-    ) as stream:
-
-        while True:
-
-            block, overflowed = (
-                stream.read(
-                    BLOCK_SIZE
+        self.pre_roll = (
+            deque(
+                maxlen=max(
+                    1,
+                    int(
+                        pre_roll_frames
+                    ),
                 )
             )
+        )
+
+        self.recorded_frames = []
+
+        self.started = False
 
 
-            if overflowed:
+    def reset(
+        self,
+    ):
+        """
+        Clears all captured utterance state so this buffer can be reused
+        safely after interruption or cancellation.
+        """
 
-                # Overflow should not terminate the session.
-                # The following blocks are still usable.
+        self.pre_roll.clear()
 
-                pass
+        self.recorded_frames.clear()
+
+        self.started = False
 
 
-            block = (
-                np.asarray(
-                    block,
-                    dtype=np.int16,
-                )
-                .copy()
+    def add_pre_roll(
+        self,
+        frame: np.ndarray,
+    ):
+
+        if self.started:
+
+            return
+
+        self.pre_roll.append(
+            np.asarray(
+                frame,
+                dtype=np.int16,
+            )
+            .copy()
+        )
+
+
+    def start(
+        self,
+    ):
+
+        if self.started:
+
+            return
+
+        self.recorded_frames.extend(
+            list(
+                self.pre_roll
+            )
+        )
+
+        self.pre_roll.clear()
+
+        self.started = True
+
+
+    def add_frame(
+        self,
+        frame: np.ndarray,
+    ):
+
+        if not self.started:
+
+            raise RuntimeError(
+                "UtteranceBuffer has not started."
             )
 
-
-            voice = (
-                contains_voice(
-                    block
-                )
+        self.recorded_frames.append(
+            np.asarray(
+                frame,
+                dtype=np.int16,
             )
+            .copy()
+        )
 
 
-            # ---------------------------------------------------------------
-            # Waiting for Speech
-            # ---------------------------------------------------------------
+    def audio(
+        self,
+    ):
 
-            if not speech_started:
+        if not self.recorded_frames:
 
-                pre_roll.append(
-                    block
-                )
+            return None
 
-
-                if voice:
-
-                    consecutive_voice += 1
-
-                else:
-
-                    consecutive_voice = 0
-
-
-                if (
-                    consecutive_voice
-                    >= SPEECH_START_BLOCKS
-                ):
-
-                    speech_started = True
-
-                    speech_started_at = (
-                        time.monotonic()
-                    )
-
-                    recorded_blocks.extend(
-                        list(
-                            pre_roll
-                        )
-                    )
-
-                    pre_roll.clear()
-
-                    consecutive_silence = 0
-
-                    print(
-                        "Speech detected."
-                    )
-
-                    continue
-
-
-                # No speech within timeout.
-
-                if (
-                    time.monotonic()
-                    - listen_started
-                    >= LISTEN_TIMEOUT_SECONDS
-                ):
-
-                    print(
-                        "Listening timed out."
-                    )
-
-                    return None
-
-
-                continue
-
-
-            # ---------------------------------------------------------------
-            # Speech Active
-            # ---------------------------------------------------------------
-
-            recorded_blocks.append(
-                block
+        return (
+            np.concatenate(
+                self.recorded_frames,
+                axis=0,
             )
+            .astype(
+                np.int16,
+                copy=False,
+            )
+        )
 
-
-            if voice:
-
-                consecutive_silence = 0
-
-            else:
-
-                consecutive_silence += 1
-
-
-            # ---------------------------------------------------------------
-            # End-of-Speech Detection
-            # ---------------------------------------------------------------
-
-            if (
-                consecutive_silence
-                >= SILENCE_END_BLOCKS
-            ):
-
-                print(
-                    "Speech complete."
-                )
-
-                break
-
-
-            # ---------------------------------------------------------------
-            # Maximum Utterance Safety Limit
-            # ---------------------------------------------------------------
-
-            if (
-                speech_started_at
-                is not None
-                and (
-                    time.monotonic()
-                    - speech_started_at
-                )
-                >= MAX_UTTERANCE_SECONDS
-            ):
-
-                print(
-                    "Maximum utterance length reached."
-                )
-
-                break
-
-
-    if not recorded_blocks:
-
-        return None
-
-
-    return np.concatenate(
-        recorded_blocks,
-        axis=0,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Temporary WAV
-# ---------------------------------------------------------------------------
 
 def write_temporary_wav(
     audio: np.ndarray,
 ) -> str:
-    """
-    Writes microphone audio to a temporary WAV for Faster-Whisper.
-    """
 
     with tempfile.NamedTemporaryFile(
         suffix=".wav",
@@ -422,7 +284,6 @@ def write_temporary_wav(
         filename = (
             temp.name
         )
-
 
     with wave.open(
         filename,
@@ -445,23 +306,16 @@ def write_temporary_wav(
             audio.tobytes()
         )
 
-
     return filename
 
 
-# ---------------------------------------------------------------------------
-# Transcription
-# ---------------------------------------------------------------------------
-
-def transcribe_audio(
+def transcribe_audio_result(
     audio: np.ndarray,
-) -> str:
-    """
-    Transcribe captured speech with the resident Faster-Whisper model.
-    """
+    *,
+    beam_size: int = FINAL_BEAM_SIZE,
+) -> TranscriptionResult:
 
     filename = None
-
 
     try:
 
@@ -471,48 +325,64 @@ def transcribe_audio(
             )
         )
 
+        with _WHISPER_LOCK:
 
-        print(
-            "Transcribing..."
-        )
+            segments, _ = (
+                whisper.transcribe(
+                    filename,
 
+                    language=
+                        WHISPER_LANGUAGE,
 
-        segments, _ = (
-            whisper.transcribe(
-                filename,
-                language="en",
+                    task=
+                        "transcribe",
 
-                # Faster than the old beam_size=5 while still giving
-                # strong command transcription quality.
-                beam_size=1,
+                    beam_size=
+                        int(
+                            beam_size
+                        ),
 
-                vad_filter=False,
+                    vad_filter=
+                        WHISPER_VAD_FILTER,
 
-                condition_on_previous_text=False,
+                    condition_on_previous_text=
+                        CONDITION_ON_PREVIOUS_TEXT,
+
+                    hotwords=
+                        WHISPER_HOTWORDS,
+
+                    temperature=
+                        0.0,
+                )
             )
-        )
 
+            segment_list = (
+                list(
+                    segments
+                )
+            )
 
         text = " ".join(
             segment.text.strip()
 
             for segment
-            in segments
+            in segment_list
 
             if segment.text.strip()
         ).strip()
 
-
-        return text
-
+        return (
+            TranscriptionResult(
+                text=text,
+                language=WHISPER_LANGUAGE,
+                language_probability=None,
+            )
+        )
 
     finally:
 
-        if (
+        if filename and os.path.exists(
             filename
-            and os.path.exists(
-                filename
-            )
         ):
 
             try:
@@ -526,55 +396,432 @@ def transcribe_audio(
                 pass
 
 
-# ---------------------------------------------------------------------------
-# Public Listening API
-# ---------------------------------------------------------------------------
+def transcribe_partial_audio_result(
+    audio: np.ndarray,
+) -> TranscriptionResult:
 
-def listen():
-    """
-    Listen for one natural spoken utterance and return its transcription.
-
-    Maintains compatibility with main.py's existing:
-
-        user_text = listen()
-
-    interface.
-    """
-
-    audio = (
-        record_utterance()
+    return (
+        transcribe_audio_result(
+            audio,
+            beam_size=PARTIAL_BEAM_SIZE,
+        )
     )
 
+
+def transcribe_final_audio_result(
+    audio: np.ndarray,
+) -> TranscriptionResult:
+
+    return (
+        transcribe_audio_result(
+            audio,
+            beam_size=FINAL_BEAM_SIZE,
+        )
+    )
+
+
+class LiveTranscriptController:
+
+    def __init__(
+        self,
+        *,
+        required_stability: int = 2,
+        on_streaming_candidate=None,
+        on_streaming_final=None,
+    ):
+
+        self.state = (
+            TranscriptState(
+                required_stability=
+                    required_stability,
+            )
+        )
+
+        self.language = (
+            WHISPER_LANGUAGE
+        )
+
+        self.language_probability = None
+
+        self.streaming_input = (
+            StreamingInputCoordinator()
+        )
+
+        self.on_streaming_candidate = (
+            on_streaming_candidate
+        )
+
+        self.on_streaming_final = (
+            on_streaming_final
+        )
+
+
+    def handle_partial(
+        self,
+        event: TranscriptEvent,
+    ):
+
+        update = (
+            self.state.update_partial(
+                event.text
+            )
+        )
+
+        print(
+            (
+                "[Partial — en] "
+                f"{event.text}"
+            )
+        )
+
+        if (
+            self.on_streaming_candidate
+            is not None
+        ):
+
+            for sentence in (
+                update.newly_committed
+            ):
+
+                snapshot = (
+                    self.streaming_input
+                    .commit_sentence(
+                        sentence
+                    )
+                )
+
+                if (
+                    snapshot
+                    .provisional_reasoning_allowed
+                ):
+
+                    self.on_streaming_candidate(
+                        snapshot
+                    )
+
+        if update.rewritten:
+
+            print(
+                "[Transcript revised]"
+            )
+
+        return update
+
+
+    def finalize(
+        self,
+        result: TranscriptionResult,
+    ):
+
+        update = (
+            self.state.finalize(
+                result.text
+            )
+        )
+
+        snapshot = (
+            self.streaming_input.finalize(
+                result.text
+            )
+        )
+
+        if (
+            self.on_streaming_final
+            is not None
+        ):
+
+            self.on_streaming_final(
+                snapshot
+            )
+
+        print(
+            (
+                "[Final transcript — en] "
+                f"{result.text}"
+            )
+        )
+
+        if update.rewritten:
+
+            print(
+                "[Final transcript reconciled]"
+            )
+
+        return update
+
+
+def record_utterance(
+    *,
+    on_streaming_candidate=None,
+    on_streaming_final=None,
+    on_speech_started=None,
+):
+    """
+    Captures one utterance.
+
+    on_speech_started:
+        called immediately when VAD confirms speech onset.
+        This is intentionally earlier than partial/final transcription.
+    """
+
+    print(
+        "\nListening..."
+    )
+
+    detector = (
+        create_vad()
+    )
+
+    buffer = (
+        UtteranceBuffer()
+    )
+
+    transcript_controller = (
+        LiveTranscriptController(
+            required_stability=2,
+            on_streaming_candidate=
+                on_streaming_candidate,
+            on_streaming_final=
+                on_streaming_final,
+        )
+    )
+
+    partial_worker = (
+        PartialTranscriber(
+            transcribe_fn=
+                transcribe_partial_audio_result,
+            emit_fn=
+                transcript_controller.handle_partial,
+            sample_rate=
+                SAMPLE_RATE,
+        )
+    )
+
+    listen_started_at = (
+        time.monotonic()
+    )
+
+    speech_started_at = None
+
+    next_partial_at = None
+
+    try:
+
+        with sd.InputStream(
+            samplerate=
+                SAMPLE_RATE,
+            channels=
+                CHANNELS,
+            dtype=
+                "int16",
+            blocksize=
+                FRAME_SAMPLES,
+        ) as stream:
+
+            while True:
+
+                frame, overflowed = (
+                    stream.read(
+                        FRAME_SAMPLES
+                    )
+                )
+
+                frame = (
+                    np.asarray(
+                        frame,
+                        dtype=np.int16,
+                    )
+                    .copy()
+                )
+
+                vad_result = (
+                    detector.process_frame(
+                        frame
+                    )
+                )
+
+                if not buffer.started:
+
+                    buffer.add_pre_roll(
+                        frame
+                    )
+
+                    if vad_result.speech_started:
+
+                        buffer.start()
+
+                        speech_started_at = (
+                            time.monotonic()
+                        )
+
+                        next_partial_at = (
+                            speech_started_at
+                            + PARTIAL_INITIAL_DELAY_SECONDS
+                        )
+
+                        partial_worker.start()
+
+                        print(
+                            "Speech detected."
+                        )
+
+                        if (
+                            on_speech_started
+                            is not None
+                        ):
+
+                            try:
+
+                                on_speech_started()
+
+                            except Exception as error:
+
+                                print(
+                                    (
+                                        "[Speech-start callback warning] "
+                                        f"{error}"
+                                    )
+                                )
+
+                    else:
+
+                        if (
+                            time.monotonic()
+                            - listen_started_at
+                            >= LISTEN_TIMEOUT_SECONDS
+                        ):
+
+                            print(
+                                "Listening timed out."
+                            )
+
+                            return (
+                                None,
+                                transcript_controller,
+                            )
+
+                        continue
+
+                else:
+
+                    buffer.add_frame(
+                        frame
+                    )
+
+                now = (
+                    time.monotonic()
+                )
+
+                if (
+                    next_partial_at
+                    is not None
+                    and now >= next_partial_at
+                    and not vad_result.speech_ended
+                ):
+
+                    snapshot = (
+                        buffer.audio()
+                    )
+
+                    if snapshot is not None:
+
+                        partial_worker.submit(
+                            snapshot
+                        )
+
+                    next_partial_at = (
+                        now
+                        + PARTIAL_INTERVAL_SECONDS
+                    )
+
+                if vad_result.speech_ended:
+
+                    print(
+                        "Speech complete."
+                    )
+
+                    break
+
+                if (
+                    speech_started_at
+                    is not None
+                    and (
+                        now
+                        - speech_started_at
+                    )
+                    >= MAX_UTTERANCE_SECONDS
+                ):
+
+                    print(
+                        "Maximum utterance length reached."
+                    )
+
+                    break
+
+    finally:
+
+        partial_worker.stop(
+            wait=True
+        )
+
+    return (
+        buffer.audio(),
+        transcript_controller,
+    )
+
+
+def listen(
+    *,
+    on_streaming_candidate=None,
+    on_streaming_final=None,
+    on_speech_started=None,
+):
+
+    audio, transcript_controller = (
+        record_utterance(
+            on_streaming_candidate=
+                on_streaming_candidate,
+            on_streaming_final=
+                on_streaming_final,
+            on_speech_started=
+                on_speech_started,
+        )
+    )
 
     if audio is None:
 
         return ""
 
+    print(
+        "Finalizing transcription..."
+    )
 
-    text = (
-        transcribe_audio(
+    result = (
+        transcribe_final_audio_result(
             audio
         )
     )
 
+    text = (
+        result.text.strip()
+    )
 
-    if text:
+    if not text:
 
-        print(
-            f"You: {text}"
-        )
+        return ""
 
+    transcript_controller.finalize(
+        result
+    )
 
     return text
 
 
-# ---------------------------------------------------------------------------
-# Standalone Test
-# ---------------------------------------------------------------------------
-
 if __name__ == "__main__":
 
-    result = listen()
+    result = (
+        listen()
+    )
 
     print(
         "\nTranscription:"

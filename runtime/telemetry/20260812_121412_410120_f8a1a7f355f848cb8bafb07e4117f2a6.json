@@ -1,0 +1,60 @@
+{
+  "request_id": "f8a1a7f355f848cb8bafb07e4117f2a6",
+  "user_text": "Yes.",
+  "total_seconds": 11.3879,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 2.5494,
+    "response_ready": 5.2408,
+    "tts_started": 5.2662,
+    "speech_finished": 11.3879
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 5.2348,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0246,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 6.1217,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

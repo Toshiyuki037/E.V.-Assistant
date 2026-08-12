@@ -1,0 +1,72 @@
+{
+  "request_id": "3c55540adf2a40a4a4e98a0e5c036787",
+  "user_text": "Cicely, how much is my squad portfolio today?",
+  "total_seconds": 31.469,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 16.5166,
+    "tts_started": 16.5231,
+    "tts_generation_started": 16.5247,
+    "tts_generation_finished": 21.3533,
+    "audio_playback_started": 21.3822,
+    "audio_playback_finished": 31.4633,
+    "speech_finished": 31.469
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0013,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0025,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 16.5103,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.006,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 14.9459,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 4.8285,
+      "metadata": {
+        "characters": 136
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.0289,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 10.081,
+      "metadata": {
+        "audio_seconds": 8.779
+      }
+    }
+  ],
+  "metadata": {}
+}

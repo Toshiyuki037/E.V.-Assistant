@@ -24,8 +24,11 @@ TELEMETRY_DIRECTORY = (
 def _round_seconds(
     value,
 ):
+
     if value is None:
+
         return None
+
 
     return round(
         float(
@@ -38,6 +41,7 @@ def _round_seconds(
 def telemetry_to_dict(
     telemetry: RequestTelemetry,
 ):
+
     return {
         "request_id":
             telemetry.request_id,
@@ -87,14 +91,20 @@ def telemetry_to_dict(
 def persist_telemetry(
     telemetry: RequestTelemetry,
 ):
+
     TELEMETRY_DIRECTORY.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    stamp = datetime.now().strftime(
-        "%Y%m%d_%H%M%S_%f"
+
+    stamp = (
+        datetime.now()
+        .strftime(
+            "%Y%m%d_%H%M%S_%f"
+        )
     )
+
 
     path = (
         TELEMETRY_DIRECTORY
@@ -103,6 +113,7 @@ def persist_telemetry(
             f"{telemetry.request_id}.json"
         )
     )
+
 
     path.write_text(
         json.dumps(
@@ -115,28 +126,121 @@ def persist_telemetry(
         encoding="utf-8",
     )
 
+
     return path
+
+
+def _relative_mark_seconds(
+    telemetry: RequestTelemetry,
+    name: str,
+):
+
+    value = (
+        telemetry.marks.get(
+            name
+        )
+    )
+
+
+    if value is None:
+
+        return None
+
+
+    return (
+        value
+        - telemetry.started_at
+    )
 
 
 def print_latency_report(
     telemetry: RequestTelemetry,
 ):
+
     print()
-    print("[Latency]")
+
+    print(
+        "[Latency]"
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Perceived Voice Latency
+    # -----------------------------------------------------------------------
+
+    first_sentence = (
+        _relative_mark_seconds(
+            telemetry,
+            "first_authoritative_sentence",
+        )
+    )
+
+
+    first_audio = (
+        _relative_mark_seconds(
+            telemetry,
+            "first_audio_started",
+        )
+    )
+
+
+    if first_sentence is not None:
+
+        print(
+            (
+                "time_to_first_sentence: "
+                f"{first_sentence:.3f}s"
+            )
+        )
+
+
+    if first_audio is not None:
+
+        print(
+            (
+                "time_to_first_audio: "
+                f"{first_audio:.3f}s"
+            )
+        )
+
+
+    if (
+        first_sentence is not None
+        and first_audio is not None
+    ):
+
+        print(
+            (
+                "first_sentence_to_audio: "
+                f"{max(0.0, first_audio - first_sentence):.3f}s"
+            )
+        )
+
+
+    # -----------------------------------------------------------------------
+    # Existing Span Report
+    # -----------------------------------------------------------------------
 
     for item in telemetry.spans:
 
         if item.duration is None:
+
             continue
 
+
         print(
-            f"{item.name}: "
-            f"{item.duration:.3f}s"
+            (
+                f"{item.name}: "
+                f"{item.duration:.3f}s"
+            )
         )
+
 
     if telemetry.total_duration is not None:
 
         print(
-            "total: "
-            f"{telemetry.total_duration:.3f}s"
+            (
+                "total: "
+                f"{telemetry.total_duration:.3f}s"
+            )
         )

@@ -1,0 +1,82 @@
+{
+  "request_id": "1dcdccb7b15c49d2a6486854eb38974a",
+  "user_text": "My first sentence is about electrical engineering. My second sentence is about embedded systems. And my final sentence is about testing EV.",
+  "total_seconds": 36.1502,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 23.7505,
+    "tts_started": 23.7705,
+    "tts_generation_started": 23.7716,
+    "tts_generation_finished": 27.8489,
+    "audio_playback_started": 27.8592,
+    "audio_playback_finished": 36.1496,
+    "speech_finished": 36.1502
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0031,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0012,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0006,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0016,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 4.127,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 19.6146,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0192,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 12.3796,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 4.0773,
+      "metadata": {
+        "characters": 111
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.0102,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 8.2904,
+      "metadata": {
+        "audio_seconds": 7.157
+      }
+    }
+  ],
+  "metadata": {}
+}

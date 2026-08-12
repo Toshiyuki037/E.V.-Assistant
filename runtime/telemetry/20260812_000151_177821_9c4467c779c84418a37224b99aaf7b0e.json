@@ -1,0 +1,82 @@
+{
+  "request_id": "9c4467c779c84418a37224b99aaf7b0e",
+  "user_text": "I am testing to see if it is partial speech recognition and want to see the script update in real time while I'm talking.",
+  "total_seconds": 64.5895,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 45.5047,
+    "tts_started": 45.5247,
+    "tts_generation_started": 45.5275,
+    "tts_generation_finished": 50.8098,
+    "audio_playback_started": 50.8368,
+    "audio_playback_finished": 64.5889,
+    "speech_finished": 64.5895
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0019,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0005,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 3.0194,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 42.4784,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0195,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 19.0648,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 5.2823,
+      "metadata": {
+        "characters": 193
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.027,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 13.752,
+      "metadata": {
+        "audio_seconds": 12.587
+      }
+    }
+  ],
+  "metadata": {}
+}

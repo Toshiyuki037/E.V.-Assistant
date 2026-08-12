@@ -1,0 +1,60 @@
+{
+  "request_id": "8c57cb035acf46abbcf4661f5db8c689",
+  "user_text": "Okay, tell me about Brown University and how I can transfer as a near to get in.",
+  "total_seconds": 36.027,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 10.2365,
+    "response_ready": 25.3733,
+    "tts_started": 25.3968,
+    "speech_finished": 36.027
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0018,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0056,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0012,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 4.7901,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 2.4319,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 18.1392,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0229,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 10.6301,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

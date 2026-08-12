@@ -1,0 +1,60 @@
+{
+  "request_id": "d1e28c458ca14dcaa090a259a77e91e0",
+  "user_text": "Explain what a transistor is and what matters in computers.",
+  "total_seconds": 54.1593,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 34.0368,
+    "response_ready": 37.303,
+    "tts_started": 37.325,
+    "speech_finished": 54.1593
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0017,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0057,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0015,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0037,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 3.9883,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 33.2939,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0215,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 16.8342,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

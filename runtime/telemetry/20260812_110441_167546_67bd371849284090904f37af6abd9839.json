@@ -1,0 +1,60 @@
+{
+  "request_id": "67bd371849284090904f37af6abd9839",
+  "user_text": "Morning EV how's your day? Do you remember everything memory out our initiative for you?",
+  "total_seconds": 22.7443,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 13.5821,
+    "response_ready": 16.1493,
+    "tts_started": 16.1701,
+    "speech_finished": 22.7442
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 16.1432,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0195,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 6.5741,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

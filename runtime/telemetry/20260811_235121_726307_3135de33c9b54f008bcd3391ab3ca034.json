@@ -1,0 +1,82 @@
+{
+  "request_id": "3135de33c9b54f008bcd3391ab3ca034",
+  "user_text": "What's two plus two",
+  "total_seconds": 7.6158,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 3.6766,
+    "tts_started": 3.6956,
+    "tts_generation_started": 3.6964,
+    "tts_generation_finished": 6.3411,
+    "audio_playback_started": 6.3614,
+    "audio_playback_finished": 7.6153,
+    "speech_finished": 7.6158
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0024,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0009,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.6693,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0189,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 3.9201,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 2.6447,
+      "metadata": {
+        "characters": 1
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.0203,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 1.2539,
+      "metadata": {
+        "audio_seconds": 0.203
+      }
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,82 @@
+{
+  "request_id": "30d6e4910a0b4f1fa920c3f95b787b3f",
+  "user_text": "Yeah, my portfolio performed today.",
+  "total_seconds": 31.5145,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 5.1436,
+    "tts_started": 5.1665,
+    "tts_generation_started": 5.1684,
+    "tts_generation_finished": 13.5311,
+    "audio_playback_started": 13.5517,
+    "audio_playback_finished": 31.5131,
+    "speech_finished": 31.5145
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0019,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0045,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0012,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0013,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 5.1318,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0223,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 26.348,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 8.3627,
+      "metadata": {
+        "characters": 259
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.0206,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 17.9613,
+      "metadata": {
+        "audio_seconds": 17.013
+      }
+    }
+  ],
+  "metadata": {}
+}

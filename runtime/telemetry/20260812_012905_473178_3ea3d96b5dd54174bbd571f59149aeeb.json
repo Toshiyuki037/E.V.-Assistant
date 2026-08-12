@@ -1,0 +1,81 @@
+{
+  "request_id": "3ea3d96b5dd54174bbd571f59149aeeb",
+  "user_text": "Bye.",
+  "total_seconds": 5.4478,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 2.0164,
+    "tts_started": 2.0369,
+    "tts_generation_started": 2.0374,
+    "tts_generation_finished": 4.6508,
+    "audio_playback_started": 4.6508,
+    "speech_finished": 5.4478
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0053,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0009,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0009,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 2.0064,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0202,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 3.4106,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 2.6133,
+      "metadata": {
+        "characters": 9
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 0.797,
+      "metadata": {
+        "audio_seconds": 1.92
+      }
+    }
+  ],
+  "metadata": {}
+}

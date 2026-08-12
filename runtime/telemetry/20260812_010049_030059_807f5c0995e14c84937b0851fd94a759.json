@@ -1,0 +1,82 @@
+{
+  "request_id": "807f5c0995e14c84937b0851fd94a759",
+  "user_text": "What is a transistor and why important income there is?",
+  "total_seconds": 47.3602,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 21.3061,
+    "tts_started": 21.3371,
+    "tts_generation_started": 21.3395,
+    "tts_generation_finished": 29.8137,
+    "audio_playback_started": 29.8267,
+    "audio_playback_finished": 47.3596,
+    "speech_finished": 47.3602
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0024,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 21.2992,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0306,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 26.0229,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 8.4742,
+      "metadata": {
+        "characters": 259
+      }
+    },
+    {
+      "name": "tts_audio_load",
+      "seconds": 0.013,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 17.5328,
+      "metadata": {
+        "audio_seconds": 16.49
+      }
+    }
+  ],
+  "metadata": {}
+}

@@ -2539,7 +2539,221 @@ PROJECT / FILE KNOWLEDGE
         context_text,
         visual_input,
     )
+# ---------------------------------------------------------------------------
+# Phase 14D - Provisional Streaming Reasoning
+# ---------------------------------------------------------------------------
 
+PROVISIONAL_SYSTEM_PROMPT = (
+    SYSTEM_PROMPT
+    + """
+
+PROVISIONAL VOICE REASONING
+
+This request comes from E.V.I.E.'s live streaming voice system.
+
+The user's utterance may still change.
+
+Rules:
+
+- This is READ-ONLY provisional conversational reasoning.
+- Never claim that an action has been performed.
+- Never claim that a tool, workflow, computer action, integration,
+  memory mutation, file mutation, or external operation occurred.
+- Do not request approval.
+- Do not execute or simulate execution.
+- Do not make durable memory decisions.
+- Answer only the informational/conversational meaning currently
+  available.
+- Be concise and conversational.
+- A later finalized request remains authoritative.
+"""
+)
+
+
+def stream_provisional_reasoning(
+    user_message: str,
+    *,
+    on_delta=None,
+    is_current=None,
+):
+    """
+    Phase 14D provisional reasoning stream.
+
+    IMPORTANT:
+
+    This does NOT replace chat().
+
+    It intentionally avoids the expensive full-context pipeline used by
+    authoritative final requests.
+
+    It uses:
+        - the existing E.V.I.E. system identity
+        - recent conversation history
+        - the currently committed safe speech
+
+    It does NOT invoke:
+        - semantic long-term memory retrieval
+        - project indexing/retrieval
+        - live computer perception
+        - screenshots/vision
+        - tools
+        - agents
+        - workflows
+        - computer control
+        - memory mutation
+
+    Returns the text accumulated before completion or cancellation.
+    """
+
+    user_message = (
+        str(
+            user_message
+            or ""
+        )
+        .strip()
+    )
+
+
+    if not user_message:
+
+        return ""
+
+
+    # -----------------------------------------------------------------------
+    # Lightweight Conversational Context
+    # -----------------------------------------------------------------------
+
+    try:
+
+        conversation_context = (
+            build_conversation_context(
+                limit=3
+            )
+        )
+
+    except Exception:
+
+        conversation_context = (
+            "Recent conversation history "
+            "is temporarily unavailable."
+        )
+
+
+    developer_message = (
+        "This is a provisional live-voice reasoning request.\n\n"
+        "The user's utterance may still change.\n\n"
+        "Do not perform or claim any external action.\n\n"
+        "RECENT CONVERSATION HISTORY\n\n"
+        f"{conversation_context}"
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Streaming Request
+    # -----------------------------------------------------------------------
+
+    accumulated = []
+
+
+    try:
+
+        with client.responses.stream(
+            model=
+                "gpt-5.5",
+
+            instructions=
+                PROVISIONAL_SYSTEM_PROMPT,
+
+            input=[
+                {
+                    "role":
+                        "developer",
+
+                    "content":
+                        developer_message,
+                },
+
+                {
+                    "role":
+                        "user",
+
+                    "content":
+                        user_message,
+                },
+            ],
+        ) as stream:
+
+            for event in stream:
+
+                # -----------------------------------------------------------
+                # Version / Cancellation Check
+                # -----------------------------------------------------------
+
+                if (
+                    is_current is not None
+                    and not is_current()
+                ):
+
+                    break
+
+
+                # -----------------------------------------------------------
+                # Text Delta
+                # -----------------------------------------------------------
+
+                if (
+                    getattr(
+                        event,
+                        "type",
+                        "",
+                    )
+                    == "response.output_text.delta"
+                ):
+
+                    delta = (
+                        getattr(
+                            event,
+                            "delta",
+                            "",
+                        )
+                        or ""
+                    )
+
+
+                    if not delta:
+
+                        continue
+
+
+                    accumulated.append(
+                        delta
+                    )
+
+
+                    if on_delta is not None:
+
+                        on_delta(
+                            delta
+                        )
+
+
+    except Exception as error:
+
+        print(
+            "\n[Provisional Reasoning Warning]"
+        )
+
+        print(
+            error
+        )
+
+
+    return (
+        "".join(
+            accumulated
+        )
+        .strip()
+    )
 # ---------------------------------------------------------------------------
 # Main Chat
 # ---------------------------------------------------------------------------

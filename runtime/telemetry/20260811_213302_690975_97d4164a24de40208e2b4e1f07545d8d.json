@@ -1,0 +1,59 @@
+{
+  "request_id": "97d4164a24de40208e2b4e1f07545d8d",
+  "user_text": "What's 2 + 2?",
+  "total_seconds": 28.0251,
+  "marks": {
+    "request_received": 0.0001,
+    "response_ready": 23.0107,
+    "tts_started": 23.018,
+    "speech_finished": 28.0251
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.002,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0047,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 5.0411,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 3.7887,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 14.1698,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0065,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 5.007,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

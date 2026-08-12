@@ -34,8 +34,24 @@ from .brain import (
     handle_tool_request,
 )
 from .listen import listen
-from .speak import speak
 from .speech_formatter import prepare_spoken_text
+
+from .speak import (
+    play_audio,
+    speak,
+    pause_audio,
+    resume_audio,
+    stop_audio,
+    synthesize_audio,
+)
+
+from .voice.authoritative_reasoning import (
+    stream_authoritative_chat,
+)
+
+from .voice.authoritative_speech import (
+    AuthoritativeSpeechPipeline,
+)
 
 from .memory.database import (
     archive_memories,
@@ -95,6 +111,10 @@ from .telemetry import (
     print_latency_report,
     span,
     start_request,
+)
+
+from .voice.session import (
+    run_voice_session,
 )
 
 # ---------------------------------------------------------------------------
@@ -760,6 +780,8 @@ def complete_response(
 
 def process_prompt(
     user_text,
+    *,
+    voice_streaming: bool = False,
 ):
     """
     Shared E.V.I.E. processing pipeline.
@@ -1294,17 +1316,204 @@ def process_prompt(
     # Main Reasoning
     # -----------------------------------------------------------------------
 
-    with span(
-        "reasoning"
-    ):
+    if voice_streaming:
 
-        response = chat(
-            user_text
+        # -------------------------------------------------------------------
+        # Phase 14 - Perceived Latency Telemetry
+        # -------------------------------------------------------------------
+
+        first_sentence_marked = False
+        first_audio_marked = False
+
+
+        def handle_authoritative_sentence(
+            sentence,
+        ):
+
+            nonlocal first_sentence_marked
+
+
+            if not first_sentence_marked:
+
+                mark(
+                    "first_authoritative_sentence"
+                )
+
+                first_sentence_marked = True
+
+
+            return (
+                speech_pipeline.submit_sentence(
+                    sentence
+                )
+            )
+
+
+        def handle_authoritative_speech_event(
+            event,
+        ):
+
+            nonlocal first_audio_marked
+
+
+            if (
+                event.kind
+                == "playback_started"
+
+                and not first_audio_marked
+            ):
+
+                mark(
+                    "first_audio_started"
+                )
+
+                first_audio_marked = True
+
+
+        # -------------------------------------------------------------------
+        # Authoritative Streaming Speech Pipeline
+        # -------------------------------------------------------------------
+
+        speech_pipeline = (
+            AuthoritativeSpeechPipeline(
+                synthesize_fn=
+                    synthesize_audio,
+
+                play_fn=
+                    play_audio,
+
+                prepare_fn=
+                    prepare_spoken_text,
+
+                emit_fn=
+                    handle_authoritative_speech_event,
+
+                max_sentences=
+                    2,
+
+                max_characters=
+                    260,
+            )
         )
 
-    complete_response(
-        user_text,
-        response,
+
+        speech_pipeline.start()
+
+
+        # -------------------------------------------------------------------
+        # Authoritative Streaming Reasoning
+        # -------------------------------------------------------------------
+
+        with span(
+            "reasoning"
+        ):
+
+            response = (
+                stream_authoritative_chat(
+                    user_text,
+
+                    on_sentence=
+                        handle_authoritative_sentence,
+                )
+            )
+
+
+        speech_pipeline.finish_input()
+
+
+        mark(
+            "response_ready"
+        )
+
+
+        print(
+            f"\nE.V.I.E.: "
+            f"{response}\n"
+        )
+
+
+        with span(
+            "conversation_save"
+        ):
+
+            save_conversation(
+                user_text,
+                response,
+            )
+
+
+        mark(
+            "tts_started"
+        )
+
+
+        with span(
+            "tts_total"
+        ):
+
+            speech_pipeline.wait()
+
+
+        mark(
+            "speech_finished"
+        )
+
+
+        telemetry = (
+            finish_request()
+        )
+
+
+        if telemetry is not None:
+
+            persist_telemetry(
+                telemetry
+            )
+
+            print_latency_report(
+                telemetry
+            )
+
+
+        clear_request()
+
+
+    else:
+
+        with span(
+            "reasoning"
+        ):
+
+            response = chat(
+                user_text
+            )
+
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+# ---------------------------------------------------------------------------
+# Phase 14 - Voice Authoritative Streaming Entry
+# ---------------------------------------------------------------------------
+
+def process_voice_prompt(
+    user_text,
+):
+    """
+    Processes finalized voice requests through the normal frozen
+    E.V.I.E. routing architecture while enabling authoritative
+    sentence-by-sentence streaming for normal reasoning.
+    """
+
+    return (
+        process_prompt(
+            user_text,
+
+            voice_streaming=
+                True,
+        )
     )
 
 # ---------------------------------------------------------------------------
@@ -1429,32 +1638,32 @@ while True:
         "voice",
     }:
 
-        user_text = listen()
+        voice_result = (
+            run_voice_session(
+                listen_fn=
+                    listen,
 
-        if not user_text:
+                process_prompt_fn=
+                    process_voice_prompt,
 
-            print(
-                "\nI didn't hear anything."
+                interrupt_speech_fn=
+                    stop_audio,
+
+                pause_speech_fn=
+                    pause_audio,
+
+                resume_speech_fn=
+                    resume_audio,
+
+                speech_started_fn=
+                    pause_audio,
             )
-
-            continue
-
-        if user_text.lower() in {
-            "quit",
-            "exit",
-            "goodbye",
-        }:
-
-            print(
-                "\nE.V.I.E. Offline"
-            )
-
-            break
-
-        process_prompt(
-            user_text
         )
 
+
+        if voice_result.quit_application:
+
+            break
 
     # -----------------------------------------------------------------------
     # Invalid Input

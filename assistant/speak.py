@@ -1,44 +1,22 @@
 """
 E.V.I.E. - Voice Synthesis Module
 
-Created: August 7, 2026
-Last Edited: August 12, 2026
-Author: Max Maehara
+Phase 14I
 
-Purpose:
-    Converts E.V.I.E.'s spoken-response text into local speech.
-
-How It Works:
-    Uses the local F5-TTS model with an authorized reference voice.
-
-    The model remains loaded on the NVIDIA GPU.
-
-    Generated speech is:
-        - written temporarily
-        - loaded into memory
-        - played through the speaker
-        - deleted afterward
-
-Phase 14A:
-    Added separate telemetry for:
-        - TTS generation
-        - WAV loading
-        - audio playback
-
-    This allows E.V.I.E. to distinguish model latency from actual
-    speech duration before Phase 14 streaming TTS is implemented.
+Exposes the resident F5 model and the process-wide controllable playback
+controller.
 """
 
 from __future__ import annotations
 
 import os
 import tempfile
+import threading
 
 from pathlib import (
     Path,
 )
 
-import sounddevice as sd
 import soundfile as sf
 
 from f5_tts.api import (
@@ -50,10 +28,10 @@ from .telemetry import (
     span,
 )
 
+from .voice.playback import (
+    PLAYER,
+)
 
-# ---------------------------------------------------------------------------
-# Paths
-# ---------------------------------------------------------------------------
 
 ROOT = (
     Path(
@@ -64,7 +42,6 @@ ROOT = (
     .parent
 )
 
-
 REF_AUDIO = (
     ROOT
     / "evie-voice"
@@ -72,14 +49,12 @@ REF_AUDIO = (
     / "evie-neutral.wav"
 )
 
-
 REF_TEXT_FILE = (
     ROOT
     / "evie-voice"
     / "references"
     / "evie-neutral.txt"
 )
-
 
 REF_TEXT = (
     REF_TEXT_FILE
@@ -90,36 +65,29 @@ REF_TEXT = (
 )
 
 
-# ---------------------------------------------------------------------------
-# Model Initialization
-# ---------------------------------------------------------------------------
-
 print(
     "Loading E.V. voice model..."
 )
 
-
-tts = F5TTS(
-    model=
-        "F5TTS_v1_Base"
+tts = (
+    F5TTS(
+        model=
+            "F5TTS_v1_Base"
+    )
 )
 
+_TTS_LOCK = (
+    threading.Lock()
+)
 
 print(
     "E.V. voice ready."
 )
 
 
-# ---------------------------------------------------------------------------
-# Speech
-# ---------------------------------------------------------------------------
-
-def speak(
+def synthesize_audio(
     text: str,
 ):
-    """
-    Generates and plays one spoken E.V.I.E. response.
-    """
 
     text = (
         str(
@@ -132,7 +100,10 @@ def speak(
 
     if not text:
 
-        return
+        return (
+            None,
+            0,
+        )
 
 
     temp_path = None
@@ -140,16 +111,9 @@ def speak(
 
     try:
 
-        # -------------------------------------------------------------------
-        # Temporary Output File
-        # -------------------------------------------------------------------
-
         with tempfile.NamedTemporaryFile(
-            suffix=
-                ".wav",
-
-            delete=
-                False,
+            suffix=".wav",
+            delete=False,
         ) as temp:
 
             temp_path = (
@@ -157,22 +121,7 @@ def speak(
             )
 
 
-        # -------------------------------------------------------------------
-        # F5-TTS Generation
-        # -------------------------------------------------------------------
-
-        mark(
-            "tts_generation_started"
-        )
-
-
-        with span(
-            "tts_generation",
-            characters=
-                len(
-                    text
-                ),
-        ):
+        with _TTS_LOCK:
 
             tts.infer(
                 ref_file=
@@ -191,84 +140,22 @@ def speak(
             )
 
 
-        mark(
-            "tts_generation_finished"
+        audio, sample_rate = (
+            sf.read(
+                temp_path
+            )
         )
 
 
-        # -------------------------------------------------------------------
-        # Read Generated Audio
-        # -------------------------------------------------------------------
-
-        with span(
-            "tts_audio_load"
-        ):
-
-            audio, sample_rate = (
-                sf.read(
-                    temp_path
-                )
-            )
-
-
-        # -------------------------------------------------------------------
-        # Audio Duration
-        # -------------------------------------------------------------------
-
-        try:
-
-            audio_duration = (
-                len(
-                    audio
-                )
-                / float(
-                    sample_rate
-                )
-            )
-
-        except Exception:
-
-            audio_duration = (
-                0.0
-            )
-
-
-        # -------------------------------------------------------------------
-        # Playback
-        # -------------------------------------------------------------------
-
-        mark(
-            "audio_playback_started"
-        )
-
-
-        with span(
-            "tts_playback",
-            audio_seconds=
-                round(
-                    audio_duration,
-                    3,
-                ),
-        ):
-
-            sd.play(
-                audio,
-                sample_rate,
-            )
-
-            sd.wait()
-
-
-        mark(
-            "audio_playback_finished"
+        return (
+            audio,
+            int(
+                sample_rate
+            ),
         )
 
 
     finally:
-
-        # -------------------------------------------------------------------
-        # Temporary Audio Cleanup
-        # -------------------------------------------------------------------
 
         if (
             temp_path
@@ -277,21 +164,155 @@ def speak(
             )
         ):
 
-            os.remove(
-                temp_path
-            )
+            try:
+
+                os.remove(
+                    temp_path
+                )
+
+            except OSError:
+
+                pass
 
 
-# ---------------------------------------------------------------------------
-# Standalone Test
-# ---------------------------------------------------------------------------
+def play_audio(
+    audio,
+    sample_rate: int,
+):
 
-if __name__ == "__main__":
-
-    speak(
-        (
-            "Good evening, Max. "
-            "E.V. voice systems are "
-            "operating normally."
+    return (
+        PLAYER.play(
+            audio,
+            int(
+                sample_rate
+            ),
         )
+    )
+
+
+def stop_audio():
+
+    PLAYER.stop_current()
+
+
+def pause_audio():
+
+    PLAYER.pause_current()
+
+
+def resume_audio():
+
+    PLAYER.resume_current()
+
+
+def audio_is_speaking() -> bool:
+
+    return (
+        PLAYER.is_speaking
+    )
+
+
+def audio_is_paused() -> bool:
+
+    return (
+        PLAYER.is_paused
+    )
+
+
+def close_audio():
+
+    PLAYER.close()
+
+
+def speak(
+    text: str,
+):
+
+    text = (
+        str(
+            text
+            or ""
+        )
+        .strip()
+    )
+
+
+    if not text:
+
+        return
+
+
+    mark(
+        "tts_generation_started"
+    )
+
+
+    with span(
+        "tts_generation",
+        characters=
+            len(
+                text
+            ),
+    ):
+
+        audio, sample_rate = (
+            synthesize_audio(
+                text
+            )
+        )
+
+
+    mark(
+        "tts_generation_finished"
+    )
+
+
+    if (
+        audio is None
+        or sample_rate <= 0
+    ):
+
+        return
+
+
+    try:
+
+        audio_duration = (
+            len(
+                audio
+            )
+            / float(
+                sample_rate
+            )
+        )
+
+    except Exception:
+
+        audio_duration = (
+            0.0
+        )
+
+
+    mark(
+        "audio_playback_started"
+    )
+
+
+    with span(
+        "tts_playback",
+        audio_seconds=
+            round(
+                audio_duration,
+                3,
+            ),
+    ):
+
+        play_audio(
+            audio,
+            sample_rate,
+        )
+
+
+    mark(
+        "audio_playback_finished"
     )
