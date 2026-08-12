@@ -796,7 +796,14 @@ def continue_if_needed(
         >= MAX_CONTINUATIONS
     ):
 
-        return "fail"
+        # No more adaptive actions may be added.
+        #
+        # This is NOT proof that the goal failed.
+        #
+        # The final verifier must inspect the real execution history and
+        # decide whether the last permitted continuation actually completed
+        # the user's goal.
+        return "complete"
 
 
     continuation = decide_continuation(

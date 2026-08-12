@@ -2,7 +2,7 @@
 E.V.I.E. - Agent Planner
 
 Created: August 9, 2026
-Last Edited: August 12, 2026
+Last Edited: August 9, 2026
 Author: Max Maehara
 
 Purpose:
@@ -16,14 +16,16 @@ Capabilities:
     - uses exact registered tool signatures
     - creates bounded plans
     - preserves Phase 6 permission boundaries
-    - coordinates Phase 13 computer control
-    - uses structured filesystem discovery
-    - prevents dependent-step guessing
 
 Important:
     This module PLANS only.
 
     It does not execute tools.
+
+Most Recent Change:
+    Added adaptive task routing so requests such as
+    "run this and fix it if it fails" correctly enter Phase 7
+    even when only one initial action is known.
 """
 
 import inspect
@@ -78,7 +80,9 @@ MAX_INITIAL_STEPS = 8
 
 class PlannedStep(BaseModel):
     description: str
+
     tool_name: str
+
     arguments_json: str = "{}"
 
 
@@ -158,7 +162,6 @@ GENERAL RULES:
 
 7. Prefer dedicated tools over run_command.
 
-
 PHASE 13 COMPUTER CONTROL:
 
 E.V.I.E. has a unified computer-control tool named:
@@ -193,18 +196,12 @@ when computer_control can perform the requested action.
 
 Common canonical Phase 13 actions include:
 
-    monitor.list
-
     application.launch
-
     window.focus
     window.move
     window.minimize
     window.maximize
-    window.close
-    window.place
 
-    clipboard.read
     clipboard.write
 
     filesystem.create_directory
@@ -212,9 +209,6 @@ Common canonical Phase 13 actions include:
     filesystem.copy
     filesystem.move
     filesystem.rename
-    filesystem.delete
-    filesystem.exists
-    filesystem.inspect
 
     settings.open
 
@@ -231,13 +225,8 @@ Common canonical Phase 13 actions include:
     browser.dom.select
     browser.dom.press
 
-    vision.pointer_move
-    vision.click
-
-
 When an application may not already be running, explicitly plan the
 application-launch prerequisite.
-
 
 Example:
 
@@ -280,298 +269,35 @@ computer_control actions.
 Phase 7 reasons about WHAT actions and sequencing are required.
 Phase 13 decides HOW each action is physically executed.
 
+8. Prefer inspection before modification when investigation is needed.
 
-PHASE 13 FINAL RULES:
+9. Do not invent tool results.
 
-1. Use only canonical Phase 13 actions exposed in the registered
-   computer_control contract.
+10. Do not assume future steps succeed.
 
-2. NEVER include or invent approved.
-   Approval belongs only to Phase 6.
+11. Do not include conversational responses as plan steps.
 
-3. Never invent actions such as:
+12. Preserve the user's requested ordering.
 
-       window.fullscreen
-       application.close
-       filesystem.verify
+13. Do not automatically commit or push unless the user explicitly asks.
 
-   unless they actually exist in the registered tool contract.
+14. When creating source code, include the COMPLETE intended file
+    contents in the create_file or write_file content argument.
 
-4. Exact important contracts:
-
-       clipboard.write
-           arguments={
-               "text": "<text>"
-           }
-
-       accessibility.set_value
-           arguments={
-               "value": "<text>",
-               "selector": {...}
-           }
-
-       filesystem.write
-           target="<path>"
-           arguments={
-               "content": "<text>"
-           }
-
-       filesystem.exists
-           target="<path>"
-           arguments={}
-
-       filesystem.inspect
-           target="<known path>"
-           arguments={}
-
-       window.close
-           target="<window>"
-
-       window.place
-           target="<window>"
-           arguments={
-               "monitor_index": <1-based integer>,
-               "maximized": true
-           }
-
-       monitor.list
-           target=""
-           arguments={}
-
-5. Friendly user paths are valid:
-
-       Desktop/foo.txt
-       Documents/foo.txt
-       Downloads/foo.txt
-
-   Phase 13 resolves them to real Windows user folders.
-
-6. For multi-monitor requests:
-
-   - use monitor.list when monitor availability matters
-   - rely on actual monitor evidence
-   - use window.place with the requested monitor_index
-   - preserve the requested monitor numbers exactly
-   - never assume monitor 2 or monitor 3 exists
-
-7. Prefer dedicated VS Code tools for opening projects/workspaces/files.
-
-8. After opening VS Code, use computer_control window.place for monitor
-   positioning when requested.
-
-9. Prefer browser tools / DOM for browser-page navigation and interaction.
-
-10. YouTube video fullscreen is a page/player operation.
-    Maximizing Chrome is NOT equivalent to fullscreening the video.
-
-
-PROJECT / PATH DISCOVERY:
-
-11. When the user names a project, workspace, folder, or file but its
-    real filesystem path is unknown, DO NOT guess a path.
-
-12. Never assume the requested project is relative to E.V.I.E.'s
-    repository.
-
-13. Prefer the registered:
-
-        search_filesystem
-
-    tool for locating projects, workspaces, folders, or files outside
-    the active workspace.
-
-14. search_filesystem is the standard Phase 7 filesystem-discovery tool.
-
-15. Do NOT generate:
-
-        run_python
-        PowerShell
-        os.walk
-        pathlib traversal
-        Get-ChildItem recursion
-        custom filesystem crawling scripts
-
-    when search_filesystem can perform the requested discovery.
-
-16. Use filesystem.inspect only for ONE already-known path.
-
-17. filesystem.inspect does NOT enumerate or search children.
-
-18. list_directory is appropriate when the exact directory to enumerate
-    is already known and lies within the tool's supported workspace.
-
-19. search_filesystem is appropriate when the requested filesystem
-    location itself is unknown.
-
-20. For a named project such as FinalCollegePortfolio, a good discovery
-    action is:
-
-        search_filesystem(
-            query="FinalCollegePortfolio",
-            kind="directory"
-        )
-
-21. Once search_filesystem returns real matches, consume the exact:
-
-        result.matches[].path
-
-    value.
-
-22. Never reconstruct, shorten, normalize from memory, or guess the
-    discovered path.
-
-23. Once a real absolute path is observed, preserve that exact path for
-    later VS Code, filesystem, or application actions.
-
-
-Example:
-
-User:
-    Open FinalCollegePortfolio in a new VS Code window.
-
-If its path is unknown:
-
-Correct INITIAL plan:
-
-1.
-    Tool:
-        search_filesystem
-
-    Arguments:
-        {
-            "query": "FinalCollegePortfolio",
-            "kind": "directory"
-        }
-
-STOP the initial plan there.
-
-After the real result is observed, continuation may use:
-
-    open_workspace_in_vscode(
-        workspace_path=<exact result.matches[].path>,
-        new_window=True
-    )
-
-
-Incorrect:
-
-    run_python(
-        arguments=[
-            "-c",
-            "import os; os.walk(...)"
-        ]
-    )
-
-Incorrect:
-
-    list_directory(
-        path="."
-    )
-
-followed immediately by:
-
-    open_workspace_in_vscode(
-        workspace_path="FinalCollegePortfolio"
-    )
-
-when the real path has not yet been observed.
-
-
-DEPENDENT-STEP RULE:
-
-24. When a later action requires a value that must first be discovered
-    by an earlier REAL tool result, DO NOT pre-plan the dependent action
-    with a guessed value.
-
-25. Plan only the action or actions required to obtain the missing real
-    information.
-
-26. Allow Phase 7 continuation to consume the real result.
-
-27. Then continuation may create the dependent action using the exact
-    observed value.
-
-28. Never pre-plan a dependent action using a:
-
-        guessed path
-        placeholder path
-        relative project name
-        guessed URL
-        guessed process id
-        guessed window handle
-        guessed monitor
-        guessed account
-        guessed selector
-
-    when an earlier action exists specifically to discover it.
-
-29. Adaptive planning is expected.
-
-30. It is completely valid for the initial Phase 7 plan to contain only
-    one discovery action.
-
-
-Example:
-
-User:
-    Find MyProject and open it in VS Code.
-
-Correct INITIAL plan:
-
-    search_filesystem(
-        query="MyProject",
-        kind="directory"
-    )
-
-STOP.
-
-Continuation sees:
-
-    C:\\Users\\Example\\Desktop\\MyProject
-
-and then plans:
-
-    open_workspace_in_vscode(
-        workspace_path=
-            "C:\\Users\\Example\\Desktop\\MyProject",
-        new_window=True
-    )
-
-
-INSPECTION AND EXECUTION RULES:
-
-31. Prefer inspection before modification when investigation is needed.
-
-32. Do not invent tool results.
-
-33. Do not assume future steps succeed.
-
-34. Do not include conversational responses as plan steps.
-
-35. Preserve the user's requested ordering.
-
-36. Do not automatically commit or push unless explicitly requested.
-
-37. When creating source code, include COMPLETE intended file contents
-    in the create_file or write_file content argument.
-
-38. create_file may create parent directories automatically, so do not
+15. create_file may create parent directories automatically, so do not
     add unnecessary directory-creation steps.
 
-39. For normal Python execution, prefer run_python.
+16. For Python execution, prefer run_python.
 
-40. run_python is NOT a replacement for registered Phase 13 computer
-    actions or search_filesystem.
-
-41. Do NOT create conditional future plan steps such as:
+17. Do NOT create conditional plan steps such as:
 
         "If execution fails, inspect the file."
 
-    Conditional behavior belongs to the recovery controller.
+    Conditional behavior belongs to the Phase 7 recovery controller.
 
-42. Do NOT add a separate verification step merely to inspect stdout.
+18. Do NOT add a separate verification step merely to inspect stdout.
 
-    The Phase 7 verifier receives real tool results automatically.
+    The final Phase 7 verifier receives real tool results automatically.
 
 
 PROJECT KNOWLEDGE QUESTIONS:
@@ -595,15 +321,13 @@ computer actions such as opening, editing, executing, searching the
 live filesystem when indexed knowledge is insufficient, testing,
 debugging, or modifying something.
 
-
 TOOL ARGUMENT CONTRACTS:
 
-The registered tool descriptions include exact Python signatures.
+The registered tool descriptions include the exact Python signatures.
 
 You MUST use parameter names from those signatures exactly.
 
 Never invent argument names.
-
 
 Example:
 
@@ -618,9 +342,9 @@ run_python(
 
 and the user wants to run:
 
-    TypewriterTest/typewriter.py
+TypewriterTest/typewriter.py
 
-correct:
+the correct arguments are:
 
 {
     "arguments": [
@@ -628,14 +352,14 @@ correct:
     ]
 }
 
-incorrect:
+NOT:
 
 {
     "path": "TypewriterTest/typewriter.py"
 }
 
 
-Example:
+Another example:
 
 If the tool signature is:
 
@@ -646,7 +370,7 @@ open_file_in_vscode(
     new_window=False
 )
 
-and the user explicitly requests a new window:
+and the user asks for a new VS Code window:
 
 {
     "path": "TypewriterTest/typewriter.py",
@@ -654,29 +378,9 @@ and the user explicitly requests a new window:
 }
 
 
-Example:
-
-If the registered signature is:
-
-search_filesystem(
-    query,
-    roots=None,
-    kind="any",
-    max_results=25,
-    max_depth=6
-)
-
-and the user wants to locate FinalCollegePortfolio:
-
-{
-    "query": "FinalCollegePortfolio",
-    "kind": "directory"
-}
-
-
 ADAPTIVE / ITERATIVE TASKS:
 
-Phase 7 MUST be used when the request contains adaptive behavior,
+Phase 7 MUST also be used when the request contains adaptive behavior,
 even when only ONE immediate action is known initially.
 
 Examples:
@@ -690,10 +394,10 @@ Examples:
 - "Verify the result and repair problems if necessary."
 - "Run this script and keep debugging until it exits successfully."
 
+These are Phase 7 tasks because the next actions depend on REAL results.
 
 For adaptive tasks it is valid for the INITIAL plan to contain only
 one step.
-
 
 Example:
 
@@ -705,12 +409,12 @@ Correct initial plan:
 
 1. run_python
 
-Do NOT pre-plan a repair.
+Do NOT pre-plan a specific repair.
 
 Do NOT assume what the error will be.
 
-The recovery controller will inspect real stderr/stdout and generate
-corrective work dynamically.
+The recovery controller will inspect the real stderr/stdout and create
+new corrective steps dynamically.
 
 
 PHASE 10 MULTI-INTENT CONNECTED SERVICES:
@@ -720,7 +424,6 @@ belong to Phase 7.
 
 Each requested connected-service capability becomes its own
 integration_execute step.
-
 
 Example:
 
@@ -761,6 +464,28 @@ Step 2:
             }
         }
 
+Another example:
+
+User:
+
+    Show my latest commits and open issues for E.V.-Assistant.
+
+Correct plan:
+
+Step 1:
+    integration_execute
+    capability = github.commits
+
+Step 2:
+    integration_execute
+    capability = github.issues
+
+Both steps preserve:
+    provider = github
+    account_id = primary
+    routing_mode = explicit_account
+    arguments.repo = E.V.-Assistant
+
 
 PHASE 10 MULTI-INTENT RULES:
 
@@ -772,7 +497,7 @@ PHASE 10 MULTI-INTENT RULES:
 
 4. Never bypass Phase 6 permissions.
 
-5. Never include or invent approved.
+5. Never include or invent an approved argument.
 
 6. Do not invent accounts.
 
@@ -780,12 +505,13 @@ PHASE 10 MULTI-INTENT RULES:
    section, symbol, dates, and account identifiers.
 
 8. Multiple independent connected-service reads are Phase 7 even when
-   the second does not depend on the first.
+   the second read does not depend on the first.
 
 9. Use the smallest number of steps required.
 
-10. Final verification should synthesize successful integration results
-    into one user-facing answer.
+10. The final verifier should synthesize all successful integration
+    results into one user-facing answer.
+
 
 
 MULTI-STEP EXAMPLE:
@@ -846,11 +572,11 @@ Show me my Git status.
 
 Only one direct action is needed:
 
-    git_status
+git_status
 
 Therefore:
 
-    use_agent = false
+use_agent = false
 
 
 NO COMPUTER ACTION EXAMPLE:
@@ -861,7 +587,7 @@ What's 2 + 2?
 
 Therefore:
 
-    use_agent = false
+use_agent = false
 """
 
 
@@ -875,13 +601,12 @@ def describe_agent_tools():
     signatures.
 
     This prevents the planner from inventing argument names.
-
-    Executor-only computer_control approval state is intentionally hidden.
     """
 
     load_default_tools()
 
     blocks = []
+
 
     for tool in list_tools():
 
@@ -891,19 +616,6 @@ def describe_agent_tools():
                 tool.function
             )
 
-            if tool.name == "computer_control":
-
-                parameters = [
-                    parameter
-                    for name, parameter
-                    in signature.parameters.items()
-                    if name != "approved"
-                ]
-
-                signature = signature.replace(
-                    parameters=parameters
-                )
-
         except (
             TypeError,
             ValueError,
@@ -912,6 +624,7 @@ def describe_agent_tools():
             signature = (
                 "(signature unavailable)"
             )
+
 
         blocks.append(
             (
@@ -924,6 +637,7 @@ def describe_agent_tools():
                 f"{tool.description}"
             )
         )
+
 
     return "\n\n".join(
         blocks
@@ -947,6 +661,7 @@ def parse_arguments(
 
         return {}
 
+
     try:
 
         arguments = json.loads(
@@ -957,12 +672,14 @@ def parse_arguments(
 
         return {}
 
+
     if not isinstance(
         arguments,
         dict,
     ):
 
         return {}
+
 
     return arguments
 
@@ -1022,9 +739,11 @@ def plan_task(
 
     load_default_tools()
 
+
     user_message = (
         user_message.strip()
     )
+
 
     if not user_message:
 
@@ -1040,8 +759,9 @@ def plan_task(
             ),
         )
 
+
     # -----------------------------------------------------------------------
-    # Normalize User Input
+    # Phase 10D - Normalize User Input
     # -----------------------------------------------------------------------
 
     normalized_user_message = (
@@ -1049,6 +769,7 @@ def plan_task(
             user_message
         )
     )
+
 
     prompt = (
         f"{PLANNER_SYSTEM_PROMPT}\n\n"
@@ -1061,6 +782,7 @@ def plan_task(
 
         f"{normalized_user_message}"
     )
+
 
     try:
 
@@ -1084,9 +806,11 @@ def plan_task(
             )
         )
 
+
         parsed = (
             response.output_parsed
         )
+
 
     except Exception as error:
 
@@ -1104,6 +828,7 @@ def plan_task(
             ),
         )
 
+
     if parsed is None:
 
         return AgentPlan(
@@ -1119,6 +844,7 @@ def plan_task(
                 "no structured result."
             ),
         )
+
 
     # -----------------------------------------------------------------------
     # Phase 7 Not Required
@@ -1139,11 +865,13 @@ def plan_task(
                 parsed.summary,
         )
 
+
     # -----------------------------------------------------------------------
     # Convert Planned Steps
     # -----------------------------------------------------------------------
 
     steps = []
+
 
     for planned in parsed.steps[
         :MAX_INITIAL_STEPS
@@ -1155,11 +883,13 @@ def plan_task(
             .lower()
         )
 
+
         if not tool_name_exists(
             tool_name
         ):
 
             continue
+
 
         arguments = (
             parse_arguments(
@@ -1167,8 +897,9 @@ def plan_task(
             )
         )
 
+
         # -------------------------------------------------------------------
-        # Phase 10 Integration Argument Preparation
+        # Phase 10A / 10E - Prepare Integration Arguments
         # -------------------------------------------------------------------
 
         if (
@@ -1182,19 +913,6 @@ def plan_task(
                 )
             )
 
-        # -------------------------------------------------------------------
-        # Security: Planner May Never Supply Approval
-        # -------------------------------------------------------------------
-
-        if (
-            tool_name
-            == "computer_control"
-        ):
-
-            arguments.pop(
-                "approved",
-                None,
-            )
 
         steps.append(
             AgentStep(
@@ -1213,8 +931,21 @@ def plan_task(
             )
         )
 
+
     # -----------------------------------------------------------------------
     # Agent Needs At Least One Initial Action
+    # -----------------------------------------------------------------------
+    #
+    # IMPORTANT:
+    #
+    # We intentionally DO NOT require two initial steps.
+    #
+    # Adaptive tasks may begin with:
+    #
+    #     run_python
+    #
+    # and dynamically create additional steps only after observing
+    # the real result.
     # -----------------------------------------------------------------------
 
     if not steps:
@@ -1233,6 +964,7 @@ def plan_task(
                 "computer action was planned."
             ),
         )
+
 
     # -----------------------------------------------------------------------
     # Return Agent Plan
@@ -1283,6 +1015,7 @@ def format_plan(
         ),
     ]
 
+
     if plan.summary:
 
         lines.append(
@@ -1291,6 +1024,7 @@ def format_plan(
                 f"{plan.summary}"
             )
         )
+
 
     if plan.steps:
 
@@ -1302,6 +1036,7 @@ def format_plan(
             "Steps:"
         )
 
+
         for step in plan.steps:
 
             lines.append(
@@ -1311,6 +1046,7 @@ def format_plan(
                 )
             )
 
+
             lines.append(
                 (
                     "   Tool: "
@@ -1318,12 +1054,14 @@ def format_plan(
                 )
             )
 
+
             lines.append(
                 (
                     "   Arguments: "
                     f"{step.arguments}"
                 )
             )
+
 
     return "\n".join(
         lines
@@ -1344,31 +1082,40 @@ if __name__ == "__main__":
         "-----------------------"
     )
 
+
     tests = (
         "What's 2 + 2?",
 
         "Show me my Git status.",
 
         (
-            "Open FinalCollegePortfolio "
-            "in a new VS Code window."
+            "Open my E.V.I.E. project "
+            "in VS Code and then show "
+            "me its Git status."
         ),
 
         (
-            "Open VS Code in a new window for "
-            "FinalCollegePortfolio, maximize it "
-            "on monitor 1, open Chrome to the "
-            "Hacksmith YouTube page, then open "
-            "Canvas in another browser tab."
+            "Create TypewriterTest/"
+            "typewriter.py with a Python "
+            "script that prints "
+            "\"Hello from E.V.I.E.\" "
+            "one character at a time with "
+            "random delays, open it in a "
+            "new VS Code window, then run it."
         ),
 
         (
             "Run TypewriterTest/typewriter.py. "
             "If it fails, inspect the actual "
-            "error and keep debugging until "
-            "it succeeds."
+            "error and the file, determine "
+            "what is wrong, fix the code, "
+            "rerun it, and continue debugging "
+            "until it exits successfully and "
+            "prints exactly Hello from E.V.I.E.. "
+            "Verify the final result."
         ),
     )
+
 
     for message in tests:
 
@@ -1379,9 +1126,11 @@ if __name__ == "__main__":
             message,
         )
 
+
         plan = plan_task(
             message
         )
+
 
         print(
             format_plan(

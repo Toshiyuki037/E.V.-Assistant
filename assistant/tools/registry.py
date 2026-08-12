@@ -229,6 +229,7 @@ def load_default_tools():
     # -----------------------------------------------------------------------
 
     from . import filesystem
+    from . import filesystem_search
     from . import terminal
 
     from . import git
@@ -236,15 +237,18 @@ def load_default_tools():
     from . import browser
     from . import vscode
 
+    # -----------------------------------------------------------------------
+    # Phase 13 Unified Computer Control
+    # -----------------------------------------------------------------------
+
+    from . import computer
+
 
     # -----------------------------------------------------------------------
     # Phase 9 Connected Services
     # -----------------------------------------------------------------------
 
     from . import integrations
-
-
-    return list_tools()
 
 
 # ---------------------------------------------------------------------------

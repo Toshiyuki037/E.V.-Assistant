@@ -34,12 +34,10 @@ Architecture:
     verification layer.
 
 Most Recent Change:
-    Final Phase 13 hardening:
-    - preserves search_filesystem discovery evidence
-    - consumes exact discovered paths
-    - prevents repeated zero-result filesystem search loops
-    - preserves verified Phase 13 success evidence
-    - prevents redundant VS Code/window/browser continuation loops
+    Added Phase 8 browser evidence to task-history reasoning and fixed
+    research completion so the final verifier generates the user-facing
+    research summary rather than requiring that summary to have already
+    been delivered before verification.
 """
 
 import inspect
@@ -152,14 +150,6 @@ def describe_agent_tools():
             signature = inspect.signature(
                 tool.function
             )
-
-            if tool.name == "computer_control":
-                parameters = [
-                    parameter
-                    for name, parameter in signature.parameters.items()
-                    if name != "approved"
-                ]
-                signature = signature.replace(parameters=parameters)
 
         except (
             TypeError,
@@ -571,43 +561,6 @@ def extract_execution_details(
 
         return details
     
-
-
-    # -----------------------------------------------------------------------
-    # Phase 13 Filesystem-Discovery Evidence
-    # -----------------------------------------------------------------------
-    #
-    # search_filesystem returns exact real filesystem discovery evidence.
-    # Preserve the result intact so continuation/recovery can consume:
-    #
-    #     result.matches[].path
-    #     result.count
-    #     result.query
-    #     result.roots
-    #     result.truncated
-    #
-    # Without this special case, the generic compactor drops those fields,
-    # causing Phase 7 to forget successful discoveries and search again.
-    # -----------------------------------------------------------------------
-
-    if (
-        execution.get(
-            "tool"
-        )
-        == "search_filesystem"
-        and isinstance(
-            result,
-            dict,
-        )
-    ):
-
-        details[
-            "result"
-        ] = result
-
-        return details
-
-
     if isinstance(
         result,
         dict,
@@ -1189,131 +1142,6 @@ PHASE 13 COMPUTER CONTROL:
 
 24. A Phase 13 BLOCKED result is a safety boundary, not a reason to
     try a weaker control mechanism.
-25. Use only canonical computer_control actions in the registered contract.
-26. Never include or invent approved.
-27. A FAILED result is not permission to lower to vision.
-28. If an action is unsupported, choose another REGISTERED canonical action.
-29. If a requested monitor does not exist, report that evidence instead of pretending placement succeeded.
-30. Treat computer_control verified=true as real post-action evidence.
-31. Prefer filesystem.exists/inspect for file verification instead of inferring success from a prior write.
-
-DIRECTORY / PROJECT DISCOVERY:
-
-32. filesystem.inspect describes ONE already-known filesystem path.
-    It does NOT enumerate or search that directory's children.
-
-33. When the location of a requested project, workspace, directory, or file is
-    unknown, prefer the registered read-only tool:
-
-        search_filesystem
-
-34. Do NOT replace search_filesystem with:
-        run_python
-        PowerShell
-        os.walk
-        pathlib traversal
-        Get-ChildItem recursion
-        custom filesystem crawling code
-
-35. Never use filesystem.inspect on a parent directory and claim that it will
-    locate a child project.
-
-36. A successful search_filesystem result is real filesystem evidence.
-
-37. When search_filesystem returns one strong exact-name directory match,
-    immediately consume the exact:
-
-        result.matches[0].path
-
-    value in the next dependent action.
-
-38. Never invent, shorten, reconstruct, or guess a discovered path.
-
-39. If multiple plausible matches are returned, do not guess between them.
-    Use other real evidence when available; otherwise stop safely so the user
-    can disambiguate.
-
-40. Read-only filesystem discovery must remain read-only.
-
-FILESYSTEM SEARCH ANTI-LOOP:
-
-41. A search_filesystem result with:
-
-        count = 0
-        matches = []
-
-    is REAL evidence that the query was not found in the roots/depth actually
-    searched.
-
-42. Do not repeatedly issue increasingly vague filesystem searches forever.
-
-43. For one unknown requested path, normally allow at most TWO materially
-    different search_filesystem attempts.
-
-44. A second attempt is justified only when it materially expands real search
-    coverage, such as broader roots or greater max_depth.
-
-45. After two searches return zero useful matches, do NOT spend more recovery
-    or continuation cycles searching arbitrary fragments of the same name.
-
-46. If the requested path still cannot be identified safely after the bounded
-    searches, stop and report that the project/file location could not be
-    found from the searched user folders.
-
-47. Never claim a project was found when matches=[].
-
-48. Once a valid match has been found, NEVER search for the same path again
-    unless later real evidence proves that observed path is invalid.
-
-RECOVERY ANTI-LOOP / SUCCESS-EVIDENCE RULES:
-
-49. Never recover from one failed action by repeating an earlier action that
-    task history already proves succeeded unless newer evidence invalidates
-    that success.
-
-50. Do not reopen the same workspace repeatedly merely to identify or retarget
-    a window.
-
-51. Prefer process id, window handle, workspace path, window title, browser tab,
-    monitor, and other concrete evidence already observed in successful task
-    history.
-
-52. Do not repeat the same failed target-resolution strategy indefinitely.
-
-53. If a corrected action has already succeeded, continue toward the next
-    unfinished part of the original goal rather than redoing that action.
-
-54. If a successful VS Code action reports opened=True and new_window=True,
-    treat the requested new-window launch as complete.
-
-55. If a successful computer_control result contains verified=True, treat the
-    requested structured computer effect as real evidence unless later evidence
-    contradicts it.
-
-VS CODE TARGET RECOVERY:
-
-56. If the generic target "Visual Studio Code" affected the wrong VS Code
-    window, do not repeat that generic target.
-
-57. For a project-specific VS Code request, prefer an observed project name
-    appearing in the real visible window title, for example:
-
-        FinalCollegePortfolio
-
-58. Do not turn an application-launch process id into a string target such as:
-
-        pid:<number>
-
-    unless the registered Phase 13 action contract explicitly supports that
-    target form.
-
-59. A process id returned by application.launch is not automatically the
-    process id of the intended top-level window. Applications such as VS Code
-    may reuse or forward work into an existing process.
-
-60. If task history contains a verified window.place whose real nested window
-    title contains the requested project/workspace name and whose monitor
-    matches the user's requested monitor, treat that placement as complete.
 
 Example:
 
@@ -1719,157 +1547,6 @@ PHASE 13 COMPUTER CONTROL:
 
 25. Preserve the user's requested sequence while allowing Phase 13 to
     choose the physical backend.
-26. Use only canonical computer_control actions in the registered contract.
-27. Never include or invent approved.
-28. Never replace structured Phase 13 control with PowerShell, SendKeys, pyautogui, or blind coordinate clicking.
-29. A BLOCKED result is a safety boundary.
-30. A FAILED result is not permission to lower to vision.
-31. If an action is unsupported, choose another REGISTERED canonical action.
-32. If a requested monitor does not exist, report that evidence instead of pretending placement succeeded.
-33. Prefer filesystem.exists/inspect for verification instead of inferring success from a prior write.
-34. filesystem.inspect is for ONE already-known path.
-    It is not a directory search.
-
-35. When a real project/file/workspace path is unknown, prefer:
-
-        search_filesystem
-
-36. Do NOT generate run_python, PowerShell, os.walk, pathlib traversal,
-    Get-ChildItem recursion, or custom filesystem search code when
-    search_filesystem is available.
-
-37. search_filesystem returns real structured evidence. Consume the exact:
-
-        result.matches[].path
-
-    value.
-
-38. Never guess that a project name is relative to the E.V.I.E. repository.
-
-39. When search_filesystem returns exactly one strong matching project
-    directory, use its exact absolute path in the NEXT dependent action.
-
-40. Once the path has been discovered successfully, do not search for it again
-    unless later real evidence shows that path is invalid.
-
-41. If multiple plausible search matches exist and no real evidence identifies
-    the intended one, do not guess.
-
-FILESYSTEM SEARCH ANTI-LOOP:
-
-42. A completed search_filesystem step with:
-        count = 0
-        matches = []
-    is real negative search evidence.
-
-43. Do not repeatedly broaden the same project-name search through arbitrary
-    fragments merely to keep the task alive.
-
-44. Normally allow no more than TWO materially different search_filesystem
-    attempts for one unknown requested path.
-
-45. A second attempt should materially expand real coverage, such as using
-    broader roots or greater max_depth.
-
-46. After two zero-result searches, do not consume more continuation cycles
-    searching arbitrary fragments of the same project name.
-
-47. Never claim the project was found unless task history contains a real
-    search result with a matching path.
-
-48. If two materially different searches return zero useful matches and the
-    missing path blocks the remaining goal, stop continuation and allow final
-    verification to report the missing project location accurately.
-
-PHASE 13 ANTI-LOOP / SUCCESS-EVIDENCE RULES:
-
-49. Do not repeat a successful computer action merely because the wording of
-    the action description differs from the original user wording.
-
-50. If task history already contains a successful verified window.place for
-    the requested target and monitor, treat that placement as complete.
-
-51. Do not repeatedly:
-        focus the same window
-        place the same window
-        reopen the same workspace
-        relaunch the same application
-        reopen the same browser page
-    unless new REAL evidence shows the previous action did not achieve the
-    requested state.
-
-52. If a VS Code result proves opened=True and new_window=True and identifies
-    a workspace, process, or window, consume that evidence instead of opening
-    the same workspace again.
-
-53. If a successful Phase 13 result exposes a concrete process id, window
-    handle, title, monitor, or other target identity, prefer that observed
-    identity for subsequent targeting instead of rediscovering it.
-
-54. After a requested browser tab/page action succeeds, move on to the next
-    unfinished part of the original goal. Do not redo already-completed VS Code
-    or window-placement work.
-
-55. Before returning continuation steps, compare each proposed step against
-    successful task history. Remove any step whose requested effect is already
-    supported by real verified evidence.
-
-56. If all requested real-world effects are already supported by real task
-    history:
-        complete = true
-        next_steps = []
-
-57. Do not consume continuation budget merely to re-verify actions whose
-    successful structured results already contain verified=true or equivalent
-    direct evidence.
-
-58. When a later action depends on information discovered by the most recent
-    successful step, use the exact observed value in the next action. Never
-    substitute the original guessed value.
-
-59. Preserve the original user ordering while skipping effects already proven
-    complete.
-
-VS CODE WINDOW TARGETING:
-
-60. When a specific VS Code workspace/project is requested, do not use the
-    generic target:
-
-        Visual Studio Code
-
-    if multiple VS Code windows may exist.
-
-61. Prefer a project/workspace-specific target from real evidence, such as:
-
-        FinalCollegePortfolio
-
-    when that text appears in the observed visible window title.
-
-62. A verified window.place only satisfies a project-specific placement request
-    when the real nested result.window.title corresponds to that requested
-    project/workspace.
-
-63. Do not generate targets such as:
-
-        pid:83848
-
-    unless the registered computer_control/window contract explicitly supports
-    PID-form targets.
-
-64. An application-launch pid is not necessarily a stable top-level window id.
-    VS Code may reuse an existing process.
-
-65. If task history already contains a verified project-specific window.place
-    on the requested monitor, do not focus, place, or reopen that workspace
-    again.
-
-66. Prefer, in order:
-
-        observed project-specific window title
-        observed supported native window identity
-        requested project/workspace name appearing in the actual title
-
-    over a generic application title.
 """.strip(),
 
             input=json.dumps(
@@ -2125,38 +1802,6 @@ RESEARCH SUMMARY GENERATION:
 31. If the user requested research but did NOT ask to modify anything,
     the absence of file mutations is normal and does not make the task
     incomplete.
-
-PHASE 13 DESKTOP / FILESYSTEM COMPLETION:
-
-32. A successful search_filesystem result with one matching path is real
-    discovery evidence.
-
-33. A search_filesystem result with count=0 is real evidence that no matching
-    path was found in the roots/depth actually searched.
-
-34. Never claim a project/workspace/file was found when matches=[].
-
-35. A successful VS Code result with opened=True and new_window=True is real
-    evidence that the requested new VS Code window was launched.
-
-36. A successful computer_control result with verified=True is real
-    post-action evidence for the specific requested effect represented by that
-    result.
-
-37. A verified window.place on the requested monitor is sufficient evidence of
-    that window-placement request unless later evidence contradicts it.
-
-38. Successful browser tab/navigation results are sufficient evidence that the
-    corresponding requested pages were opened.
-
-39. Do not require redundant focus/place/reopen actions when task history
-    already contains direct structured evidence of completion.
-
-40. If an essential requested project path could not be found after bounded
-    real filesystem searches, the overall task is NOT fully complete. Set:
-        complete = false
-    and accurately describe the missing project location/action in `missing`.
-    Do not pretend later dependent actions succeeded.
 
 
 EXAMPLE

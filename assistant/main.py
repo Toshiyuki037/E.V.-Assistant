@@ -83,6 +83,10 @@ from .coding.integration import (
     handle_coding_message,
 )
 
+from .computer.integration import (
+    handle_computer_message,
+)
+
 # ---------------------------------------------------------------------------
 # Speak Model Response
 # ---------------------------------------------------------------------------
@@ -1116,6 +1120,36 @@ def process_prompt(
         # another path. Continue into the existing normal pipeline.
         pass
 
+
+    # -----------------------------------------------------------------------
+    # Phase 13L - Computer & Device Control Integration
+    # -----------------------------------------------------------------------
+
+    computer_result = (
+        handle_computer_message(
+            user_text
+        )
+    )
+
+    if computer_result.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            computer_result.get(
+                "response"
+            )
+            or "Done."
+        )
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+        return
+    
     # -----------------------------------------------------------------------
     # Explicit Memory
     # -----------------------------------------------------------------------

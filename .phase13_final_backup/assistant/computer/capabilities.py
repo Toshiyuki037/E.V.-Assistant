@@ -23,14 +23,10 @@ ACTION_RISKS: dict[str, DeviceRisk] = {
     "vision.capture": DeviceRisk.READ,
     "vision.target": DeviceRisk.READ,
 
-    "monitor.list": DeviceRisk.READ,
-"filesystem.exists": DeviceRisk.READ,
-
-"window.focus": DeviceRisk.LOW,
+    "window.focus": DeviceRisk.LOW,
     "window.move": DeviceRisk.LOW,
     "window.minimize": DeviceRisk.LOW,
     "window.maximize": DeviceRisk.LOW,
-"window.place": DeviceRisk.LOW,
     "application.launch": DeviceRisk.LOW,
     "notification.send": DeviceRisk.LOW,
     "settings.open": DeviceRisk.LOW,
@@ -42,8 +38,7 @@ ACTION_RISKS: dict[str, DeviceRisk] = {
     "browser.navigate": DeviceRisk.LOW,
     "vision.pointer_move": DeviceRisk.LOW,
 
-    "window.close": DeviceRisk.MEDIUM,
-"clipboard.write": DeviceRisk.MEDIUM,
+    "clipboard.write": DeviceRisk.MEDIUM,
     "filesystem.write": DeviceRisk.MEDIUM,
     "filesystem.copy": DeviceRisk.MEDIUM,
     "filesystem.move": DeviceRisk.MEDIUM,
