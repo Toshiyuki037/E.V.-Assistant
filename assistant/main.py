@@ -117,6 +117,18 @@ from .voice.session import (
     run_voice_session,
 )
 
+from .voice.authentication import (
+    NOT_RECOGNIZED_LINE,
+    authenticate_last_wake_utterance,
+    authenticated_wake_line,
+)
+
+from .voice.acknowledgements import (
+    choose_acknowledgement,
+    play_acknowledgement,
+    suppress_next_acknowledgement,
+)
+
 # ---------------------------------------------------------------------------
 # Speak Model Response
 # ---------------------------------------------------------------------------
@@ -825,6 +837,41 @@ def process_prompt(
         "request_received"
     )
 
+
+    # -----------------------------------------------------------------------
+    # Phase 14 - Immediate Cached Voice Acknowledgement
+    # -----------------------------------------------------------------------
+    #
+    # Voice mode only.
+    #
+    # Plays a pre-generated acknowledgement immediately while the normal
+    # frozen Phase 1-13 routing pipeline continues processing.
+    #
+    # Examples:
+    #     "Got it, boss."
+    #     "Checking."
+    #     "On it."
+    #     "Yes, boss."
+    #
+    # This uses cached WAV files, so it does not invoke F5-TTS or block
+    # authoritative reasoning.
+    # -----------------------------------------------------------------------
+
+    if voice_streaming:
+
+        acknowledgement = (
+            choose_acknowledgement()
+        )
+
+        if acknowledgement is not None:
+
+            play_acknowledgement(
+                acknowledgement,
+                asynchronous=
+                    True,
+            )
+
+
     print(
         f"\nYou: {user_text}"
     )
@@ -1517,6 +1564,56 @@ def process_voice_prompt(
     )
 
 # ---------------------------------------------------------------------------
+# Phase 14 - Wake Voice Authentication Speech
+# ---------------------------------------------------------------------------
+
+def speak_authenticated_wake():
+    """
+    Speaks the wake authentication greeting.
+
+    This greeting itself acts as the immediate acknowledgement for
+    the inline wake request, so the next cached acknowledgement is
+    suppressed.
+    """
+
+    suppress_next_acknowledgement()
+
+
+    line = (
+        authenticated_wake_line()
+    )
+
+
+    print(
+        f"E.V.I.E.: {line}"
+    )
+
+
+    speak(
+        line
+    )
+
+def speak_unrecognized_wake():
+    """
+    Speaks the unrecognized-voice notice.
+
+    This is already an immediate spoken response, so a cached
+    acknowledgement should not follow it either.
+    """
+
+    suppress_next_acknowledgement()
+
+
+    print(
+        f"E.V.I.E.: {NOT_RECOGNIZED_LINE}"
+    )
+
+
+    speak(
+        NOT_RECOGNIZED_LINE
+    )
+
+# ---------------------------------------------------------------------------
 # Startup
 # ---------------------------------------------------------------------------
 
@@ -1657,6 +1754,18 @@ while True:
 
                 speech_started_fn=
                     pause_audio,
+
+                require_wake=
+                    True,
+
+                wake_authenticate_fn=
+                    authenticate_last_wake_utterance,
+
+                wake_authenticated_fn=
+                    speak_authenticated_wake,
+
+                wake_unrecognized_fn=
+                    speak_unrecognized_wake,
             )
         )
 

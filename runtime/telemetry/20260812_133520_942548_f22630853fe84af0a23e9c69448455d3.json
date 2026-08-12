@@ -1,0 +1,60 @@
+{
+  "request_id": "f22630853fe84af0a23e9c69448455d3",
+  "user_text": "use Honolulu as my default weather location going forward",
+  "total_seconds": 24.1812,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 16.0163,
+    "response_ready": 16.2145,
+    "tts_started": 16.2305,
+    "speech_finished": 24.1812
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 13.1107,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.0975,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0054,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.9506,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

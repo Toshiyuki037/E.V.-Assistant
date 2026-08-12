@@ -1,0 +1,60 @@
+{
+  "request_id": "61c62fe4a161401a8ba405ed71ab53e0",
+  "user_text": "Evie, what do I have to say put you back to sleep?",
+  "total_seconds": 19.1889,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 2.9852,
+    "response_ready": 3.2354,
+    "tts_started": 3.2394,
+    "speech_finished": 19.1889
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.2325,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0032,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 15.9496,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

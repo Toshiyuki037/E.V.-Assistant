@@ -1,0 +1,60 @@
+{
+  "request_id": "dc7067247d9345178f7919aaa312fe61",
+  "user_text": "That's all, EV.",
+  "total_seconds": 6.1427,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 2.0112,
+    "response_ready": 2.2015,
+    "tts_started": 2.205,
+    "speech_finished": 6.1427
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 2.1998,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0032,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 3.9377,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

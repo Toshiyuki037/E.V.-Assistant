@@ -1,0 +1,67 @@
+{
+  "request_id": "a2eb1ad44dcc42e79ed50ee89f31f894",
+  "user_text": "good morning. what's on my calendar today",
+  "total_seconds": 27.2694,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 20.3818,
+    "tts_started": 20.4034,
+    "tts_generation_started": 20.4044,
+    "tts_generation_finished": 23.4391,
+    "audio_playback_started": 23.4392,
+    "audio_playback_finished": 27.2694,
+    "speech_finished": 27.2694
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0024,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0068,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0031,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 20.365,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0212,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 6.866,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 3.0347,
+      "metadata": {
+        "characters": 60
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 3.8302,
+      "metadata": {
+        "audio_seconds": 3.989
+      }
+    }
+  ],
+  "metadata": {}
+}

@@ -60,6 +60,10 @@ from .voice.vad import (
     frame_samples,
 )
 
+from .voice.audio_state import (
+    set_last_utterance_audio,
+)
+
 
 SAMPLE_RATE = DEFAULT_SAMPLE_RATE
 CHANNELS = 1
@@ -791,6 +795,12 @@ def listen(
     if audio is None:
 
         return ""
+
+    set_last_utterance_audio(
+        audio,
+        sample_rate=
+            SAMPLE_RATE,
+    )
 
     print(
         "Finalizing transcription..."

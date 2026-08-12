@@ -1,13 +1,16 @@
-"""
-Phase 14H voice-session interruption-hook tests.
-"""
-
 from assistant.voice.session import (
     run_voice_session,
 )
 
 
-def test_session_passes_speech_start_interrupt_callback():
+def test_session_passes_speech_start_interrupt_callback(
+    monkeypatch,
+):
+
+    monkeypatch.setenv(
+        "EVIE_DUPLEX_MODE",
+        "headset",
+    )
 
     interrupted = []
 

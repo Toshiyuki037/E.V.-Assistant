@@ -8,7 +8,14 @@ from assistant.voice.session import (
 )
 
 
-def test_barge_in_queues_new_turn_without_concurrent_prompt_workers():
+def test_barge_in_queues_new_turn_without_concurrent_prompt_workers(
+    monkeypatch,
+):
+
+    monkeypatch.setenv(
+        "EVIE_DUPLEX_MODE",
+        "headset",
+    )
 
     release_first = (
         threading.Event()
@@ -36,7 +43,6 @@ def test_barge_in_queues_new_turn_without_concurrent_prompt_workers():
         nonlocal active
         nonlocal max_active
 
-
         with lock:
 
             active += 1
@@ -46,11 +52,9 @@ def test_barge_in_queues_new_turn_without_concurrent_prompt_workers():
                 active,
             )
 
-
         prompts.append(
             text
         )
-
 
         if text == "First request.":
 
@@ -59,7 +63,6 @@ def test_barge_in_queues_new_turn_without_concurrent_prompt_workers():
             release_first.wait(
                 1.0
             )
-
 
         with lock:
 
@@ -78,13 +81,11 @@ def test_barge_in_queues_new_turn_without_concurrent_prompt_workers():
 
         calls += 1
 
-
         if calls == 1:
 
             return (
                 "First request."
             )
-
 
         if calls == 2:
 
@@ -100,12 +101,10 @@ def test_barge_in_queues_new_turn_without_concurrent_prompt_workers():
                 "Actually just tell me the morning."
             )
 
-
         deadline = (
             time.time()
             + 1.0
         )
-
 
         while (
             len(
@@ -119,7 +118,6 @@ def test_barge_in_queues_new_turn_without_concurrent_prompt_workers():
             time.sleep(
                 0.005
             )
-
 
         return (
             "stop listening"

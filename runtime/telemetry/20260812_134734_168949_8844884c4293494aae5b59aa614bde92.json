@@ -1,0 +1,62 @@
+{
+  "request_id": "8844884c4293494aae5b59aa614bde92",
+  "user_text": "open my vs workspace",
+  "total_seconds": 7.912,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.0628,
+    "tts_started": 0.0682,
+    "tts_generation_started": 0.0688,
+    "tts_generation_finished": 3.3101,
+    "audio_playback_started": 3.3101,
+    "audio_playback_finished": 7.912,
+    "speech_finished": 7.912
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0024,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0068,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0016,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.046,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0032,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.8439,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 3.2413,
+      "metadata": {
+        "characters": 74
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 4.6019,
+      "metadata": {
+        "audio_seconds": 4.768
+      }
+    }
+  ],
+  "metadata": {}
+}

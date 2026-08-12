@@ -1,7 +1,3 @@
-"""
-Phase 14J production pause-then-stop ownership tests.
-"""
-
 from __future__ import annotations
 
 import threading
@@ -12,7 +8,14 @@ from assistant.voice.session import (
 )
 
 
-def test_revision_pauses_at_onset_then_stops_after_transcription():
+def test_revision_pauses_at_onset_then_stops_after_transcription(
+    monkeypatch,
+):
+
+    monkeypatch.setenv(
+        "EVIE_DUPLEX_MODE",
+        "headset",
+    )
 
     events = []
 
@@ -158,7 +161,14 @@ def test_revision_pauses_at_onset_then_stops_after_transcription():
     )
 
 
-def test_legacy_interrupt_callback_still_fires_once():
+def test_legacy_interrupt_callback_still_fires_once(
+    monkeypatch,
+):
+
+    monkeypatch.setenv(
+        "EVIE_DUPLEX_MODE",
+        "headset",
+    )
 
     interrupted = []
 

@@ -1,0 +1,67 @@
+{
+  "request_id": "92dccf6d19ca4a6f92e2b3de7e865ab9",
+  "user_text": "What are all my Google Task events for today?",
+  "total_seconds": 34.1888,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 10.268,
+    "tts_started": 10.2895,
+    "tts_generation_started": 10.2898,
+    "tts_generation_finished": 17.9844,
+    "audio_playback_started": 17.9844,
+    "audio_playback_finished": 34.1888,
+    "speech_finished": 34.1888
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0025,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 10.2595,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0201,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 23.8993,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 7.6946,
+      "metadata": {
+        "characters": 257
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 16.2044,
+      "metadata": {
+        "audio_seconds": 16.362
+      }
+    }
+  ],
+  "metadata": {}
+}

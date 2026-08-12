@@ -1,0 +1,60 @@
+{
+  "request_id": "dadd701120284295af44d10228a5af9c",
+  "user_text": "Good job, too.",
+  "total_seconds": 7.0062,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 2.4178,
+    "response_ready": 3.0438,
+    "tts_started": 3.0744,
+    "speech_finished": 7.0062
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.0413,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0302,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 3.9318,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,60 @@
+{
+  "request_id": "91a4f0e332ee41a8a43be9b40c367cbf",
+  "user_text": "What time is it?",
+  "total_seconds": 7.614,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 4.078,
+    "response_ready": 4.2774,
+    "tts_started": 4.2816,
+    "speech_finished": 7.614
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 4.2728,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0026,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 3.3324,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

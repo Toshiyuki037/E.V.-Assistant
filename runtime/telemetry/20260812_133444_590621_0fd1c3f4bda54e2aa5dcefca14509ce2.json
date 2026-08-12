@@ -1,0 +1,60 @@
+{
+  "request_id": "0fd1c3f4bda54e2aa5dcefca14509ce2",
+  "user_text": "Use Honolulu.",
+  "total_seconds": 27.0161,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 1.3619,
+    "response_ready": 3.0173,
+    "tts_started": 3.0877,
+    "speech_finished": 27.0161
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.0139,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0698,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 23.9284,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

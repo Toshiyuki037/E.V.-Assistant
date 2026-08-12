@@ -1,0 +1,67 @@
+{
+  "request_id": "273fa7394b5c43f4b9143607960be3ce",
+  "user_text": "play fashion killer spotify",
+  "total_seconds": 18.0073,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 10.8313,
+    "tts_started": 10.8511,
+    "tts_generation_started": 10.8548,
+    "tts_generation_finished": 14.0408,
+    "audio_playback_started": 14.0408,
+    "audio_playback_finished": 18.0073,
+    "speech_finished": 18.0073
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0021,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0024,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 10.823,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0192,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.1562,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 3.186,
+      "metadata": {
+        "characters": 49
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 3.9664,
+      "metadata": {
+        "audio_seconds": 3.413
+      }
+    }
+  ],
+  "metadata": {}
+}

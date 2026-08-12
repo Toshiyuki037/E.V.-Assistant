@@ -1,0 +1,60 @@
+{
+  "request_id": "f3bd8a2c41be4b13b691c22764550faa",
+  "user_text": "good morning, what's the weather like today",
+  "total_seconds": 18.8434,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 8.5855,
+    "response_ready": 8.9099,
+    "tts_started": 8.9169,
+    "speech_finished": 18.8434
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0025,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0055,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0026,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0017,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 4.6873,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 1.2563,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 2.9511,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0066,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 9.9265,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

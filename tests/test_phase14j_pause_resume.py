@@ -3,7 +3,14 @@ from assistant.voice.session import (
 )
 
 
-def test_wait_pauses_and_continue_resumes():
+def test_wait_pauses_and_continue_resumes(
+    monkeypatch,
+):
+
+    monkeypatch.setenv(
+        "EVIE_DUPLEX_MODE",
+        "headset",
+    )
 
     paused = []
 
@@ -23,13 +30,11 @@ def test_wait_pauses_and_continue_resumes():
 
         calls += 1
 
-
         if calls == 1:
 
             return (
                 "First request."
             )
-
 
         if calls == 2:
 
@@ -39,7 +44,6 @@ def test_wait_pauses_and_continue_resumes():
                 "Wait."
             )
 
-
         if calls == 3:
 
             on_speech_started()
@@ -47,7 +51,6 @@ def test_wait_pauses_and_continue_resumes():
             return (
                 "Continue."
             )
-
 
         return (
             "stop listening"
@@ -84,7 +87,7 @@ def test_wait_pauses_and_continue_resumes():
             speech_started_fn=
                 lambda:
                     paused.append(
-                        "vad",
+                        "vad"
                     ),
         )
     )
