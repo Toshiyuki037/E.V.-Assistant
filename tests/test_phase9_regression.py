@@ -391,3 +391,156 @@ def test_schwab_core_capability_names_exist():
         )
 
         assert registered is not None
+
+# ---------------------------------------------------------------------------
+# Real handle_tool_request Schwab routing path
+# ---------------------------------------------------------------------------
+
+def test_handle_tool_request_routes_schwab_performance_questions(monkeypatch):
+    from assistant import brain
+
+    calls = []
+
+    def fake_plan_tool_request(user_message):
+        from assistant.tools.planner import ToolPlan
+
+        lowered = user_message.lower()
+        assert "portfolio" in lowered
+        assert (
+            "how did " in lowered
+            or "how is " in lowered
+        )
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="integration_execute",
+            arguments_json=(
+                '{"capability": "finance.performance", '
+                '"provider": "schwab", '
+                '"account_id": "primary", '
+                '"routing_mode": "explicit_account"}'
+            ),
+            confidence=95,
+            summary="Read Schwab portfolio performance.",
+        )
+
+    def fake_execute_tool(tool_name, arguments, approved=False):
+        calls.append((tool_name, arguments, approved))
+        return {
+            "success": True,
+            "executed": True,
+            "tool": tool_name,
+            "risk": "low",
+            "requires_approval": False,
+            "error": None,
+            "reason": None,
+            "result": {
+                "capability": arguments["capability"],
+                "provider": arguments["provider"],
+            },
+        }
+
+    monkeypatch.setattr(brain, "plan_tool_request", fake_plan_tool_request)
+    monkeypatch.setattr(brain, "execute_tool", fake_execute_tool)
+    monkeypatch.setattr(brain, "record_tool_context", lambda **kwargs: None)
+    monkeypatch.setattr(
+        brain,
+        "render_tool_result_response",
+        lambda *args, **kwargs: "performance routed",
+    )
+
+    messages = (
+        "How did my portfolio do today?",
+        "How is my portfolio doing today?",
+    )
+
+    for message in messages:
+        result = brain.handle_tool_request(message)
+        assert result["handled"] is True
+        assert result["approval_required"] is False
+        assert result["response"] == "performance routed"
+
+    assert len(calls) == len(messages)
+
+    for tool_name, arguments, approved in calls:
+        assert tool_name == "integration_execute"
+        assert approved is False
+        assert arguments["capability"] == "finance.performance"
+        assert arguments["provider"] == "schwab"
+        assert arguments["account_id"] == "primary"
+        assert arguments["routing_mode"] == "explicit_account"
+        assert "approved" not in arguments
+
+
+def test_handle_tool_request_preserves_schwab_positions_and_balances(monkeypatch):
+    from assistant import brain
+
+    expected_by_message = {
+        "What stocks do I own?": "finance.positions",
+        "What's my Schwab cash balance?": "finance.balances",
+    }
+
+    calls = []
+
+    def fake_plan_tool_request(user_message):
+        from assistant.tools.planner import ToolPlan
+
+        capability = expected_by_message[user_message]
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="integration_execute",
+            arguments_json=(
+                f'{"{"}"capability": "{capability}", '
+                '"provider": "schwab", '
+                '"account_id": "primary", '
+                '"routing_mode": "explicit_account"}'
+            ),
+            confidence=95,
+            summary=f"Read {capability}.",
+        )
+
+    def fake_execute_tool(tool_name, arguments, approved=False):
+        calls.append((tool_name, arguments, approved))
+        return {
+            "success": True,
+            "executed": True,
+            "tool": tool_name,
+            "risk": "low",
+            "requires_approval": False,
+            "error": None,
+            "reason": None,
+            "result": {
+                "capability": arguments["capability"],
+                "provider": arguments["provider"],
+            },
+        }
+
+    monkeypatch.setattr(brain, "plan_tool_request", fake_plan_tool_request)
+    monkeypatch.setattr(brain, "execute_tool", fake_execute_tool)
+    monkeypatch.setattr(brain, "record_tool_context", lambda **kwargs: None)
+    monkeypatch.setattr(
+        brain,
+        "render_tool_result_response",
+        lambda *args, **kwargs: "schwab routed",
+    )
+
+    for message in expected_by_message:
+        result = brain.handle_tool_request(message)
+        assert result["handled"] is True
+        assert result["approval_required"] is False
+        assert result["response"] == "schwab routed"
+
+    assert [call[1]["capability"] for call in calls] == [
+        "finance.positions",
+        "finance.balances",
+    ]
+
+    for tool_name, arguments, approved in calls:
+        assert tool_name == "integration_execute"
+        assert approved is False
+        assert arguments["provider"] == "schwab"
+        assert arguments["account_id"] == "primary"
+        assert arguments["routing_mode"] == "explicit_account"
+        assert "approved" not in arguments
+

@@ -2583,6 +2583,8 @@ def should_consider_tools(
         "do we have",
         "how many ",
         "how much ",
+        "how did ",
+        "how is ",
         "will ",
         "is it ",
         "are we ",
