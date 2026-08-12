@@ -2,65 +2,140 @@
 E.V.I.E. - Speech Response Formatter
 
 Created: August 8, 2026
-Last Edited: August 8, 2026
+Last Edited: August 12, 2026
 Author: Max Maehara
 
 Purpose:
-    Converts E.V.I.E.'s full text responses into shorter,
-    cleaner text for F5-TTS.
+    Converts E.V.I.E.'s complete text responses into concise,
+    natural spoken responses for F5-TTS.
 
 How It Works:
-    The complete response remains visible in the terminal.
-    This module removes unnecessary formatting and limits
-    the amount of text sent to the voice model.
+    The full response remains visible in the terminal.
 
-Most Recent Change:
-    Added spoken-response optimization for Phase 3.
+    Voice output is intentionally much shorter so E.V.I.E. begins
+    and finishes speaking quickly while preserving the essential
+    answer.
+
+Phase 14A:
+    Reduced spoken response size substantially to lower TTS
+    generation and playback latency before Phase 14 streaming.
 """
+
+from __future__ import annotations
 
 import re
 
 
-MAX_SPEECH_CHARACTERS = 550
-MAX_SENTENCES = 5
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# Short answers should be spoken exactly as generated.
+SHORT_RESPONSE_CHARACTERS = 160
+
+# Longer terminal responses are compressed for speech.
+MAX_SPEECH_CHARACTERS = 260
+MAX_SENTENCES = 2
 
 
-def remove_markdown(text: str) -> str:
-    """Remove formatting that should not be spoken."""
+# ---------------------------------------------------------------------------
+# Markdown Cleanup
+# ---------------------------------------------------------------------------
 
-    # Code fences
-    text = text.replace("```text", "")
-    text = text.replace("```python", "")
-    text = text.replace("```powershell", "")
-    text = text.replace("```", "")
+def remove_markdown(
+    text: str,
+) -> str:
+    """
+    Removes formatting that should not be spoken.
+    """
 
-    # Inline code
-    text = text.replace("`", "")
+    # -----------------------------------------------------------------------
+    # Code Fences
+    # -----------------------------------------------------------------------
 
-    # Bold / italics
-    text = text.replace("**", "")
-    text = text.replace("__", "")
-    text = text.replace("*", "")
+    text = re.sub(
+        r"```[\w+-]*",
+        "",
+        text,
+    )
 
-    # Markdown headings
+    text = text.replace(
+        "```",
+        "",
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Inline Code / Emphasis
+    # -----------------------------------------------------------------------
+
+    text = text.replace(
+        "`",
+        "",
+    )
+
+    text = text.replace(
+        "**",
+        "",
+    )
+
+    text = text.replace(
+        "__",
+        "",
+    )
+
+    text = text.replace(
+        "*",
+        "",
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Headings
+    # -----------------------------------------------------------------------
+
     text = re.sub(
         r"(?m)^#+\s*",
         "",
         text,
     )
 
+
+    # -----------------------------------------------------------------------
     # Bullets
+    # -----------------------------------------------------------------------
+
     text = re.sub(
         r"(?m)^\s*[-•]\s+",
         "",
         text,
     )
 
+
+    # -----------------------------------------------------------------------
+    # Numbered Markdown Lists
+    # -----------------------------------------------------------------------
+
+    text = re.sub(
+        r"(?m)^\s*\d+[.)]\s+",
+        "",
+        text,
+    )
+
+
     return text
 
 
-def normalize_whitespace(text: str) -> str:
-    """Convert excessive whitespace into normal spaces."""
+# ---------------------------------------------------------------------------
+# Whitespace
+# ---------------------------------------------------------------------------
+
+def normalize_whitespace(
+    text: str,
+) -> str:
+    """
+    Converts excessive whitespace into normal spaces.
+    """
 
     text = re.sub(
         r"\s+",
@@ -71,107 +146,230 @@ def normalize_whitespace(text: str) -> str:
     return text.strip()
 
 
-def limit_sentences(
+# ---------------------------------------------------------------------------
+# Sentence Splitting
+# ---------------------------------------------------------------------------
+
+def split_sentences(
     text: str,
-    maximum: int = MAX_SENTENCES,
-) -> str:
-    """Limit how many sentences are spoken."""
+):
+    """
+    Splits normal prose into useful speech-sized sentences.
+    """
 
     sentences = re.split(
         r"(?<=[.!?])\s+",
         text,
     )
 
-    sentences = [
+    return [
         sentence.strip()
-        for sentence in sentences
+        for sentence
+        in sentences
         if sentence.strip()
     ]
 
-    if len(sentences) <= maximum:
-        return text
 
-    return " ".join(
-        sentences[:maximum]
+# ---------------------------------------------------------------------------
+# Sentence Limit
+# ---------------------------------------------------------------------------
+
+def limit_sentences(
+    text: str,
+    maximum: int = MAX_SENTENCES,
+) -> str:
+    """
+    Limits long responses to the first few useful sentences.
+    """
+
+    sentences = split_sentences(
+        text
     )
 
+    if len(
+        sentences
+    ) <= maximum:
+
+        return text
+
+
+    return " ".join(
+        sentences[
+            :maximum
+        ]
+    )
+
+
+# ---------------------------------------------------------------------------
+# Character Limit
+# ---------------------------------------------------------------------------
 
 def limit_characters(
     text: str,
     maximum: int = MAX_SPEECH_CHARACTERS,
 ) -> str:
-    """Prevent extremely long TTS generations."""
+    """
+    Prevents expensive long F5-TTS generations.
+    """
 
-    if len(text) <= maximum:
+    if len(
+        text
+    ) <= maximum:
+
         return text
 
-    shortened = text[:maximum]
+
+    shortened = text[
+        :maximum
+    ]
+
 
     if " " in shortened:
-        shortened = shortened.rsplit(
-            " ",
-            1,
-        )[0]
+
+        shortened = (
+            shortened.rsplit(
+                " ",
+                1,
+            )[0]
+        )
+
 
     shortened = shortened.rstrip(
         " ,;:-"
     )
 
-    if shortened:
-        if shortened[-1] not in ".!?":
-            shortened += "."
+
+    if (
+        shortened
+        and shortened[-1]
+        not in ".!?"
+    ):
+
+        shortened += "."
+
 
     return shortened
 
 
-def prepare_spoken_text(response: str) -> str:
-    """
-    Prepare E.V.I.E.'s response for speech.
+# ---------------------------------------------------------------------------
+# Spoken Text Preparation
+# ---------------------------------------------------------------------------
 
-    The original response is not changed.
+def prepare_spoken_text(
+    response: str,
+) -> str:
+    """
+    Prepares E.V.I.E.'s terminal response for speech.
+
+    The original response is never changed.
+
+    Short responses are preserved.
+
+    Long responses are reduced to a concise spoken representation.
     """
 
     if not response:
+
         return ""
+
 
     text = response.strip()
 
-    text = remove_markdown(text)
+    text = remove_markdown(
+        text
+    )
 
-    text = normalize_whitespace(text)
+    text = normalize_whitespace(
+        text
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Preserve Naturally Short Responses
+    # -----------------------------------------------------------------------
+    #
+    # A response is only considered naturally short when BOTH:
+    #
+    #     - its character count is small
+    #     - its sentence count is already within the speech limit
+    #
+    # This prevents several short sentences from bypassing the
+    # Phase 14A spoken-response compression.
+    # -----------------------------------------------------------------------
+
+    sentences = split_sentences(
+        text
+    )
+
+
+    if (
+        len(
+            text
+        )
+        <= SHORT_RESPONSE_CHARACTERS
+
+        and len(
+            sentences
+        )
+        <= MAX_SENTENCES
+    ):
+
+        return text
+
+
+    # -----------------------------------------------------------------------
+    # Compress Longer / Multi-Sentence Responses
+    # -----------------------------------------------------------------------
 
     text = limit_sentences(
         text,
         MAX_SENTENCES,
     )
 
+
     text = limit_characters(
         text,
         MAX_SPEECH_CHARACTERS,
     )
 
+
     return text
 
+
+# ---------------------------------------------------------------------------
+# Standalone Test
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
     sample = """
-    You're working on the **eve-assistant** project.
+A transistor is a tiny electronic component that controls the
+flow of electric current.
 
-    Your active file is `main.py`.
+It's mainly used in two ways:
 
-    You're currently on the `main` Git branch.
+1. As a switch. A small signal can turn a larger current on or off.
 
-    You have several modified files.
+2. As an amplifier. A weak signal can control a stronger one.
 
-    E.V.I.E. can see this information through the
-    Phase 3 perception system.
-    """
+Most modern transistors are made from semiconductors.
+"""
 
-    print("Original:")
-    print(sample)
-
-    print("\nSpoken:")
     print(
-        prepare_spoken_text(sample)
+        "Original:"
+    )
+
+    print(
+        sample
+    )
+
+
+    print(
+        "\nSpoken:"
+    )
+
+    print(
+        prepare_spoken_text(
+            sample
+        )
     )

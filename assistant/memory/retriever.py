@@ -74,7 +74,47 @@ def get_reranker():
 
     return _reranker
 
+def warm_memory_retriever():
+    """
+    Explicitly initializes the semantic embedding model and
+    CrossEncoder reranker.
 
+    Intended for optional startup warmup so the first real
+    memory-dependent conversation does not pay model-load latency.
+    """
+
+    print(
+        "Warming E.V.I.E. memory retrieval..."
+    )
+
+    try:
+
+        # Force the embedding model to initialize.
+        create_embedding(
+            "E.V.I.E. memory warmup"
+        )
+
+        # Force the CrossEncoder to initialize.
+        get_reranker()
+
+        print(
+            "E.V.I.E. memory retrieval ready."
+        )
+
+        return True
+
+    except Exception as error:
+
+        print(
+            "\n[Memory Warmup Warning]"
+        )
+
+        print(
+            error
+        )
+
+        return False
+        
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------

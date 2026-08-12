@@ -396,6 +396,92 @@ def build_conversation_context(
 # Long-Term Memory
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Memory Retrieval Routing
+# ---------------------------------------------------------------------------
+
+_MEMORY_REFERENCE_PHRASES = (
+    "remember",
+    "do you remember",
+    "what did i",
+    "what did we",
+    "what was my",
+    "what were my",
+    "what have i",
+    "what have we",
+    "we talked about",
+    "we discussed",
+    "earlier",
+    "before",
+    "last time",
+    "previously",
+    "my preference",
+    "my preferences",
+    "my goal",
+    "my goals",
+    "my plan",
+    "my plans",
+    "my project",
+    "my projects",
+    "my research",
+    "my application",
+    "my applications",
+    "my schedule",
+    "my setup",
+    "my server",
+    "my portfolio",
+    "my resume",
+    "my gpa",
+    "my classes",
+    "my college",
+    "my transfer",
+)
+
+
+def should_retrieve_long_term_memory(
+    user_message: str,
+):
+    """
+    Returns True when the current request appears to depend on
+    persistent personal/project history.
+
+    This is intentionally conservative:
+    uncertain requests may still retrieve memory, while obviously
+    context-free requests avoid the semantic-memory pipeline.
+    """
+
+    text = (
+        user_message
+        .strip()
+        .lower()
+    )
+
+    if not text:
+        return False
+
+    if any(
+        phrase in text
+        for phrase in _MEMORY_REFERENCE_PHRASES
+    ):
+        return True
+
+    # First-person possessive references often depend on persistent
+    # user state even when no explicit "remember" phrase is present.
+    personal_markers = (
+        " my ",
+        " mine ",
+    )
+
+    padded = f" {text} "
+
+    if any(
+        marker in padded
+        for marker in personal_markers
+    ):
+        return True
+
+    return False
+
 def build_memory_context(
     user_message: str,
     limit: int = 5,
@@ -2378,14 +2464,25 @@ def build_context(
     )
 
 
-    memory_context = (
-        build_memory_context(
-            user_message=
-                user_message,
+    if should_retrieve_long_term_memory(
+        user_message
+    ):
 
-            limit=5,
+        memory_context = (
+            build_memory_context(
+                user_message=
+                    user_message,
+
+                limit=5,
+            )
         )
-    )
+
+    else:
+
+        memory_context = (
+            "Long-term memory retrieval was not "
+            "required for this request."
+        )
 
 
     live_context = (

@@ -28,6 +28,8 @@ Most Recent Change:
 
 from typing import Literal
 
+import re
+
 from dotenv import load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel
@@ -231,6 +233,255 @@ Be conservative.
 Do not invent information.
 """
 
+# ---------------------------------------------------------------------------
+# Phase 14A - Cheap Memory Candidate Gate
+# ---------------------------------------------------------------------------
+
+_MEMORY_EXPLICIT_PREFIXES = (
+    "remember ",
+    "remember that ",
+    "remember this ",
+    "forget ",
+    "forget that ",
+    "forget about ",
+    "don't remember ",
+    "do not remember ",
+)
+
+
+_MEMORY_UPDATE_SIGNALS = (
+    "i changed ",
+    "i switched ",
+    "i moved ",
+    "i now ",
+    "i no longer ",
+    "i don't use ",
+    "i do not use ",
+    "my new ",
+    "instead of ",
+    "from now on ",
+)
+
+
+_MEMORY_DURABLE_SELF_SIGNALS = (
+    "i am ",
+    "i'm ",
+    "i study ",
+    "i attend ",
+    "i work ",
+    "i live ",
+    "i use ",
+    "i own ",
+    "i prefer ",
+    "i like ",
+    "i dislike ",
+    "i want ",
+    "i plan ",
+    "my goal ",
+    "my favorite ",
+    "my project ",
+    "my research ",
+    "my computer ",
+    "my server ",
+    "my laptop ",
+    "my phone ",
+)
+
+
+_EPHEMERAL_PREFIXES = (
+    "what is ",
+    "what's ",
+    "whats ",
+    "who is ",
+    "who's ",
+    "where is ",
+    "where's ",
+    "when is ",
+    "when's ",
+    "why is ",
+    "why ",
+    "how is ",
+    "how's ",
+    "how do ",
+    "how can ",
+    "can you ",
+    "could you ",
+    "would you ",
+    "tell me ",
+    "show me ",
+    "open ",
+    "launch ",
+    "play ",
+    "pause ",
+    "stop ",
+    "focus ",
+    "run ",
+)
+
+
+_EPHEMERAL_EXACT = {
+    "yes",
+    "no",
+    "okay",
+    "ok",
+    "thanks",
+    "thank you",
+    "cool",
+    "nice",
+    "great",
+    "continue",
+    "go ahead",
+    "do it",
+    "approve",
+    "cancel",
+}
+
+
+def should_consider_memory(
+    user_message: str,
+) -> bool:
+    """
+    Cheap conservative gate before GPT memory analysis.
+
+    Returns True only when the message contains meaningful evidence
+    that it may modify durable personal/project memory.
+
+    False means:
+        skip analyze_memory entirely
+
+    True means:
+        run the existing GPT-based memory manager normally
+    """
+
+    text = (
+        str(
+            user_message
+            or ""
+        )
+        .strip()
+    )
+
+
+    if not text:
+        return False
+
+
+    normalized = (
+        re.sub(
+            r"\s+",
+            " ",
+            text.lower(),
+        )
+        .strip()
+    )
+
+
+    # -----------------------------------------------------------------------
+    # Explicit Memory Commands Always Pass
+    # -----------------------------------------------------------------------
+
+    if any(
+        normalized.startswith(
+            prefix
+        )
+        for prefix
+        in _MEMORY_EXPLICIT_PREFIXES
+    ):
+        return True
+
+
+    # -----------------------------------------------------------------------
+    # Obvious Memory Updates
+    # -----------------------------------------------------------------------
+
+    if any(
+        signal in normalized
+        for signal
+        in _MEMORY_UPDATE_SIGNALS
+    ):
+        return True
+
+
+    # -----------------------------------------------------------------------
+    # Durable First-Person Facts
+    # -----------------------------------------------------------------------
+
+    if any(
+        signal in normalized
+        for signal
+        in _MEMORY_DURABLE_SELF_SIGNALS
+    ):
+
+        # Avoid treating trivial temporary statements as durable.
+        temporary_terms = (
+            " right now",
+            " for now",
+            " today",
+            " this second",
+            " this minute",
+        )
+
+        if not any(
+            term in normalized
+            for term
+            in temporary_terms
+        ):
+            return True
+
+
+    # -----------------------------------------------------------------------
+    # Tiny Conversational Responses
+    # -----------------------------------------------------------------------
+
+    if normalized in _EPHEMERAL_EXACT:
+        return False
+
+
+    # -----------------------------------------------------------------------
+    # Questions Normally Do Not Modify Durable Memory
+    # -----------------------------------------------------------------------
+
+    if normalized.endswith(
+        "?"
+    ):
+        return False
+
+
+    # -----------------------------------------------------------------------
+    # Common Commands / Questions
+    # -----------------------------------------------------------------------
+
+    if any(
+        normalized.startswith(
+            prefix
+        )
+        for prefix
+        in _EPHEMERAL_PREFIXES
+    ):
+        return False
+
+
+    # -----------------------------------------------------------------------
+    # Short Messages Without Durable Self-Reference
+    # -----------------------------------------------------------------------
+
+    word_count = len(
+        normalized.split()
+    )
+
+    if word_count <= 5:
+        return False
+
+
+    # -----------------------------------------------------------------------
+    # Conservative Fallback
+    # -----------------------------------------------------------------------
+    #
+    # Longer declarative statements may contain useful durable information.
+    # Let the existing GPT memory manager make the final decision.
+    # -----------------------------------------------------------------------
+
+    return True
 
 # ---------------------------------------------------------------------------
 # Analyze Message
@@ -243,7 +494,9 @@ def analyze_memory(
         user_message.strip()
     )
 
+
     if not user_message:
+
         return MemoryAnalysis(
             action="none",
             content="",
@@ -253,6 +506,26 @@ def analyze_memory(
             permanence=0,
             confidence=100,
         )
+
+
+    # -----------------------------------------------------------------------
+    # Phase 14A Fast Gate
+    # -----------------------------------------------------------------------
+
+    if not should_consider_memory(
+        user_message
+    ):
+
+        return MemoryAnalysis(
+            action="none",
+            content="",
+            target_query="",
+            category="general",
+            importance=0,
+            permanence=0,
+            confidence=100,
+        )
+
 
     response = client.responses.parse(
         model="gpt-5.5",

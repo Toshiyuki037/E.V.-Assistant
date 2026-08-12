@@ -87,6 +87,16 @@ from .computer.integration import (
     handle_computer_message,
 )
 
+from .telemetry import (
+    clear_request,
+    finish_request,
+    mark,
+    persist_telemetry,
+    print_latency_report,
+    span,
+    start_request,
+)
+
 # ---------------------------------------------------------------------------
 # Speak Model Response
 # ---------------------------------------------------------------------------
@@ -690,23 +700,63 @@ def complete_response(
     response: str,
 ):
     """
-    Displays, stores, and speaks one completed E.V.I.E. response.
+    Displays, stores, speaks, and records telemetry for one
+    completed E.V.I.E. response.
     """
+
+    mark(
+        "response_ready"
+    )
 
     print(
         f"\nE.V.I.E.: "
         f"{response}\n"
     )
 
-    save_conversation(
-        user_text,
-        response,
+    with span(
+        "conversation_save"
+    ):
+
+        save_conversation(
+            user_text,
+            response,
+        )
+
+    mark(
+        "tts_started"
     )
 
-    speak_response(
-        response
-    )
+    try:
 
+        with span(
+            "tts_total"
+        ):
+
+            speak_response(
+                response
+            )
+
+    finally:
+
+        mark(
+            "speech_finished"
+        )
+
+        telemetry = (
+            finish_request()
+        )
+
+        if telemetry is not None:
+
+            persist_telemetry(
+                telemetry
+            )
+
+            print_latency_report(
+                telemetry
+            )
+
+        clear_request()
 
 def process_prompt(
     user_text,
@@ -741,6 +791,17 @@ def process_prompt(
 
         return
 
+    # -----------------------------------------------------------------------
+    # Phase 14A - Request Telemetry
+    # -----------------------------------------------------------------------
+
+    start_request(
+        user_text
+    )
+
+    mark(
+        "request_received"
+    )
 
     print(
         f"\nYou: {user_text}"
@@ -931,13 +992,17 @@ def process_prompt(
     # Phase 11 - Workflow / Protocol Commands
     # -----------------------------------------------------------------------
 
-    workflow_result = (
-        handle_workflow_message(
-            user_text,
-            default_timezone=
-                "America/Los_Angeles",
+    with span(
+        "phase11_workflow"
+    ):
+
+        workflow_result = (
+            handle_workflow_message(
+                user_text,
+                default_timezone=
+                    "America/Los_Angeles",
+            )
         )
-    )
 
 
     if workflow_result.get(
@@ -1000,11 +1065,15 @@ def process_prompt(
     # Ordinary conversation continues through memory/tools/reasoning.
     # -----------------------------------------------------------------------
 
-    coding_result = (
-        handle_coding_message(
-            user_text
+    with span(
+        "phase12_coding"
+    ):
+
+        coding_result = (
+            handle_coding_message(
+                user_text
+            )
         )
-    )
 
 
     if coding_result.get(
@@ -1060,11 +1129,15 @@ def process_prompt(
         )
 
 
-        agent_result = (
-            handle_agent_message(
-                user_text
+        with span(
+            "phase7_agent"
+        ):
+
+            agent_result = (
+                handle_agent_message(
+                    user_text
+                )
             )
-        )
 
 
         if (
@@ -1125,11 +1198,15 @@ def process_prompt(
     # Phase 13L - Computer & Device Control Integration
     # -----------------------------------------------------------------------
 
-    computer_result = (
-        handle_computer_message(
-            user_text
+    with span(
+        "phase13_computer"
+    ):
+
+        computer_result = (
+            handle_computer_message(
+                user_text
+            )
         )
-    )
 
     if computer_result.get(
         "handled",
@@ -1165,12 +1242,15 @@ def process_prompt(
     # Immediate Phase 6 Tool Request
     # -----------------------------------------------------------------------
 
-    tool_result = (
-        handle_tool_request(
-            user_text
-        )
-    )
+    with span(
+        "phase6_tool_routing"
+    ):
 
+        tool_result = (
+            handle_tool_request(
+                user_text
+            )
+        )
 
     if tool_result.get(
         "handled",
@@ -1201,19 +1281,26 @@ def process_prompt(
     # Intelligent Memory
     # -----------------------------------------------------------------------
 
-    process_intelligent_memory(
-        user_text
-    )
+    with span(
+        "memory_processing"
+    ):
+
+        process_intelligent_memory(
+            user_text
+        )
 
 
     # -----------------------------------------------------------------------
     # Main Reasoning
     # -----------------------------------------------------------------------
 
-    response = chat(
-        user_text
-    )
+    with span(
+        "reasoning"
+    ):
 
+        response = chat(
+            user_text
+        )
 
     complete_response(
         user_text,
