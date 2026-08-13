@@ -1,0 +1,109 @@
+{
+  "request_id": "bf9f282b03044d07a45fbd433744e2ff",
+  "user_text": "what can you do",
+  "total_seconds": 76.4755,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.0106,
+    "tts_started": 0.0215,
+    "audio_playback_started": 5.2195,
+    "first_audio_started": 5.2195,
+    "audio_playback_finished": 76.4754,
+    "speech_finished": 76.4755
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0026,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0029,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0098,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 76.454,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 11.0848,
+      "metadata": {
+        "chunk_index": 0,
+        "audio_seconds": 11.232
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 7.4701,
+      "metadata": {
+        "chunk_index": 1,
+        "audio_seconds": 7.477
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 7.8197,
+      "metadata": {
+        "chunk_index": 2,
+        "audio_seconds": 7.808
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 7.7203,
+      "metadata": {
+        "chunk_index": 3,
+        "audio_seconds": 7.744
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 9.6203,
+      "metadata": {
+        "chunk_index": 4,
+        "audio_seconds": 9.611
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 7.0194,
+      "metadata": {
+        "chunk_index": 5,
+        "audio_seconds": 7.029
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 7.1021,
+      "metadata": {
+        "chunk_index": 6,
+        "audio_seconds": 7.093
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 6.7067,
+      "metadata": {
+        "chunk_index": 7,
+        "audio_seconds": 6.709
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 6.7113,
+      "metadata": {
+        "chunk_index": 8,
+        "audio_seconds": 6.709
+      }
+    }
+  ],
+  "metadata": {}
+}

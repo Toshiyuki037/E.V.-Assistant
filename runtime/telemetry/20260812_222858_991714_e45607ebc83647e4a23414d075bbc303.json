@@ -1,0 +1,65 @@
+{
+  "request_id": "e45607ebc83647e4a23414d075bbc303",
+  "user_text": "Tell me more.",
+  "total_seconds": 106.7312,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 28.6071,
+    "response_ready": 46.2242,
+    "tts_started": 46.2319,
+    "speech_finished": 106.7312
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0067,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0032,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0009,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0025,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 38.245,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0073,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 60.4992,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

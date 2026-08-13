@@ -1,0 +1,52 @@
+{
+  "request_id": "588699d12d4141d5938043c3e9cee9fa",
+  "user_text": "What version are you?",
+  "total_seconds": 5.0373,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.0071,
+    "tts_started": 0.0352,
+    "tts_generation_started": 0.0354,
+    "tts_generation_finished": 3.005,
+    "audio_playback_started": 3.005,
+    "audio_playback_finished": 5.0373,
+    "speech_finished": 5.0373
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0259,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 5.002,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 2.9696,
+      "metadata": {
+        "characters": 34
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 2.0323,
+      "metadata": {
+        "audio_seconds": 2.187
+      }
+    }
+  ],
+  "metadata": {}
+}

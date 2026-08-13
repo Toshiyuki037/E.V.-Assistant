@@ -1,0 +1,52 @@
+{
+  "request_id": "6d9211e34ce64c068c2091a3262a0a0d",
+  "user_text": "What can you do?",
+  "total_seconds": 16.0761,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.0104,
+    "tts_started": 0.0377,
+    "tts_generation_started": 0.0381,
+    "tts_generation_finished": 5.0028,
+    "audio_playback_started": 5.0028,
+    "audio_playback_finished": 16.0761,
+    "speech_finished": 16.0761
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0043,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0268,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 16.0384,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 4.9647,
+      "metadata": {
+        "characters": 174
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 11.0732,
+      "metadata": {
+        "audio_seconds": 11.232
+      }
+    }
+  ],
+  "metadata": {}
+}

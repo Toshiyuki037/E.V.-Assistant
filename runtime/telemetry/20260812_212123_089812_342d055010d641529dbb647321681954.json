@@ -1,0 +1,52 @@
+{
+  "request_id": "342d055010d641529dbb647321681954",
+  "user_text": "Run a diagnostic.",
+  "total_seconds": 9.4815,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.2878,
+    "tts_started": 0.3083,
+    "tts_generation_started": 0.309,
+    "tts_generation_finished": 3.9676,
+    "audio_playback_started": 3.9677,
+    "audio_playback_finished": 9.4815,
+    "speech_finished": 9.4815
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.2799,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.02,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 9.1732,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 3.6586,
+      "metadata": {
+        "characters": 88
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 5.5138,
+      "metadata": {
+        "audio_seconds": 5.675
+      }
+    }
+  ],
+  "metadata": {}
+}

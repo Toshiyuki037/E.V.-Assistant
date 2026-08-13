@@ -1,0 +1,65 @@
+{
+  "request_id": "fe0dfba574f645509bb4af60241222fe",
+  "user_text": "Goodbye, Evie.",
+  "total_seconds": 8.5558,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 2.3557,
+    "response_ready": 2.7157,
+    "tts_started": 2.7387,
+    "speech_finished": 8.5558
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0043,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0026,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.001,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0015,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 2.6989,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0217,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 5.8171,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

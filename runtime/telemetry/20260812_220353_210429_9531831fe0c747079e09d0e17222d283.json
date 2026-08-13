@@ -1,0 +1,65 @@
+{
+  "request_id": "9531831fe0c747079e09d0e17222d283",
+  "user_text": "We're on a deep diagnostic EV.",
+  "total_seconds": 105.0917,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 8.4089,
+    "response_ready": 37.9133,
+    "tts_started": 37.944,
+    "speech_finished": 105.0917
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.004,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0033,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0054,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0016,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0015,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 3.1198,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 20.8736,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0299,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 67.1477,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

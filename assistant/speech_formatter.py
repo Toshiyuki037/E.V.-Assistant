@@ -1,24 +1,20 @@
 """
 E.V.I.E. - Speech Response Formatter
 
-Created: August 8, 2026
-Last Edited: August 12, 2026
-Author: Max Maehara
+Phase 14 Rolling Speech Update
 
 Purpose:
-    Converts E.V.I.E.'s complete text responses into concise,
-    natural spoken responses for F5-TTS.
+    Cleans E.V.I.E. text for speech while preserving the complete response.
 
-How It Works:
-    The full response remains visible in the terminal.
+Compatibility:
+    prepare_spoken_text() keeps the existing concise behavior by default.
+    New rolling/full-response speech uses prepare_spoken_chunks().
 
-    Voice output is intentionally much shorter so E.V.I.E. begins
-    and finishes speaking quickly while preserving the essential
-    answer.
-
-Phase 14A:
-    Reduced spoken response size substantially to lower TTS
-    generation and playback latency before Phase 14 streaming.
+Rolling speech:
+    - complete response remains visible in terminal
+    - speech is divided into small chunks
+    - default chunk size is 2 sentences
+    - no response content is intentionally discarded
 """
 
 from __future__ import annotations
@@ -26,33 +22,17 @@ from __future__ import annotations
 import re
 
 
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
-
-# Short answers should be spoken exactly as generated.
 SHORT_RESPONSE_CHARACTERS = 160
-
-# Longer terminal responses are compressed for speech.
 MAX_SPEECH_CHARACTERS = 260
 MAX_SENTENCES = 2
 
+DEFAULT_SENTENCES_PER_CHUNK = 2
+DEFAULT_CHUNK_CHARACTERS = 340
 
-# ---------------------------------------------------------------------------
-# Markdown Cleanup
-# ---------------------------------------------------------------------------
 
 def remove_markdown(
     text: str,
 ) -> str:
-    """
-    Removes formatting that should not be spoken.
-    """
-
-    # -----------------------------------------------------------------------
-    # Code Fences
-    # -----------------------------------------------------------------------
-
     text = re.sub(
         r"```[\w+-]*",
         "",
@@ -63,11 +43,6 @@ def remove_markdown(
         "```",
         "",
     )
-
-
-    # -----------------------------------------------------------------------
-    # Inline Code / Emphasis
-    # -----------------------------------------------------------------------
 
     text = text.replace(
         "`",
@@ -89,21 +64,11 @@ def remove_markdown(
         "",
     )
 
-
-    # -----------------------------------------------------------------------
-    # Headings
-    # -----------------------------------------------------------------------
-
     text = re.sub(
         r"(?m)^#+\s*",
         "",
         text,
     )
-
-
-    # -----------------------------------------------------------------------
-    # Bullets
-    # -----------------------------------------------------------------------
 
     text = re.sub(
         r"(?m)^\s*[-•]\s+",
@@ -111,32 +76,18 @@ def remove_markdown(
         text,
     )
 
-
-    # -----------------------------------------------------------------------
-    # Numbered Markdown Lists
-    # -----------------------------------------------------------------------
-
     text = re.sub(
         r"(?m)^\s*\d+[.)]\s+",
         "",
         text,
     )
 
-
     return text
 
-
-# ---------------------------------------------------------------------------
-# Whitespace
-# ---------------------------------------------------------------------------
 
 def normalize_whitespace(
     text: str,
 ) -> str:
-    """
-    Converts excessive whitespace into normal spaces.
-    """
-
     text = re.sub(
         r"\s+",
         " ",
@@ -146,17 +97,9 @@ def normalize_whitespace(
     return text.strip()
 
 
-# ---------------------------------------------------------------------------
-# Sentence Splitting
-# ---------------------------------------------------------------------------
-
 def split_sentences(
     text: str,
 ):
-    """
-    Splits normal prose into useful speech-sized sentences.
-    """
-
     sentences = re.split(
         r"(?<=[.!?])\s+",
         text,
@@ -170,18 +113,10 @@ def split_sentences(
     ]
 
 
-# ---------------------------------------------------------------------------
-# Sentence Limit
-# ---------------------------------------------------------------------------
-
 def limit_sentences(
     text: str,
     maximum: int = MAX_SENTENCES,
 ) -> str:
-    """
-    Limits long responses to the first few useful sentences.
-    """
-
     sentences = split_sentences(
         text
     )
@@ -189,9 +124,7 @@ def limit_sentences(
     if len(
         sentences
     ) <= maximum:
-
         return text
-
 
     return " ".join(
         sentences[
@@ -200,32 +133,20 @@ def limit_sentences(
     )
 
 
-# ---------------------------------------------------------------------------
-# Character Limit
-# ---------------------------------------------------------------------------
-
 def limit_characters(
     text: str,
     maximum: int = MAX_SPEECH_CHARACTERS,
 ) -> str:
-    """
-    Prevents expensive long F5-TTS generations.
-    """
-
     if len(
         text
     ) <= maximum:
-
         return text
-
 
     shortened = text[
         :maximum
     ]
 
-
     if " " in shortened:
-
         shortened = (
             shortened.rsplit(
                 " ",
@@ -233,45 +154,29 @@ def limit_characters(
             )[0]
         )
 
-
     shortened = shortened.rstrip(
         " ,;:-"
     )
-
 
     if (
         shortened
         and shortened[-1]
         not in ".!?"
     ):
-
         shortened += "."
-
 
     return shortened
 
 
-# ---------------------------------------------------------------------------
-# Spoken Text Preparation
-# ---------------------------------------------------------------------------
-
-def prepare_spoken_text(
+def prepare_full_spoken_text(
     response: str,
 ) -> str:
     """
-    Prepares E.V.I.E.'s terminal response for speech.
-
-    The original response is never changed.
-
-    Short responses are preserved.
-
-    Long responses are reduced to a concise spoken representation.
+    Clean a complete response for speech without truncating its meaning.
     """
 
     if not response:
-
         return ""
-
 
     text = response.strip()
 
@@ -283,93 +188,277 @@ def prepare_spoken_text(
         text
     )
 
+    return text
 
-    # -----------------------------------------------------------------------
-    # Preserve Naturally Short Responses
-    # -----------------------------------------------------------------------
-    #
-    # A response is only considered naturally short when BOTH:
-    #
-    #     - its character count is small
-    #     - its sentence count is already within the speech limit
-    #
-    # This prevents several short sentences from bypassing the
-    # Phase 14A spoken-response compression.
-    # -----------------------------------------------------------------------
+
+def prepare_spoken_text(
+    response: str,
+    *,
+    full_response: bool = False,
+) -> str:
+    """
+    Backwards-compatible spoken-text preparation.
+
+    full_response=False:
+        preserves the prior concise Phase 14 behavior.
+
+    full_response=True:
+        returns the complete cleaned response for rolling speech.
+    """
+
+    text = prepare_full_spoken_text(
+        response
+    )
+
+    if not text:
+        return ""
+
+    if full_response:
+        return text
 
     sentences = split_sentences(
         text
     )
-
 
     if (
         len(
             text
         )
         <= SHORT_RESPONSE_CHARACTERS
-
         and len(
             sentences
         )
         <= MAX_SENTENCES
     ):
-
         return text
-
-
-    # -----------------------------------------------------------------------
-    # Compress Longer / Multi-Sentence Responses
-    # -----------------------------------------------------------------------
 
     text = limit_sentences(
         text,
         MAX_SENTENCES,
     )
 
-
     text = limit_characters(
         text,
         MAX_SPEECH_CHARACTERS,
     )
 
-
     return text
 
 
-# ---------------------------------------------------------------------------
-# Standalone Test
-# ---------------------------------------------------------------------------
+def _split_long_sentence(
+    sentence: str,
+    maximum: int,
+):
+    """
+    Preserve a long sentence by splitting it at word boundaries instead of
+    discarding the tail.
+    """
 
-if __name__ == "__main__":
-
-    sample = """
-A transistor is a tiny electronic component that controls the
-flow of electric current.
-
-It's mainly used in two ways:
-
-1. As a switch. A small signal can turn a larger current on or off.
-
-2. As an amplifier. A weak signal can control a stronger one.
-
-Most modern transistors are made from semiconductors.
-"""
-
-    print(
-        "Original:"
-    )
-
-    print(
-        sample
-    )
-
-
-    print(
-        "\nSpoken:"
-    )
-
-    print(
-        prepare_spoken_text(
-            sample
+    sentence = (
+        str(
+            sentence
+            or ""
         )
+        .strip()
     )
+
+    if not sentence:
+        return []
+
+    if len(
+        sentence
+    ) <= maximum:
+        return [
+            sentence
+        ]
+
+    words = (
+        sentence.split()
+    )
+
+    parts = []
+
+    current = []
+
+    current_length = 0
+
+    for word in words:
+
+        extra = (
+            len(
+                word
+            )
+            + (
+                1
+                if current
+                else 0
+            )
+        )
+
+        if (
+            current
+            and current_length
+            + extra
+            > maximum
+        ):
+            parts.append(
+                " ".join(
+                    current
+                )
+            )
+
+            current = [
+                word
+            ]
+
+            current_length = len(
+                word
+            )
+
+        else:
+            current.append(
+                word
+            )
+
+            current_length += extra
+
+    if current:
+        parts.append(
+            " ".join(
+                current
+            )
+        )
+
+    return parts
+
+
+def prepare_spoken_chunks(
+    response: str,
+    *,
+    sentences_per_chunk: int = DEFAULT_SENTENCES_PER_CHUNK,
+    max_chunk_characters: int = DEFAULT_CHUNK_CHARACTERS,
+):
+    """
+    Convert one complete response into ordered speech chunks.
+
+    Default:
+        2 sentences per F5 generation.
+
+    Character limit is a per-chunk safety bound, not a whole-response limit.
+    """
+
+    text = prepare_full_spoken_text(
+        response
+    )
+
+    if not text:
+        return []
+
+    sentences_per_chunk = max(
+        1,
+        int(
+            sentences_per_chunk
+        ),
+    )
+
+    max_chunk_characters = max(
+        80,
+        int(
+            max_chunk_characters
+        ),
+    )
+
+    raw_sentences = split_sentences(
+        text
+    )
+
+    if not raw_sentences:
+        raw_sentences = [
+            text
+        ]
+
+    sentences = []
+
+    for sentence in raw_sentences:
+        sentences.extend(
+            _split_long_sentence(
+                sentence,
+                max_chunk_characters,
+            )
+        )
+
+    chunks = []
+
+    current = []
+
+    current_characters = 0
+
+    for sentence in sentences:
+
+        separator = (
+            1
+            if current
+            else 0
+        )
+
+        would_exceed_characters = (
+            current
+            and (
+                current_characters
+                + separator
+                + len(
+                    sentence
+                )
+                > max_chunk_characters
+            )
+        )
+
+        would_exceed_sentences = (
+            len(
+                current
+            )
+            >= sentences_per_chunk
+        )
+
+        if (
+            would_exceed_characters
+            or would_exceed_sentences
+        ):
+            chunks.append(
+                " ".join(
+                    current
+                )
+                .strip()
+            )
+
+            current = []
+
+            current_characters = 0
+
+            separator = 0
+
+        current.append(
+            sentence
+        )
+
+        current_characters += (
+            separator
+            + len(
+                sentence
+            )
+        )
+
+    if current:
+        chunks.append(
+            " ".join(
+                current
+            )
+            .strip()
+        )
+
+    return [
+        chunk
+        for chunk
+        in chunks
+        if chunk
+    ]

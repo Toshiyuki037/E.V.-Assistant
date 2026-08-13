@@ -1,0 +1,65 @@
+{
+  "request_id": "4149d23f878945659fa9cd4865654c0c",
+  "user_text": "explain exactly what parts of your system are held right now and what each one does",
+  "total_seconds": 462.7438,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 46.5895,
+    "response_ready": 404.5026,
+    "tts_started": 404.5343,
+    "speech_finished": 462.7438
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0026,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0043,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0097,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0023,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.001,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0043,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 4.7801,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 381.8022,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0307,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 58.2095,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,52 @@
+{
+  "request_id": "81238ed76b0a4c49a6e51844dce653db",
+  "user_text": "Okay, EV, run a diagnostic please.",
+  "total_seconds": 9.1764,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.0782,
+    "tts_started": 0.0855,
+    "tts_generation_started": 0.0858,
+    "tts_generation_finished": 3.6635,
+    "audio_playback_started": 3.6635,
+    "audio_playback_finished": 9.1764,
+    "speech_finished": 9.1764
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0703,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0069,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 9.0909,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 3.5776,
+      "metadata": {
+        "characters": 88
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 5.5128,
+      "metadata": {
+        "audio_seconds": 5.675
+      }
+    }
+  ],
+  "metadata": {}
+}

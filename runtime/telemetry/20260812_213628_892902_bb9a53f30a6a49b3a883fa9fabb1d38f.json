@@ -1,0 +1,65 @@
+{
+  "request_id": "bb9a53f30a6a49b3a883fa9fabb1d38f",
+  "user_text": "Hey AV, what can you do?",
+  "total_seconds": 25.6047,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 6.4733,
+    "response_ready": 8.4875,
+    "tts_started": 8.51,
+    "speech_finished": 25.6047
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0042,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0016,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0036,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 8.4698,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0222,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 17.0946,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,52 @@
+{
+  "request_id": "bc58e29ad4f94235ab35f484ea14100b",
+  "user_text": "Run a deep diagnostic.",
+  "total_seconds": 19.8412,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 10.1925,
+    "tts_started": 10.2163,
+    "tts_generation_started": 10.2178,
+    "tts_generation_finished": 14.2472,
+    "audio_playback_started": 14.2472,
+    "audio_playback_finished": 19.8412,
+    "speech_finished": 19.8412
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 10.1843,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.02,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 9.6249,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 4.0293,
+      "metadata": {
+        "characters": 89
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 5.594,
+      "metadata": {
+        "audio_seconds": 5.739
+      }
+    }
+  ],
+  "metadata": {}
+}

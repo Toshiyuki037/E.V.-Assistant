@@ -39,6 +39,7 @@ from .speech_formatter import prepare_spoken_text
 from .speak import (
     play_audio,
     speak,
+    speak_streaming_response,
     pause_audio,
     resume_audio,
     stop_audio,
@@ -51,6 +52,15 @@ from .voice.authoritative_reasoning import (
 
 from .voice.authoritative_speech import (
     AuthoritativeSpeechPipeline,
+)
+
+from .voice.response_length import (
+    apply_response_length_policy,
+)
+
+from .voice.presentation import (
+    build_contextual_expansion_prompt,
+    prepare_voice_presentation,
 )
 
 from .memory.database import (
@@ -129,31 +139,43 @@ from .voice.acknowledgements import (
     suppress_next_acknowledgement,
 )
 
+from .system.integration import (
+    handle_system_message,
+)
+
 # ---------------------------------------------------------------------------
 # Speak Model Response
 # ---------------------------------------------------------------------------
 
 def speak_response(
+    user_text: str,
     response: str,
 ):
-    """
-    Keeps the complete response in the terminal while sending a cleaner,
-    shorter representation to F5-TTS.
-    """
+    if not response:
+        return
+
+    presentation = (
+        prepare_voice_presentation(
+            user_text,
+            response,
+        )
+    )
 
     spoken_response = (
-        prepare_spoken_text(
-            response
-        )
+        presentation.text
+        .strip()
     )
 
     if not spoken_response:
         return
 
-    speak(
-        spoken_response
+    speak_streaming_response(
+        spoken_response,
+        sentences_per_chunk=
+            2,
+        max_chunk_characters=
+            340,
     )
-
 
 # ---------------------------------------------------------------------------
 # Store Memory
@@ -765,8 +787,9 @@ def complete_response(
         ):
 
             speak_response(
-                response
-            )
+            user_text,
+            response,
+        )
 
     finally:
 
@@ -918,7 +941,9 @@ def process_prompt(
         if follow_up:
 
             process_prompt(
-                follow_up
+                follow_up,
+                voice_streaming=
+                    voice_streaming,
             )
 
 
@@ -971,7 +996,9 @@ def process_prompt(
         if follow_up:
 
             process_prompt(
-                follow_up
+                follow_up,
+                voice_streaming=
+                    voice_streaming,
             )
 
 
@@ -1031,7 +1058,9 @@ def process_prompt(
 
 
             process_prompt(
-                follow_up
+                follow_up,
+                voice_streaming=
+                    voice_streaming,
             )
 
 
@@ -1105,13 +1134,70 @@ def process_prompt(
         if follow_up:
 
             process_prompt(
-                follow_up
+                follow_up,
+                voice_streaming=
+                    voice_streaming,
             )
 
 
         return
 
-        # -----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
+    # Phase 15 - System Health, Diagnostics & Self-Awareness
+    # -----------------------------------------------------------------------
+
+    with span(
+        "phase15_system"
+    ):
+
+        system_result = (
+            handle_system_message(
+                user_text
+            )
+        )
+
+
+    if system_result.get(
+        "handled",
+        False,
+    ):
+
+        response = (
+            system_result.get(
+                "response"
+            )
+            or "Done."
+        )
+
+
+        follow_up = (
+            system_result.get(
+                "follow_up",
+                ""
+            )
+            .strip()
+        )
+
+
+        complete_response(
+            user_text,
+            response,
+        )
+
+
+        if follow_up:
+
+            process_prompt(
+                follow_up,
+                voice_streaming=
+                    voice_streaming,
+            )
+
+
+        return
+
+
+    # -----------------------------------------------------------------------
     # Phase 12N - Self-Engineering Integration
     # -----------------------------------------------------------------------
     #
@@ -1176,7 +1262,9 @@ def process_prompt(
         if follow_up:
 
             process_prompt(
-                follow_up
+                follow_up,
+                voice_streaming=
+                    voice_streaming,
             )
 
 
@@ -1246,8 +1334,10 @@ def process_prompt(
             if follow_up:
 
                 process_prompt(
-                    follow_up
-                )
+                follow_up,
+                voice_streaming=
+                    voice_streaming,
+            )
 
 
             return
@@ -1439,7 +1529,10 @@ def process_prompt(
                     2,
 
                 max_characters=
-                    260,
+                    340,
+
+                rolling=
+                    True,
             )
         )
 
@@ -1455,9 +1548,25 @@ def process_prompt(
             "reasoning"
         ):
 
+            contextual_user_text = (
+                build_contextual_expansion_prompt(
+                    user_text
+                )
+            )
+
+
+            reasoning_text = (
+                apply_response_length_policy(
+                    contextual_user_text,
+                    voice_mode=
+                        True,
+                )
+            )
+
+
             response = (
                 stream_authoritative_chat(
-                    user_text,
+                    reasoning_text,
 
                     on_sentence=
                         handle_authoritative_sentence,

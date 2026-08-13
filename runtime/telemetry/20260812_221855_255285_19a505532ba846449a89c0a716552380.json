@@ -1,0 +1,77 @@
+{
+  "request_id": "19a505532ba846449a89c0a716552380",
+  "user_text": "Run a deep diagnostic.",
+  "total_seconds": 39.9819,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.2758,
+    "tts_started": 0.2986,
+    "audio_playback_started": 3.9482,
+    "first_audio_started": 3.9482,
+    "audio_playback_finished": 39.9818,
+    "speech_finished": 39.9819
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0034,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.263,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0222,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 39.6833,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 5.5928,
+      "metadata": {
+        "chunk_index": 0,
+        "audio_seconds": 5.739
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 8.8901,
+      "metadata": {
+        "chunk_index": 1,
+        "audio_seconds": 8.907
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 9.8294,
+      "metadata": {
+        "chunk_index": 2,
+        "audio_seconds": 9.813
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 8.892,
+      "metadata": {
+        "chunk_index": 3,
+        "audio_seconds": 8.907
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 2.8288,
+      "metadata": {
+        "chunk_index": 4,
+        "audio_seconds": 2.827
+      }
+    }
+  ],
+  "metadata": {}
+}
