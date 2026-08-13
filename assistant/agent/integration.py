@@ -12,15 +12,24 @@ Phase 14A:
     Adds a cheap deterministic fast gate so obviously non-agentic
     requests do not pay for the expensive Phase 7 planner.
 
-Important:
-    Existing active tasks and approval continuations ALWAYS bypass
-    the fast gate so pending Phase 7 state is preserved.
+Phase 14 Routing Hardening:
+    - unfinished Phase 7 tasks only own a new turn when the user clearly
+      approves, rejects, cancels, resumes, or retries that task
+    - unrelated new requests cancel stale unfinished task state and fall
+      through to normal routing
+    - natural compound desktop requests such as:
+          "open YouTube in Chrome and fullscreen it"
+          "open VS Code and maximize it"
+          "pull up YouTube full screen"
+      are recognized as Phase 7 candidates
+
+This preserves Phase 6 as the single-action layer and Phase 7 as the
+multi-step/adaptive coordinator.
 """
 
 from __future__ import annotations
 
 import re
-
 
 from assistant.tools.session import (
     parse_approval_response,
@@ -38,46 +47,145 @@ from .controller import (
 
 
 # ---------------------------------------------------------------------------
-# Command Detection
+# Command Normalization
+# ---------------------------------------------------------------------------
+
+def _normalized_command(
+    text: str,
+) -> str:
+
+    return (
+        " ".join(
+            str(
+                text
+                or ""
+            )
+            .strip()
+            .lower()
+            .split()
+        )
+        .rstrip(
+            ".!?"
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Explicit Task-Control Commands
 # ---------------------------------------------------------------------------
 
 def is_cancel_request(
     text: str,
 ):
+
     normalized = (
-        text
-        .strip()
-        .lower()
+        _normalized_command(
+            text
+        )
     )
 
     return normalized in {
         "cancel task",
         "cancel the task",
+        "cancel that",
         "stop task",
         "stop the task",
         "stop working on that",
         "abort task",
         "abort the task",
+        "never mind",
+        "nevermind",
+        "forget it",
     }
 
 
 def is_resume_request(
     text: str,
 ):
+
     normalized = (
-        text
-        .strip()
-        .lower()
+        _normalized_command(
+            text
+        )
     )
 
     return normalized in {
         "resume task",
         "resume the task",
+        "resume that",
         "continue task",
         "continue the task",
-        "keep going",
+        "continue that",
         "continue",
+        "keep going",
+        "keep working",
+        "keep working on that",
+        "try again",
+        "retry",
+        "retry that",
+        "retry the task",
+        "run it again",
+        "go ahead",
+        "proceed",
     }
+
+
+# ---------------------------------------------------------------------------
+# Existing Task Helpers
+# ---------------------------------------------------------------------------
+
+_ACTIVE_UNFINISHED_STATUSES = {
+    "running",
+    "planned",
+    "incomplete",
+    "awaiting_approval",
+}
+
+
+def _unfinished_agent_task():
+
+    task = (
+        get_agent_task()
+    )
+
+    if (
+        task is not None
+        and getattr(
+            task,
+            "status",
+            None,
+        )
+        in _ACTIVE_UNFINISHED_STATUSES
+    ):
+
+        return task
+
+    return None
+
+
+def _cancel_stale_task_silently():
+    """
+    The user moved on to a new request.
+
+    Cancel the old unfinished task without surfacing the cancellation text.
+    The CURRENT request should continue normally through E.V.I.E.'s router.
+    """
+
+    try:
+
+        if agent_task_active():
+
+            cancel_agent()
+
+
+    except Exception as error:
+
+        print(
+            (
+                "[Agent stale-task cleanup warning] "
+                f"{error}"
+            )
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -85,11 +193,14 @@ def is_resume_request(
 # ---------------------------------------------------------------------------
 
 _AGENTIC_PHRASES = (
+    # Sequential / dependency language
     " and then ",
     " then ",
     " after that ",
     " once that ",
     " when that ",
+
+    # Adaptive / recovery language
     " if it fails",
     " if that fails",
     " if this fails",
@@ -104,6 +215,8 @@ _AGENTIC_PHRASES = (
     " repair it",
     " investigate",
     " diagnose",
+
+    # Verification / development language
     " verify that",
     " verify it",
     " run the tests",
@@ -114,6 +227,21 @@ _AGENTIC_PHRASES = (
     " inspect current",
     " commit everything",
     " stage all",
+
+    # Common natural desktop compound phrasing
+    " and open ",
+    " and launch ",
+    " and pull up ",
+    " and maximize ",
+    " and minimise ",
+    " and minimize ",
+    " and full screen ",
+    " and fullscreen ",
+    " then open ",
+    " then launch ",
+    " then maximize ",
+    " then full screen ",
+    " then fullscreen ",
 )
 
 
@@ -123,7 +251,11 @@ _MULTI_ACTION_VERBS = (
     "focus",
     "move",
     "maximize",
+    "maximise",
     "minimize",
+    "minimise",
+    "fullscreen",
+    "press",
     "close",
     "type",
     "write",
@@ -147,18 +279,52 @@ _MULTI_ACTION_VERBS = (
 )
 
 
+def _contains_open_like_action(
+    normalized: str,
+) -> bool:
+
+    return bool(
+        re.search(
+            r"\b("
+            r"open|open up|launch|pull up|start"
+            r")\b",
+            normalized,
+        )
+    )
+
+
+def _contains_display_followup_action(
+    normalized: str,
+) -> bool:
+
+    return bool(
+        re.search(
+            r"\b("
+            r"full\s*screen|fullscreen|"
+            r"maximize|maximise|"
+            r"minimize|minimise|"
+            r"move|focus"
+            r")\b",
+            normalized,
+        )
+    )
+
+
 def should_consider_agent(
     user_message: str,
 ) -> bool:
     """
     Cheap pre-planner gate.
 
-    Returns True only when the message has meaningful evidence of
-    a multi-step, sequential, adaptive, or compound computer task.
+    True means:
+        the request has enough evidence of multiple dependent actions,
+        adaptive behavior, or compound computer control to justify Phase 7.
 
-    This function intentionally does NOT decide the final Phase 7 plan.
-    It only determines whether invoking the expensive Phase 7 planner
-    is justified.
+    False means:
+        continue to Phase 6 / integrations / memory / normal reasoning.
+
+    This is NOT the final agent decision. The Phase 7 planner remains
+    authoritative once this fast gate allows the request through.
     """
 
     text = (
@@ -170,6 +336,7 @@ def should_consider_agent(
     )
 
     if not text:
+
         return False
 
 
@@ -185,18 +352,45 @@ def should_consider_agent(
 
 
     # -----------------------------------------------------------------------
-    # Strong Adaptive / Sequential Signals
+    # Strong Explicit Agentic Signals
     # -----------------------------------------------------------------------
 
     if any(
         phrase in normalized
         for phrase in _AGENTIC_PHRASES
     ):
+
         return True
 
 
     # -----------------------------------------------------------------------
-    # Multiple Explicit Action Clauses
+    # Natural Application + Window/Display Compound Commands
+    # -----------------------------------------------------------------------
+    #
+    # Examples:
+    #     "Open YouTube in Chrome full screen."
+    #     "Pull up YouTube fullscreen please."
+    #     "Open VS Code and maximize it."
+    #     "Launch Chrome then move it to monitor 2."
+    #
+    # These often contain no literal "and then", but they still require
+    # more than one real computer action.
+    # -----------------------------------------------------------------------
+
+    if (
+        _contains_open_like_action(
+            normalized
+        )
+        and _contains_display_followup_action(
+            normalized
+        )
+    ):
+
+        return True
+
+
+    # -----------------------------------------------------------------------
+    # Multiple Explicit Action Verbs
     # -----------------------------------------------------------------------
 
     action_hits = 0
@@ -207,6 +401,7 @@ def should_consider_agent(
             rf"\b{re.escape(verb)}\b",
             normalized,
         ):
+
             action_hits += 1
 
 
@@ -214,28 +409,38 @@ def should_consider_agent(
         action_hits >= 2
         and (
             " and " in normalized
+            or " then " in normalized
             or "," in normalized
             or ";" in normalized
         )
     ):
+
         return True
 
 
     # -----------------------------------------------------------------------
-    # Common Explicit Agentic Forms
+    # Common Explicit Two-Step Forms
     # -----------------------------------------------------------------------
 
     if re.search(
-        r"\b(open|launch|run|create|write|search|find|inspect)\b"
-        r".+\b(and|then)\b"
-        r".+\b(open|launch|run|create|write|search|find|inspect|verify)\b",
+        r"\b("
+        r"open|launch|run|create|write|search|find|inspect|pull up"
+        r")\b"
+        r".+"
+        r"\b(and|then)\b"
+        r".+"
+        r"\b("
+        r"open|launch|run|create|write|search|find|inspect|verify|"
+        r"maximize|maximise|minimize|minimise|fullscreen|move|focus"
+        r")\b",
         normalized,
     ):
+
         return True
 
 
     # -----------------------------------------------------------------------
-    # Otherwise let Phase 6 / memory / reasoning handle it.
+    # Otherwise Phase 6 / integrations / memory / reasoning should handle it.
     # -----------------------------------------------------------------------
 
     return False
@@ -254,13 +459,28 @@ def handle_agent_message(
         {
             "handled": bool,
             "response": str | None,
+            "follow_up": str,
         }
 
-    When handled=False, main.py continues through normal
-    Phase 6 / memory / brain routing.
+    Important routing behavior:
+
+        awaiting approval + "approved"
+            -> continue old task
+
+        unfinished task + "continue that"
+            -> continue old task
+
+        unfinished task + unrelated NEW request
+            -> silently cancel stale task
+            -> route new request normally
+
+    This prevents stale Phase 7 tasks from hijacking later weather,
+    Schwab, Spotify, memory, computer, or reasoning requests.
     """
 
-    task = get_agent_task()
+    task = (
+        _unfinished_agent_task()
+    )
 
 
     # -----------------------------------------------------------------------
@@ -278,6 +498,7 @@ def handle_agent_message(
                 user_message
             )
         )
+
 
         if approval.decision == "approve":
 
@@ -319,12 +540,28 @@ def handle_agent_message(
             }
 
 
+        # A completely unrelated request while approval is pending means
+        # the user has moved on. Do not let the pending task hijack it.
+        if not (
+            is_cancel_request(
+                user_message
+            )
+            or is_resume_request(
+                user_message
+            )
+        ):
+
+            _cancel_stale_task_silently()
+
+            task = None
+
+
     # -----------------------------------------------------------------------
-    # Cancel
+    # Explicit Cancel
     # -----------------------------------------------------------------------
 
     if (
-        agent_task_active()
+        task is not None
         and is_cancel_request(
             user_message
         )
@@ -349,11 +586,11 @@ def handle_agent_message(
 
 
     # -----------------------------------------------------------------------
-    # Resume
+    # Explicit Resume / Retry
     # -----------------------------------------------------------------------
 
     if (
-        agent_task_active()
+        task is not None
         and is_resume_request(
             user_message
         )
@@ -378,45 +615,34 @@ def handle_agent_message(
 
 
     # -----------------------------------------------------------------------
-    # Existing Non-Approval Task
+    # Existing Non-Approval Task + New Request
+    # -----------------------------------------------------------------------
+    #
+    # Previous broken behavior automatically resumed running/planned/
+    # incomplete tasks for every new utterance.
+    #
+    # New behavior:
+    #     only explicit task-continuation language resumes the old task.
+    #     every other request is treated as a new user objective.
     # -----------------------------------------------------------------------
 
-    if agent_task_active():
-
-        task = get_agent_task()
-
-        if task.status in {
+    if (
+        task is not None
+        and task.status
+        in {
             "running",
             "planned",
             "incomplete",
-        }:
+        }
+    ):
 
-            result = (
-                resume_agent()
-            )
+        _cancel_stale_task_silently()
 
-            return {
-                "handled":
-                    True,
-
-                "response":
-                    result[
-                        "response"
-                    ],
-
-                "follow_up":
-                    user_message,
-            }
+        task = None
 
 
     # -----------------------------------------------------------------------
     # Phase 14A Fast Gate
-    # -----------------------------------------------------------------------
-    #
-    # No active task exists.
-    #
-    # Avoid invoking the expensive Phase 7 planner when the message
-    # clearly does not describe a multi-step/adaptive task.
     # -----------------------------------------------------------------------
 
     if not should_consider_agent(
