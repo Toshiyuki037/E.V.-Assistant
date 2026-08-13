@@ -1,0 +1,60 @@
+{
+  "request_id": "e11b716acecc45dab910b15c4bc1eb4b",
+  "user_text": "Flowers get it can be.",
+  "total_seconds": 14.5647,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 2.7349,
+    "response_ready": 3.2253,
+    "tts_started": 3.2432,
+    "speech_finished": 14.5647
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0005,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.219,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0177,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 11.3215,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

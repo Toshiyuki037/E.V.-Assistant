@@ -1,0 +1,57 @@
+{
+  "request_id": "109f64ca6c3b4c1294149d327e2d7ad2",
+  "user_text": "How did my Schwab portfolio perform today?",
+  "total_seconds": 39.5569,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 15.5472,
+    "tts_started": 15.5713,
+    "tts_generation_started": 15.5715,
+    "tts_generation_finished": 23.1541,
+    "audio_playback_started": 23.1541,
+    "audio_playback_finished": 39.5568,
+    "speech_finished": 39.5569
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 15.5437,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0219,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 23.9856,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 7.5825,
+      "metadata": {
+        "characters": 260
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 16.4027,
+      "metadata": {
+        "audio_seconds": 16.554
+      }
+    }
+  ],
+  "metadata": {}
+}

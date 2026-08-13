@@ -1,0 +1,62 @@
+{
+  "request_id": "3a8df137c1b5414a922cc03e4f708b41",
+  "user_text": "open a new tab on chrome and pull up unit full. thank you",
+  "total_seconds": 7.816,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.0587,
+    "tts_started": 0.0778,
+    "tts_generation_started": 0.0782,
+    "tts_generation_finished": 3.2129,
+    "audio_playback_started": 3.2129,
+    "audio_playback_finished": 7.816,
+    "speech_finished": 7.816
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0027,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0062,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0013,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0428,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0189,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.7382,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 3.1346,
+      "metadata": {
+        "characters": 74
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 4.6031,
+      "metadata": {
+        "audio_seconds": 4.768
+      }
+    }
+  ],
+  "metadata": {}
+}

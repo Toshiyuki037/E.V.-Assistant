@@ -1,0 +1,60 @@
+{
+  "request_id": "43cb5c7862d14fc8ba49f844942e77f0",
+  "user_text": "Are there any other features that you think I to you that haven't been incorporated yet into your architecture?",
+  "total_seconds": 49.8529,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 26.8117,
+    "response_ready": 36.0265,
+    "tts_started": 36.0451,
+    "speech_finished": 49.8529
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 36.0222,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0176,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 13.8078,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

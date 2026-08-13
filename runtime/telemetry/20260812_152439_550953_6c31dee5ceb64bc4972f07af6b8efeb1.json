@@ -1,0 +1,67 @@
+{
+  "request_id": "6c31dee5ceb64bc4972f07af6b8efeb1",
+  "user_text": "Scott Vixer, more money. Open a Google Chrome on YouTube.",
+  "total_seconds": 16.2716,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 9.3852,
+    "tts_started": 9.4066,
+    "tts_generation_started": 9.4068,
+    "tts_generation_finished": 12.4462,
+    "audio_playback_started": 12.4462,
+    "audio_playback_finished": 16.2715,
+    "speech_finished": 16.2716
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 9.3805,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.021,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 6.865,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 3.0394,
+      "metadata": {
+        "characters": 62
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 3.8253,
+      "metadata": {
+        "audio_seconds": 3.989
+      }
+    }
+  ],
+  "metadata": {}
+}

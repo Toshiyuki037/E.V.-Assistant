@@ -1,0 +1,60 @@
+{
+  "request_id": "ac39326d8ffc4da0b45e7681bea07e93",
+  "user_text": "What was the weather today?",
+  "total_seconds": 16.8227,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 6.6308,
+    "response_ready": 7.137,
+    "tts_started": 7.1425,
+    "speech_finished": 16.8227
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0243,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 3.4433,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 3.6641,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0053,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 9.6801,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

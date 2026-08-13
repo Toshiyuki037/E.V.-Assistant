@@ -1,0 +1,57 @@
+{
+  "request_id": "fdcf11eb210f4e2fa3fa581c4f8690c1",
+  "user_text": "what's the weather looking like today",
+  "total_seconds": 41.554,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 18.466,
+    "tts_started": 18.4762,
+    "tts_generation_started": 18.477,
+    "tts_generation_finished": 26.1105,
+    "audio_playback_started": 26.1105,
+    "audio_playback_finished": 41.554,
+    "speech_finished": 41.554
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0026,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.007,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 18.4511,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0067,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 23.0778,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 7.6335,
+      "metadata": {
+        "characters": 245
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 15.4435,
+      "metadata": {
+        "audio_seconds": 15.594
+      }
+    }
+  ],
+  "metadata": {}
+}

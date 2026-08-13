@@ -1,0 +1,67 @@
+{
+  "request_id": "5240676e4dc94b19a7280015ca2c8915",
+  "user_text": "I want you to show me my get status.",
+  "total_seconds": 28.6924,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 5.1347,
+    "tts_started": 5.1559,
+    "tts_generation_started": 5.1561,
+    "tts_generation_finished": 12.7297,
+    "audio_playback_started": 12.7297,
+    "audio_playback_finished": 28.6924,
+    "speech_finished": 28.6924
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 5.1311,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0206,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 23.5365,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 7.5736,
+      "metadata": {
+        "characters": 253
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 15.9626,
+      "metadata": {
+        "audio_seconds": 16.117
+      }
+    }
+  ],
+  "metadata": {}
+}

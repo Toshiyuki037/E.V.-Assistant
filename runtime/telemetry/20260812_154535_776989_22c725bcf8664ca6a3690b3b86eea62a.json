@@ -1,0 +1,60 @@
+{
+  "request_id": "22c725bcf8664ca6a3690b3b86eea62a",
+  "user_text": "What features do I need to give you for full synchronous capabilities?",
+  "total_seconds": 29.8559,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 4.4277,
+    "response_ready": 19.1955,
+    "tts_started": 19.233,
+    "speech_finished": 29.8559
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 19.1919,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0366,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 10.6229,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

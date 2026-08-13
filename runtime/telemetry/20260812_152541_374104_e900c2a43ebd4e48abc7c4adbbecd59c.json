@@ -1,0 +1,60 @@
+{
+  "request_id": "e900c2a43ebd4e48abc7c4adbbecd59c",
+  "user_text": "I'm asking you to do it.",
+  "total_seconds": 28.2657,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 7.1141,
+    "response_ready": 7.6523,
+    "tts_started": 7.7247,
+    "speech_finished": 28.2656
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 2.3719,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 5.277,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0375,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 20.5409,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

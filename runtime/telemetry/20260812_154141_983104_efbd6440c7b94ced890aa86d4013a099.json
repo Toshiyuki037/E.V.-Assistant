@@ -1,0 +1,60 @@
+{
+  "request_id": "efbd6440c7b94ced890aa86d4013a099",
+  "user_text": "Honolulu.",
+  "total_seconds": 32.28,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 6.311,
+    "response_ready": 7.9104,
+    "tts_started": 7.9324,
+    "speech_finished": 32.28
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 7.9052,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0218,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 24.3476,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

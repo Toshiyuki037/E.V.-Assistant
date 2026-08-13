@@ -1,0 +1,62 @@
+{
+  "request_id": "9252aac7f3eb4cadb7bbac5d47e0545e",
+  "user_text": "Open YouTube on Chrome.",
+  "total_seconds": 7.59,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.0162,
+    "tts_started": 0.0511,
+    "tts_generation_started": 0.0511,
+    "tts_generation_finished": 2.9654,
+    "audio_playback_started": 2.9654,
+    "audio_playback_finished": 7.5899,
+    "speech_finished": 7.59
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.013,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0228,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.5389,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 2.9142,
+      "metadata": {
+        "characters": 74
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 4.6244,
+      "metadata": {
+        "audio_seconds": 4.768
+      }
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,57 @@
+{
+  "request_id": "0efdc8314db747beb7a9f81ce17203ca",
+  "user_text": "open youtube in chrome and full screen please",
+  "total_seconds": 51.3806,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 27.6526,
+    "tts_started": 27.6731,
+    "tts_generation_started": 27.6754,
+    "tts_generation_finished": 35.1569,
+    "audio_playback_started": 35.1569,
+    "audio_playback_finished": 51.3806,
+    "speech_finished": 51.3806
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0026,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0048,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 27.6417,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0195,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 23.7075,
+      "metadata": {}
+    },
+    {
+      "name": "tts_generation",
+      "seconds": 7.4815,
+      "metadata": {
+        "characters": 257
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 16.2237,
+      "metadata": {
+        "audio_seconds": 16.362
+      }
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,60 @@
+{
+  "request_id": "89bb4f807ad247d28cda72d978ac64a2",
+  "user_text": "good afternoon i need you to do me a favor and open up a new google tab at pull up youtube full screen please",
+  "total_seconds": 20.7054,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 11.5094,
+    "response_ready": 13.1855,
+    "tts_started": 13.206,
+    "speech_finished": 20.7054
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0015,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0029,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 5.0034,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 1.539,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 6.6294,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0201,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.4994,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}
