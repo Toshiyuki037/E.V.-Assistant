@@ -2,17 +2,11 @@
 E.V.I.E. - Voice Synthesis Module
 
 Phase 14 Rolling Speech Update
-Phase 16E Low-Latency First Chunk
 
 Behavior:
     The first speech chunk is synthesized immediately.
     As soon as playback of that chunk begins, the synthesis worker can prepare
     the following chunk. This repeats until the complete response has played.
-
-Phase 16E:
-    The first rolling speech chunk is reduced to one sentence. Later chunks
-    remain paired. This improves time-to-first-audio without discarding any
-    response content.
 
 The resident F5 model remains protected by one process-wide TTS lock.
 """
@@ -41,10 +35,6 @@ from .speech_formatter import (
 from .telemetry import (
     mark,
     span,
-)
-
-from .voice.low_latency import (
-    prepare_low_latency_chunks,
 )
 
 from .voice.playback import (
@@ -301,13 +291,13 @@ def speak_streaming_response(
     Speak the entire response using rolling F5 synthesis.
 
     Pipeline:
-        first sentence synthesize
+        chunk 1 synthesize
             ↓
-        first sentence playback
-            + following two-sentence chunk synthesis in parallel
+        chunk 1 playback
+            + chunk 2 synthesis in parallel
             ↓
-        next chunk playback
-            + following chunk synthesis in parallel
+        chunk 2 playback
+            + chunk 3 synthesis in parallel
             ↓
         ...until complete
     """
@@ -321,22 +311,6 @@ def speak_streaming_response(
                 max_chunk_characters,
         )
     )
-
-
-    # -----------------------------------------------------------------------
-    # Phase 16E - Lower Time To First Audio
-    # -----------------------------------------------------------------------
-    #
-    # Preserve every sentence while making only the FIRST synthesis chunk
-    # one sentence. Remaining speech stays grouped in two-sentence chunks.
-    # -----------------------------------------------------------------------
-
-    chunks = (
-        prepare_low_latency_chunks(
-            chunks
-        )
-    )
-
 
     if not chunks:
         return

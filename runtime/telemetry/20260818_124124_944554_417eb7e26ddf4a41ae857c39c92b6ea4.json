@@ -1,0 +1,53 @@
+{
+  "request_id": "417eb7e26ddf4a41ae857c39c92b6ea4",
+  "user_text": "Are you healthy?",
+  "total_seconds": 15.5007,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 0.1606,
+    "tts_started": 0.1654,
+    "audio_playback_started": 2.2406,
+    "first_audio_started": 2.2406,
+    "audio_playback_finished": 15.5006,
+    "speech_finished": 15.5007
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.156,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0045,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 15.3352,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 0.6769,
+      "metadata": {
+        "chunk_index": 0,
+        "audio_seconds": 0.843
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 9.3386,
+      "metadata": {
+        "chunk_index": 1,
+        "audio_seconds": 9.483
+      }
+    }
+  ],
+  "metadata": {}
+}

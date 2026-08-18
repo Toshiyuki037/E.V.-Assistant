@@ -1,0 +1,65 @@
+{
+  "request_id": "a89c554a134b41be9908b4308a7e6a85",
+  "user_text": "and get someone and makes them",
+  "total_seconds": 40.115,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 17.8522,
+    "response_ready": 18.7089,
+    "tts_started": 18.7339,
+    "speech_finished": 40.115
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 1.9682,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 16.7292,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0226,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 21.381,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,65 @@
+{
+  "request_id": "f3f845c81687452ab09bf1c31a840c95",
+  "user_text": "good afternoon",
+  "total_seconds": 32.0753,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 24.4119,
+    "response_ready": 25.5489,
+    "tts_started": 25.5712,
+    "speech_finished": 32.0753
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0032,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0025,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0077,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0028,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0012,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0023,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 25.5152,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0221,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 6.5041,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

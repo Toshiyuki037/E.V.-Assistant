@@ -69,30 +69,6 @@ from .performance import (
     start_background_prewarm,
 )
 
-from .performance.conversation_fastpath import (
-    handle_fast_conversation,
-)
-
-from .performance.context_budget import (
-    context_budget_for_profile,
-)
-
-from .performance.project_bridge import (
-    augment_with_project_evidence,
-)
-
-from .voice.tts_prewarm import (
-    start_tts_prewarm,
-)
-
-from .performance.model_router import (
-    should_use_fast_voice_reasoning,
-)
-
-from .voice.fast_reasoning import (
-    stream_fast_authoritative_chat,
-)
-
 from .memory.database import (
     archive_memories,
     init_memory,
@@ -1467,33 +1443,6 @@ def process_prompt(
 
 
     # -----------------------------------------------------------------------
-    # Phase 16C - Deterministic Conversational Fast Path
-    # -----------------------------------------------------------------------
-    #
-    # IMPORTANT:
-    # This sits AFTER all existing approval/workflow/system/agent/computer/
-    # tool routing, so it cannot steal commands such as "okay" or "approved"
-    # from frozen Phase 1-15 continuation logic.
-    # -----------------------------------------------------------------------
-
-    phase16_fast_conversation = (
-        handle_fast_conversation(
-            user_text
-        )
-    )
-
-
-    if phase16_fast_conversation.handled:
-
-        complete_response(
-            user_text,
-            phase16_fast_conversation.response,
-        )
-
-        return
-
-
-    # -----------------------------------------------------------------------
     # Intelligent Memory
     # -----------------------------------------------------------------------
 
@@ -1614,35 +1563,9 @@ def process_prompt(
                 "reasoning"
             ):
 
-                phase16_context_budget = (
-                    context_budget_for_profile(
-                        phase16_cost_profile
-                    )
-                )
-
-
                 contextual_user_text = (
                     build_contextual_expansion_prompt(
                         user_text
-                    )
-                )
-
-
-                contextual_user_text = (
-                    augment_with_project_evidence(
-                        contextual_user_text,
-                        allow_project_knowledge=(
-                            phase16_cost_profile
-                            .allow_project_knowledge
-                        ),
-                        limit=(
-                            phase16_context_budget
-                            .project_items
-                        ),
-                        max_characters=(
-                            phase16_context_budget
-                            .project_characters
-                        ),
                     )
                 )
 
@@ -1656,69 +1579,14 @@ def process_prompt(
                 )
 
 
-                use_fast_reasoning = (
-                    should_use_fast_voice_reasoning(
-                        user_text,
-                        phase16_cost_profile,
+                response = (
+                    stream_authoritative_chat(
+                        reasoning_text,
+
+                        on_sentence=
+                            handle_authoritative_sentence,
                     )
                 )
-
-
-                if use_fast_reasoning:
-
-                    print(
-                        "[Reasoning Route] "
-                        "fast conversational model"
-                    )
-
-
-                    try:
-
-                        response = (
-                            stream_fast_authoritative_chat(
-                                reasoning_text,
-
-                                on_sentence=
-                                    handle_authoritative_sentence,
-                            )
-                        )
-
-
-                    except Exception as error:
-
-                        # Phase 16F is an optimization only.
-                        # Any fast-model/API failure falls back to the
-                        # already-certified authoritative reasoning path.
-                        print(
-                            (
-                                "[Reasoning Route Warning] "
-                                "Fast route failed; "
-                                "using authoritative fallback: "
-                                f"{error}"
-                            )
-                        )
-
-
-                        response = (
-                            stream_authoritative_chat(
-                                reasoning_text,
-
-                                on_sentence=
-                                    handle_authoritative_sentence,
-                            )
-                        )
-
-
-                else:
-
-                    response = (
-                        stream_authoritative_chat(
-                            reasoning_text,
-
-                            on_sentence=
-                                handle_authoritative_sentence,
-                        )
-                    )
 
 
             speech_pipeline.finish_input()
@@ -1899,10 +1767,6 @@ if missing_embeddings:
 start_background_prewarm(
     delay_seconds=1.0
 )
-
-
-# Phase 16E - non-blocking first-inference F5 warmup.
-start_tts_prewarm()
 
 print(
     "\nE.V.I.E. Online"

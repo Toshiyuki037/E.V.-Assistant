@@ -31,10 +31,6 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 
-from .performance.request_context import (
-    current_performance_hints,
-)
-
 from .memory.database import (
     get_recent_conversations,
 )
@@ -490,11 +486,6 @@ def build_memory_context(
     user_message: str,
     limit: int = 5,
 ):
-
-    # Phase 16B retrieval gate: generic turns skip semantic memory retrieval.
-    if not current_performance_hints().allow_long_term_memory:
-        return ""
-
     try:
 
         memories = (

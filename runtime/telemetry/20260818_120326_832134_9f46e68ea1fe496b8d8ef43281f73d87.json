@@ -1,0 +1,65 @@
+{
+  "request_id": "9f46e68ea1fe496b8d8ef43281f73d87",
+  "user_text": "Where is memory retrieval in implemented this project?",
+  "total_seconds": 70.5348,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 21.0766,
+    "response_ready": 23.1417,
+    "tts_started": 23.1758,
+    "speech_finished": 70.5348
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 23.1313,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.032,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 47.3589,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

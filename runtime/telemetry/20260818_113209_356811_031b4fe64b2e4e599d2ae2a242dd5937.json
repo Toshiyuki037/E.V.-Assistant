@@ -1,0 +1,65 @@
+{
+  "request_id": "031b4fe64b2e4e599d2ae2a242dd5937",
+  "user_text": "Yes, we're on it.",
+  "total_seconds": 57.9496,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 21.732,
+    "response_ready": 23.793,
+    "tts_started": 23.8006,
+    "speech_finished": 57.9495
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0027,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0017,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.005,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0014,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0015,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 23.7713,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0073,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 34.1489,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

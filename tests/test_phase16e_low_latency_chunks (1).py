@@ -1,0 +1,36 @@
+from assistant.voice.low_latency import (
+    prepare_low_latency_chunks,
+)
+
+
+def test_first_chunk_one_sentence_then_pairs():
+    assert prepare_low_latency_chunks(
+        [
+            "One. Two.",
+            "Three. Four.",
+            "Five.",
+        ]
+    ) == [
+        "One.",
+        "Two. Three.",
+        "Four. Five.",
+    ]
+
+
+def test_no_sentence_is_dropped():
+    result = " ".join(
+        prepare_low_latency_chunks(
+            [
+                "One. Two.",
+                "Three. Four.",
+            ]
+        )
+    )
+
+    for sentence in (
+        "One.",
+        "Two.",
+        "Three.",
+        "Four.",
+    ):
+        assert sentence in result

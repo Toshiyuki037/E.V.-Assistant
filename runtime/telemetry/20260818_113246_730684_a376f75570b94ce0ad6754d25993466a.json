@@ -1,0 +1,65 @@
+{
+  "request_id": "a376f75570b94ce0ad6754d25993466a",
+  "user_text": "Bye.",
+  "total_seconds": 22.35,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 16.1604,
+    "response_ready": 16.5426,
+    "tts_started": 16.5679,
+    "speech_finished": 22.35
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 16.5294,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.023,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 5.7821,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

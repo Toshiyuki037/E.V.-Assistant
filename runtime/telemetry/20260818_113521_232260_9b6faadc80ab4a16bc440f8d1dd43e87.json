@@ -1,0 +1,65 @@
+{
+  "request_id": "9b6faadc80ab4a16bc440f8d1dd43e87",
+  "user_text": "Just a few minutes to go.",
+  "total_seconds": 26.7662,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 18.3173,
+    "response_ready": 19.2478,
+    "tts_started": 19.2717,
+    "speech_finished": 26.7662
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 2.0751,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 17.1612,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0231,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.4945,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

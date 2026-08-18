@@ -1,0 +1,65 @@
+{
+  "request_id": "4354b2bb328b45caa4c1225dbd994331",
+  "user_text": "what time i mean bye",
+  "total_seconds": 23.8799,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 15.7345,
+    "response_ready": 16.1124,
+    "tts_started": 16.134,
+    "speech_finished": 23.8799
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 16.1011,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0205,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.7459,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

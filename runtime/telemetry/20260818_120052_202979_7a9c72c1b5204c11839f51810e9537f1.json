@@ -1,0 +1,65 @@
+{
+  "request_id": "7a9c72c1b5204c11839f51810e9537f1",
+  "user_text": "What is a transistor?",
+  "total_seconds": 48.0483,
+  "marks": {
+    "request_received": 0.0001,
+    "first_authoritative_sentence": 15.3844,
+    "response_ready": 17.1064,
+    "tts_started": 17.1275,
+    "speech_finished": 48.0483
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0006,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 17.0909,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0206,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 30.9207,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

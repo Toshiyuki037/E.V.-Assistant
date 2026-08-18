@@ -63,36 +63,6 @@ from .voice.presentation import (
     prepare_voice_presentation,
 )
 
-from .performance import (
-    classify_request_cost,
-    performance_request_context,
-    start_background_prewarm,
-)
-
-from .performance.conversation_fastpath import (
-    handle_fast_conversation,
-)
-
-from .performance.context_budget import (
-    context_budget_for_profile,
-)
-
-from .performance.project_bridge import (
-    augment_with_project_evidence,
-)
-
-from .voice.tts_prewarm import (
-    start_tts_prewarm,
-)
-
-from .performance.model_router import (
-    should_use_fast_voice_reasoning,
-)
-
-from .voice.fast_reasoning import (
-    stream_fast_authoritative_chat,
-)
-
 from .memory.database import (
     archive_memories,
     init_memory,
@@ -1467,335 +1437,218 @@ def process_prompt(
 
 
     # -----------------------------------------------------------------------
-    # Phase 16C - Deterministic Conversational Fast Path
-    # -----------------------------------------------------------------------
-    #
-    # IMPORTANT:
-    # This sits AFTER all existing approval/workflow/system/agent/computer/
-    # tool routing, so it cannot steal commands such as "okay" or "approved"
-    # from frozen Phase 1-15 continuation logic.
-    # -----------------------------------------------------------------------
-
-    phase16_fast_conversation = (
-        handle_fast_conversation(
-            user_text
-        )
-    )
-
-
-    if phase16_fast_conversation.handled:
-
-        complete_response(
-            user_text,
-            phase16_fast_conversation.response,
-        )
-
-        return
-
-
-    # -----------------------------------------------------------------------
     # Intelligent Memory
     # -----------------------------------------------------------------------
-
-    phase16_cost_profile = classify_request_cost(user_text)
 
     with span(
         "memory_processing"
     ):
-        if phase16_cost_profile.run_intelligent_memory:
-            process_intelligent_memory(
-                user_text
-            )
+
+        process_intelligent_memory(
+            user_text
+        )
 
 
     # -----------------------------------------------------------------------
     # Main Reasoning
     # -----------------------------------------------------------------------
 
-    phase16_performance_context = performance_request_context(
-        allow_long_term_memory=phase16_cost_profile.allow_long_term_memory,
-        allow_project_knowledge=phase16_cost_profile.allow_project_knowledge,
-        reason=phase16_cost_profile.reason,
-    )
+    if voice_streaming:
 
-    with phase16_performance_context:
-        if voice_streaming:
+        # -------------------------------------------------------------------
+        # Phase 14 - Perceived Latency Telemetry
+        # -------------------------------------------------------------------
 
-            # -------------------------------------------------------------------
-            # Phase 14 - Perceived Latency Telemetry
-            # -------------------------------------------------------------------
-
-            first_sentence_marked = False
-            first_audio_marked = False
+        first_sentence_marked = False
+        first_audio_marked = False
 
 
-            def handle_authoritative_sentence(
-                sentence,
-            ):
+        def handle_authoritative_sentence(
+            sentence,
+        ):
 
-                nonlocal first_sentence_marked
-
-
-                if not first_sentence_marked:
-
-                    mark(
-                        "first_authoritative_sentence"
-                    )
-
-                    first_sentence_marked = True
+            nonlocal first_sentence_marked
 
 
-                return (
-                    speech_pipeline.submit_sentence(
-                        sentence
-                    )
+            if not first_sentence_marked:
+
+                mark(
+                    "first_authoritative_sentence"
                 )
 
+                first_sentence_marked = True
 
-            def handle_authoritative_speech_event(
-                event,
+
+            return (
+                speech_pipeline.submit_sentence(
+                    sentence
+                )
+            )
+
+
+        def handle_authoritative_speech_event(
+            event,
+        ):
+
+            nonlocal first_audio_marked
+
+
+            if (
+                event.kind
+                == "playback_started"
+
+                and not first_audio_marked
             ):
 
-                nonlocal first_audio_marked
+                mark(
+                    "first_audio_started"
+                )
+
+                first_audio_marked = True
 
 
-                if (
-                    event.kind
-                    == "playback_started"
+        # -------------------------------------------------------------------
+        # Authoritative Streaming Speech Pipeline
+        # -------------------------------------------------------------------
 
-                    and not first_audio_marked
-                ):
+        speech_pipeline = (
+            AuthoritativeSpeechPipeline(
+                synthesize_fn=
+                    synthesize_audio,
 
-                    mark(
-                        "first_audio_started"
-                    )
+                play_fn=
+                    play_audio,
 
-                    first_audio_marked = True
+                prepare_fn=
+                    prepare_spoken_text,
+
+                emit_fn=
+                    handle_authoritative_speech_event,
+
+                max_sentences=
+                    2,
+
+                max_characters=
+                    340,
+
+                rolling=
+                    True,
+            )
+        )
 
 
-            # -------------------------------------------------------------------
-            # Authoritative Streaming Speech Pipeline
-            # -------------------------------------------------------------------
+        speech_pipeline.start()
 
-            speech_pipeline = (
-                AuthoritativeSpeechPipeline(
-                    synthesize_fn=
-                        synthesize_audio,
 
-                    play_fn=
-                        play_audio,
+        # -------------------------------------------------------------------
+        # Authoritative Streaming Reasoning
+        # -------------------------------------------------------------------
 
-                    prepare_fn=
-                        prepare_spoken_text,
+        with span(
+            "reasoning"
+        ):
 
-                    emit_fn=
-                        handle_authoritative_speech_event,
+            contextual_user_text = (
+                build_contextual_expansion_prompt(
+                    user_text
+                )
+            )
 
-                    max_sentences=
-                        2,
 
-                    max_characters=
-                        340,
-
-                    rolling=
+            reasoning_text = (
+                apply_response_length_policy(
+                    contextual_user_text,
+                    voice_mode=
                         True,
                 )
             )
 
 
-            speech_pipeline.start()
+            response = (
+                stream_authoritative_chat(
+                    reasoning_text,
 
-
-            # -------------------------------------------------------------------
-            # Authoritative Streaming Reasoning
-            # -------------------------------------------------------------------
-
-            with span(
-                "reasoning"
-            ):
-
-                phase16_context_budget = (
-                    context_budget_for_profile(
-                        phase16_cost_profile
-                    )
+                    on_sentence=
+                        handle_authoritative_sentence,
                 )
-
-
-                contextual_user_text = (
-                    build_contextual_expansion_prompt(
-                        user_text
-                    )
-                )
-
-
-                contextual_user_text = (
-                    augment_with_project_evidence(
-                        contextual_user_text,
-                        allow_project_knowledge=(
-                            phase16_cost_profile
-                            .allow_project_knowledge
-                        ),
-                        limit=(
-                            phase16_context_budget
-                            .project_items
-                        ),
-                        max_characters=(
-                            phase16_context_budget
-                            .project_characters
-                        ),
-                    )
-                )
-
-
-                reasoning_text = (
-                    apply_response_length_policy(
-                        contextual_user_text,
-                        voice_mode=
-                            True,
-                    )
-                )
-
-
-                use_fast_reasoning = (
-                    should_use_fast_voice_reasoning(
-                        user_text,
-                        phase16_cost_profile,
-                    )
-                )
-
-
-                if use_fast_reasoning:
-
-                    print(
-                        "[Reasoning Route] "
-                        "fast conversational model"
-                    )
-
-
-                    try:
-
-                        response = (
-                            stream_fast_authoritative_chat(
-                                reasoning_text,
-
-                                on_sentence=
-                                    handle_authoritative_sentence,
-                            )
-                        )
-
-
-                    except Exception as error:
-
-                        # Phase 16F is an optimization only.
-                        # Any fast-model/API failure falls back to the
-                        # already-certified authoritative reasoning path.
-                        print(
-                            (
-                                "[Reasoning Route Warning] "
-                                "Fast route failed; "
-                                "using authoritative fallback: "
-                                f"{error}"
-                            )
-                        )
-
-
-                        response = (
-                            stream_authoritative_chat(
-                                reasoning_text,
-
-                                on_sentence=
-                                    handle_authoritative_sentence,
-                            )
-                        )
-
-
-                else:
-
-                    response = (
-                        stream_authoritative_chat(
-                            reasoning_text,
-
-                            on_sentence=
-                                handle_authoritative_sentence,
-                        )
-                    )
-
-
-            speech_pipeline.finish_input()
-
-
-            mark(
-                "response_ready"
             )
 
 
-            print(
-                f"\nE.V.I.E.: "
-                f"{response}\n"
-            )
+        speech_pipeline.finish_input()
 
 
-            with span(
-                "conversation_save"
-            ):
-
-                save_conversation(
-                    user_text,
-                    response,
-                )
+        mark(
+            "response_ready"
+        )
 
 
-            mark(
-                "tts_started"
-            )
+        print(
+            f"\nE.V.I.E.: "
+            f"{response}\n"
+        )
 
 
-            with span(
-                "tts_total"
-            ):
+        with span(
+            "conversation_save"
+        ):
 
-                speech_pipeline.wait()
-
-
-            mark(
-                "speech_finished"
-            )
-
-
-            telemetry = (
-                finish_request()
-            )
-
-
-            if telemetry is not None:
-
-                persist_telemetry(
-                    telemetry
-                )
-
-                print_latency_report(
-                    telemetry
-                )
-
-
-            clear_request()
-
-
-        else:
-
-            with span(
-                "reasoning"
-            ):
-
-                response = chat(
-                    user_text
-                )
-
-
-            complete_response(
+            save_conversation(
                 user_text,
                 response,
             )
+
+
+        mark(
+            "tts_started"
+        )
+
+
+        with span(
+            "tts_total"
+        ):
+
+            speech_pipeline.wait()
+
+
+        mark(
+            "speech_finished"
+        )
+
+
+        telemetry = (
+            finish_request()
+        )
+
+
+        if telemetry is not None:
+
+            persist_telemetry(
+                telemetry
+            )
+
+            print_latency_report(
+                telemetry
+            )
+
+
+        clear_request()
+
+
+    else:
+
+        with span(
+            "reasoning"
+        ):
+
+            response = chat(
+                user_text
+            )
+
+
+        complete_response(
+            user_text,
+            response,
+        )
 
 # ---------------------------------------------------------------------------
 # Phase 14 - Voice Authoritative Streaming Entry
@@ -1894,15 +1747,6 @@ if missing_embeddings:
         f"missing memory embeddings."
     )
 
-
-# Phase 16A - non-blocking semantic-model warmup.
-start_background_prewarm(
-    delay_seconds=1.0
-)
-
-
-# Phase 16E - non-blocking first-inference F5 warmup.
-start_tts_prewarm()
 
 print(
     "\nE.V.I.E. Online"

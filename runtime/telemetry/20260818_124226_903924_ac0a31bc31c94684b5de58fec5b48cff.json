@@ -1,0 +1,65 @@
+{
+  "request_id": "ac0a31bc31c94684b5de58fec5b48cff",
+  "user_text": "What can you see on my screen?",
+  "total_seconds": 50.1864,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 13.0539,
+    "response_ready": 14.5118,
+    "tts_started": 14.5309,
+    "speech_finished": 50.1864
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 14.5046,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0178,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 35.6555,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}
