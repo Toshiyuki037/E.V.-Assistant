@@ -1,22 +1,14 @@
 """
 E.V.I.E. Phase 16F — Conservative Voice Model Router
 
-This router is deliberately narrow.
+Purpose:
+    Route safe, low-risk, ordinary voice conversation and stable general
+    knowledge to the existing low-latency reasoning path.
 
-It can accelerate ONLY stable, generic, text-only explanatory questions after
-all existing Phase 1-15 routing has already declined ownership.
-
-It never routes:
-    - personal/contextual questions
-    - project/code/workspace questions
-    - vision/screen/image questions
-    - current/live/time-sensitive questions
-    - tools/integrations
-    - diagnostics/errors/debugging
-    - financial/account requests
-    - explicit detailed/deep requests
-
-Those continue through the existing authoritative reasoning path.
+This preserves the existing architecture. Full authoritative reasoning remains
+mandatory for personal/contextual memory, project/code/workspace requests,
+vision, live/current data, tools/integrations, diagnostics/debugging,
+financial/account requests, and explicit detailed requests.
 """
 
 from __future__ import annotations
@@ -27,6 +19,8 @@ import re
 _FAST_PREFIXES = (
     "what is ",
     "what are ",
+    "what's ",
+    "whats ",
     "what's the difference between ",
     "what is the difference between ",
     "how does ",
@@ -35,11 +29,42 @@ _FAST_PREFIXES = (
     "why do ",
     "define ",
     "explain ",
+    "how are you",
+    "how're you",
+    "howre you",
+    "how is it going",
+    "how's it going",
+    "hows it going",
+    "how are things",
+    "are you ready",
+    "are you there",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "hello",
+    "hi ",
+    "hey ",
 )
 
+_FAST_EXACT = {
+    "hi",
+    "hello",
+    "hey",
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "how are you",
+    "how are you doing",
+    "how's it going",
+    "hows it going",
+    "how are things",
+    "are you ready",
+    "are you there",
+    "thank you",
+    "thanks",
+}
 
 _BLOCK_PHRASES = (
-    # Personal/contextual
     " my ",
     " our ",
     " we ",
@@ -54,8 +79,6 @@ _BLOCK_PHRASES = (
     " elaborate",
     " expand on",
     " what exactly",
-
-    # Project/code/runtime
     "project",
     "workspace",
     "repository",
@@ -77,8 +100,6 @@ _BLOCK_PHRASES = (
     ".vhd",
     ".vhdl",
     "fpga",
-
-    # Vision / perception
     "screen",
     "screenshot",
     "image",
@@ -87,8 +108,6 @@ _BLOCK_PHRASES = (
     "see on",
     "look at",
     "visible",
-
-    # Live / connected
     "weather",
     "calendar",
     "email",
@@ -110,8 +129,6 @@ _BLOCK_PHRASES = (
     "right now",
     "news",
     "price",
-
-    # High-value / diagnostic / engineering
     "error",
     "failed",
     "failure",
@@ -126,8 +143,7 @@ _BLOCK_PHRASES = (
     "approval",
     "health",
     "healthy",
-
-    # Explicit quality-first requests
+    "latency",
     "in detail",
     "deep dive",
     "deep-dive",
@@ -139,25 +155,25 @@ _BLOCK_PHRASES = (
 )
 
 
-def _normalize(
-    text: str,
-):
-    value = (
-        " "
-        + re.sub(
-            r"\s+",
-            " ",
-            str(
-                text
-                or ""
-            )
-            .strip()
-            .lower(),
-        )
-        + " "
-    )
+def _normalize(text: str):
+    return re.sub(
+        r"\s+",
+        " ",
+        str(text or "").strip().lower(),
+    ).strip()
 
-    return value
+
+def _contains_block_phrase(text: str):
+    padded = " " + text + " "
+
+    for phrase in _BLOCK_PHRASES:
+        if phrase.startswith(" ") or phrase.endswith(" "):
+            if phrase in padded:
+                return True
+        elif phrase in text:
+            return True
+
+    return False
 
 
 def should_use_fast_voice_reasoning(
@@ -165,10 +181,12 @@ def should_use_fast_voice_reasoning(
     cost_profile,
 ):
     """
-    Return True only when the request is an excellent fit for a low-latency,
-    no-reasoning conversational model.
+    Return True only when the request is a safe fit for E.V.I.E.'s existing
+    low-latency reasoning model.
 
-    Phase 16B's cost profile must already classify the request as fast.
+    This does not bypass any Phase 1-15 routing. main.py already calls this
+    after workflows, tools, system commands, agents, computer control, memory,
+    and other existing routing layers have declined ownership.
     """
 
     if str(
@@ -179,9 +197,7 @@ def should_use_fast_voice_reasoning(
         )
         or ""
     ).lower() != "fast":
-
         return False
-
 
     if bool(
         getattr(
@@ -190,9 +206,7 @@ def should_use_fast_voice_reasoning(
             False,
         )
     ):
-
         return False
-
 
     if bool(
         getattr(
@@ -201,40 +215,27 @@ def should_use_fast_voice_reasoning(
             False,
         )
     ):
-
         return False
-
 
     text = _normalize(
         user_text
     )
 
+    if not text:
+        return False
 
-    if len(
+    if len(text) > 320:
+        return False
+
+    if _contains_block_phrase(
         text
-    ) > 320:
-
-        return False
-
-
-    if any(
-        phrase in text
-        for phrase
-        in _BLOCK_PHRASES
     ):
-
         return False
 
-
-    stripped = (
-        text.strip()
-    )
-
+    if text.rstrip(" .!?") in _FAST_EXACT:
+        return True
 
     return any(
-        stripped.startswith(
-            prefix
-        )
-        for prefix
-        in _FAST_PREFIXES
+        text.startswith(prefix)
+        for prefix in _FAST_PREFIXES
     )

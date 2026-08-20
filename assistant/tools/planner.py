@@ -37,6 +37,7 @@ Most Recent Change:
 
 import inspect
 import json
+import re
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -2718,6 +2719,349 @@ def should_consider_tools(
     return False
 
 
+
+# ---------------------------------------------------------------------------
+# Deterministic Fast Tool Planning
+# ---------------------------------------------------------------------------
+
+def _fast_tool_plan(
+    user_message: str,
+):
+    """
+    Returns a ToolPlan only for very high-confidence, single-action requests.
+
+    IMPORTANT:
+        This is an acceleration layer only.
+
+        - It returns the SAME ToolPlan type used by the existing semantic planner.
+        - It does NOT execute tools.
+        - It does NOT bypass registry validation.
+        - It does NOT bypass workspace injection.
+        - It does NOT bypass Phase 6 permissions, approvals, audit, execution,
+          verification, Phase 9 account routing, or Phase 13 computer control.
+        - Anything ambiguous returns None and falls through to the unchanged
+          GPT semantic planner.
+    """
+
+    text = (
+        normalize_user_input(
+            str(
+                user_message
+                or ""
+            )
+        )
+        .strip()
+        .lower()
+    )
+
+    if not text:
+        return None
+
+    # Remove harmless wake-name/punctuation noise commonly produced by STT.
+    text = re.sub(
+        r"^\s*(?:evie|e\.?v\.?i\.?e\.?|ev|evi|evu)\s*[,.:;-]*\s*",
+        "",
+        text,
+        flags=re.IGNORECASE,
+    )
+
+    text = re.sub(
+        r"\s+",
+        " ",
+        text,
+    ).strip(" .,!?:;")
+
+    # -----------------------------------------------------------------------
+    # Applications
+    # -----------------------------------------------------------------------
+
+    application_patterns = {
+        "chrome": (
+            "open chrome",
+            "launch chrome",
+            "open google chrome",
+            "launch google chrome",
+        ),
+        "vscode": (
+            "open vscode",
+            "launch vscode",
+            "open vs code",
+            "launch vs code",
+            "open visual studio code",
+            "launch visual studio code",
+        ),
+        "notepad": (
+            "open notepad",
+            "launch notepad",
+        ),
+        "explorer": (
+            "open file explorer",
+            "launch file explorer",
+            "open explorer",
+        ),
+        "powershell": (
+            "open powershell",
+            "launch powershell",
+        ),
+    }
+
+    for application, patterns in application_patterns.items():
+
+        if text in patterns:
+
+            return ToolPlan(
+                use_tool=True,
+                tool_name="open_application",
+                arguments_json=json.dumps(
+                    {
+                        "name":
+                            application,
+                    }
+                ),
+                confidence=100,
+                summary=(
+                    f"Open {application}."
+                ),
+            )
+
+    # -----------------------------------------------------------------------
+    # YouTube / simple URL opening
+    # -----------------------------------------------------------------------
+
+    youtube_patterns = (
+        "open youtube",
+        "launch youtube",
+        "go to youtube",
+        "open youtube in chrome",
+        "open youtube on chrome",
+        "open youtube.com",
+        "go to youtube.com",
+    )
+
+    if text in youtube_patterns:
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="open_url",
+            arguments_json=json.dumps(
+                {
+                    "url":
+                        "https://www.youtube.com",
+                }
+            ),
+            confidence=100,
+            summary="Open YouTube.",
+        )
+
+    # Common STT form observed during voice testing.
+    if (
+        "open" in text
+        and "youtube" in text
+        and "chrome" in text
+        and len(text.split()) <= 8
+    ):
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="open_url",
+            arguments_json=json.dumps(
+                {
+                    "url":
+                        "https://www.youtube.com",
+                }
+            ),
+            confidence=98,
+            summary="Open YouTube.",
+        )
+
+    # -----------------------------------------------------------------------
+    # Managed browser state
+    # -----------------------------------------------------------------------
+
+    browser_state_patterns = (
+        "what browser tabs do you have open",
+        "what browser tabs are open",
+        "show me my browser tabs",
+        "show browser tabs",
+        "what is the active browser tab",
+        "what's the active browser tab",
+        "what page is open in the managed browser",
+    )
+
+    if text in browser_state_patterns:
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="browser_get_state",
+            arguments_json="{}",
+            confidence=100,
+            summary="Read the current managed-browser state.",
+        )
+
+    # -----------------------------------------------------------------------
+    # Schwab read-only balance / positions / accounts
+    # -----------------------------------------------------------------------
+
+    schwab_balance_patterns = (
+        "what is my schwab account balance",
+        "what's my schwab account balance",
+        "whats my schwab account balance",
+        "what is my schwab balance",
+        "what's my schwab balance",
+        "whats my schwab balance",
+        "show me my schwab balance",
+        "show my schwab balance",
+    )
+
+    if text in schwab_balance_patterns:
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="integration_execute",
+            arguments_json=json.dumps(
+                {
+                    "capability":
+                        "finance.balances",
+                    "provider":
+                        "schwab",
+                    "account_id":
+                        "primary",
+                    "routing_mode":
+                        "explicit_account",
+                    "arguments":
+                        None,
+                }
+            ),
+            confidence=100,
+            summary="Read the Schwab account balance.",
+        )
+
+    schwab_positions_patterns = (
+        "what stocks do i own",
+        "what are my schwab holdings",
+        "what are my holdings",
+        "show me my portfolio",
+        "show my portfolio",
+        "show me my schwab positions",
+        "what are my schwab positions",
+    )
+
+    if text in schwab_positions_patterns:
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="integration_execute",
+            arguments_json=json.dumps(
+                {
+                    "capability":
+                        "finance.positions",
+                    "provider":
+                        "schwab",
+                    "account_id":
+                        "primary",
+                    "routing_mode":
+                        "explicit_account",
+                    "arguments":
+                        None,
+                }
+            ),
+            confidence=100,
+            summary="Read Schwab portfolio positions.",
+        )
+
+    schwab_accounts_patterns = (
+        "show my schwab accounts",
+        "show me my schwab accounts",
+        "what are my schwab accounts",
+    )
+
+    if text in schwab_accounts_patterns:
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="integration_execute",
+            arguments_json=json.dumps(
+                {
+                    "capability":
+                        "finance.accounts",
+                    "provider":
+                        "schwab",
+                    "account_id":
+                        "primary",
+                    "routing_mode":
+                        "explicit_account",
+                    "arguments":
+                        None,
+                }
+            ),
+            confidence=100,
+            summary="Read Schwab accounts.",
+        )
+
+    # -----------------------------------------------------------------------
+    # Weather - simple explicit-location queries only
+    # -----------------------------------------------------------------------
+
+    current_weather = re.fullmatch(
+        r"(?:what(?:'s| is) the )?weather in (.+)",
+        text,
+    )
+
+    if current_weather:
+
+        location = current_weather.group(1).strip()
+
+        if location:
+
+            return ToolPlan(
+                use_tool=True,
+                tool_name="integration_execute",
+                arguments_json=json.dumps(
+                    {
+                        "capability":
+                            "weather.current",
+                        "provider":
+                            "weather",
+                        "account_id":
+                            "public",
+                        "routing_mode":
+                            "explicit_account",
+                        "arguments": {
+                            "location":
+                                location,
+                        },
+                    }
+                ),
+                confidence=100,
+                summary=(
+                    f"Read current weather for {location}."
+                ),
+            )
+
+    # -----------------------------------------------------------------------
+    # Git status
+    # -----------------------------------------------------------------------
+
+    if text in {
+        "show me my git status",
+        "show my git status",
+        "git status",
+        "what is my git status",
+        "what's my git status",
+    }:
+
+        return ToolPlan(
+            use_tool=True,
+            tool_name="git_status",
+            arguments_json="{}",
+            confidence=100,
+            summary="Read Git status.",
+        )
+
+    # Anything not unquestionably deterministic keeps the original planner.
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Argument Parsing
 # ---------------------------------------------------------------------------
@@ -2965,60 +3309,90 @@ def plan_tool_request(
     )
 
 
-    prompt = build_planner_prompt(
-        normalized_user_message
+    # -----------------------------------------------------------------------
+    # Deterministic High-Confidence Fast Path
+    # -----------------------------------------------------------------------
+    #
+    # This only avoids the semantic planner for requests whose tool and
+    # arguments are unambiguous. It returns the same ToolPlan object and then
+    # continues through the existing validation, integration preparation,
+    # workspace injection, executor, permission, audit, and verifier layers.
+    # -----------------------------------------------------------------------
+
+    fast_plan = (
+        _fast_tool_plan(
+            normalized_user_message
+        )
     )
 
 
-    try:
+    if fast_plan is not None:
 
-        planner_client = (
-            get_openai_client()
+        print(
+            "[Tool Planner] "
+            "deterministic fast route"
         )
-
-
-        response = (
-            planner_client.responses.parse(
-                model=
-                    "gpt-5.5",
-
-                instructions=(
-                    "Plan at most one immediate "
-                    "controlled computer action. "
-                    "Resolve clear conversational "
-                    "references from recent context. "
-                    "Prefer live browser inspection "
-                    "tools for current managed-browser "
-                    "state. Use only registered tool "
-                    "signatures."
-                ),
-
-                input=
-                    prompt,
-
-                text_format=
-                    ToolPlan,
-            )
-        )
-
 
         plan = (
-            response.output_parsed
+            fast_plan
+        )
+
+    else:
+
+        prompt = build_planner_prompt(
+            normalized_user_message
         )
 
 
-    except Exception as error:
+        try:
 
-        return ToolPlan(
-            use_tool=False,
+            planner_client = (
+                get_openai_client()
+            )
 
-            confidence=0,
 
-            summary=(
-                "Tool planning failed: "
-                f"{error}"
-            ),
-        )
+            response = (
+                planner_client.responses.parse(
+                    model=
+                        "gpt-5.5",
+
+                    instructions=(
+                        "Plan at most one immediate "
+                        "controlled computer action. "
+                        "Resolve clear conversational "
+                        "references from recent context. "
+                        "Prefer live browser inspection "
+                        "tools for current managed-browser "
+                        "state. Use only registered tool "
+                        "signatures."
+                    ),
+
+                    input=
+                        prompt,
+
+                    text_format=
+                        ToolPlan,
+                )
+            )
+
+
+            plan = (
+                response.output_parsed
+            )
+
+
+        except Exception as error:
+
+            return ToolPlan(
+                use_tool=False,
+
+                confidence=0,
+
+                summary=(
+                    "Tool planning failed: "
+                    f"{error}"
+                ),
+            )
 
 
     if plan is None:

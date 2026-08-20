@@ -19,6 +19,7 @@ Current Tools:
 
 import ctypes
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -211,6 +212,14 @@ def get_application(
 def find_executable(
     candidates,
 ):
+    """
+    Resolve the first executable that actually exists.
+
+    Relative command names are checked through PATH with shutil.which().
+    If a relative candidate is unavailable, resolution continues to the
+    later absolute fallback paths instead of returning an invalid command.
+    """
+
     for candidate in candidates:
 
         if not candidate:
@@ -230,9 +239,17 @@ def find_executable(
                     candidate_path
                 )
 
-        else:
+            continue
 
-            return candidate
+        resolved = (
+            shutil.which(
+                candidate
+            )
+        )
+
+        if resolved:
+
+            return resolved
 
     return None
 

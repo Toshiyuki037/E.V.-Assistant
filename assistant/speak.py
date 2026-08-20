@@ -14,24 +14,20 @@ Phase 16E:
     remain paired. This improves time-to-first-audio without discarding any
     response content.
 
-The resident F5 model remains protected by one process-wide TTS lock.
+The resident LuxTTS worker remains protected by one process-wide TTS lock.
 """
 
 from __future__ import annotations
 
-import os
 import queue
-import tempfile
 import threading
 
 from pathlib import (
     Path,
 )
 
-import soundfile as sf
-
-from f5_tts.api import (
-    F5TTS,
+from .voice.luxtts_client import (
+    CLIENT,
 )
 
 from .speech_formatter import (
@@ -85,14 +81,7 @@ REF_TEXT = (
 
 
 print(
-    "Loading E.V. voice model..."
-)
-
-tts = (
-    F5TTS(
-        model=
-            "F5TTS_v1_Base"
-    )
+    "Preparing E.V.I.E. LuxTTS backend..."
 )
 
 _TTS_LOCK = (
@@ -106,13 +95,23 @@ _ACTIVE_SPEECH_LOCK = (
 _ACTIVE_SPEECH_CANCEL = None
 
 print(
-    "E.V. voice ready."
+    "E.V.I.E. LuxTTS backend configured."
 )
 
 
 def synthesize_audio(
     text: str,
 ):
+    """
+    LuxTTS adapter for E.V.I.E.'s existing speech architecture.
+
+    Contract remains unchanged:
+        text -> (audio, sample_rate)
+
+    LuxTTS itself runs in its dedicated Conda environment through
+    the persistent worker client.
+    """
+
     text = (
         str(
             text
@@ -127,62 +126,12 @@ def synthesize_audio(
             0,
         )
 
-    temp_path = None
-
-    try:
-        with tempfile.NamedTemporaryFile(
-            suffix=".wav",
-            delete=False,
-        ) as temp:
-            temp_path = (
-                temp.name
-            )
-
-        with _TTS_LOCK:
-            tts.infer(
-                ref_file=
-                    str(
-                        REF_AUDIO
-                    ),
-
-                ref_text=
-                    REF_TEXT,
-
-                gen_text=
-                    text,
-
-                file_wave=
-                    temp_path,
-            )
-
-        audio, sample_rate = (
-            sf.read(
-                temp_path
-            )
-        )
-
+    with _TTS_LOCK:
         return (
-            audio,
-            int(
-                sample_rate
-            ),
-        )
-
-    finally:
-        if (
-            temp_path
-            and os.path.exists(
-                temp_path
+            CLIENT.synthesize(
+                text
             )
-        ):
-            try:
-                os.remove(
-                    temp_path
-                )
-
-            except OSError:
-                pass
-
+        )
 
 def play_audio(
     audio,
@@ -272,6 +221,8 @@ def close_audio():
 
     PLAYER.close()
 
+    CLIENT.stop()
+
 
 def _audio_duration(
     audio,
@@ -298,7 +249,7 @@ def speak_streaming_response(
     max_chunk_characters: int = 340,
 ):
     """
-    Speak the entire response using rolling F5 synthesis.
+    Speak the entire response using rolling LuxTTS synthesis.
 
     Pipeline:
         first sentence synthesize
@@ -520,7 +471,7 @@ def speak(
     """
     Backwards-compatible public speech function.
 
-    It now uses rolling full-response synthesis rather than one giant F5 call.
+    It now uses rolling full-response synthesis rather than one giant TTS call.
     """
 
     text = (

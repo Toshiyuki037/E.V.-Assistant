@@ -1528,6 +1528,18 @@ def process_prompt(
             first_sentence_marked = False
             first_audio_marked = False
 
+            # Telemetry only: measure existing speech-pipeline events.
+            from time import perf_counter as _speech_metric_now
+
+            speech_synthesis_started = {}
+            speech_playback_started = {}
+
+            speech_generation_total = 0.0
+            speech_playback_total = 0.0
+
+            speech_pipeline_started_at = None
+            speech_pipeline_finished_at = None
+
 
             def handle_authoritative_sentence(
                 sentence,
@@ -1557,7 +1569,12 @@ def process_prompt(
             ):
 
                 nonlocal first_audio_marked
+                nonlocal speech_generation_total
+                nonlocal speech_playback_total
+                nonlocal speech_pipeline_started_at
+                nonlocal speech_pipeline_finished_at
 
+                now = _speech_metric_now()
 
                 if (
                     event.kind
@@ -1571,6 +1588,49 @@ def process_prompt(
                     )
 
                     first_audio_marked = True
+
+                if event.kind == "synthesis_started":
+
+                    speech_synthesis_started[
+                        event.index
+                    ] = now
+
+                    if speech_pipeline_started_at is None:
+                        speech_pipeline_started_at = now
+
+                elif event.kind == "synthesis_finished":
+
+                    started = speech_synthesis_started.pop(
+                        event.index,
+                        None,
+                    )
+
+                    if started is not None:
+                        speech_generation_total += max(
+                            0.0,
+                            now - started,
+                        )
+
+                elif event.kind == "playback_started":
+
+                    speech_playback_started[
+                        event.index
+                    ] = now
+
+                elif event.kind == "playback_finished":
+
+                    started = speech_playback_started.pop(
+                        event.index,
+                        None,
+                    )
+
+                    if started is not None:
+                        speech_playback_total += max(
+                            0.0,
+                            now - started,
+                        )
+
+                    speech_pipeline_finished_at = now
 
 
             # -------------------------------------------------------------------
@@ -1776,6 +1836,35 @@ def process_prompt(
                 print_latency_report(
                     telemetry
                 )
+
+                speech_pipeline_wall = None
+
+                if (
+                    speech_pipeline_started_at is not None
+                    and speech_pipeline_finished_at is not None
+                ):
+                    speech_pipeline_wall = max(
+                        0.0,
+                        speech_pipeline_finished_at
+                        - speech_pipeline_started_at,
+                    )
+
+                print()
+                print("[Speech Timing]")
+                print(
+                    "tts_generation_total: "
+                    f"{speech_generation_total:.3f}s"
+                )
+                print(
+                    "speech_playback_total: "
+                    f"{speech_playback_total:.3f}s"
+                )
+
+                if speech_pipeline_wall is not None:
+                    print(
+                        "speech_pipeline_wall: "
+                        f"{speech_pipeline_wall:.3f}s"
+                    )
 
 
             clear_request()
