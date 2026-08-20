@@ -1,0 +1,73 @@
+{
+  "request_id": "1fe4f8e862de46db91a5e59a30fddbb9",
+  "user_text": "what's the weather look like for this in honolulu",
+  "total_seconds": 25.1802,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 8.7464,
+    "tts_started": 8.7653,
+    "audio_playback_started": 11.6676,
+    "first_audio_started": 11.6676,
+    "audio_playback_finished": 25.1802,
+    "speech_finished": 25.1802
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 8.7425,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0186,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 16.4149,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 3.3114,
+      "metadata": {
+        "chunk_index": 0,
+        "audio_seconds": 3.413
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 9.639,
+      "metadata": {
+        "chunk_index": 1,
+        "audio_seconds": 9.813
+      }
+    }
+  ],
+  "metadata": {}
+}

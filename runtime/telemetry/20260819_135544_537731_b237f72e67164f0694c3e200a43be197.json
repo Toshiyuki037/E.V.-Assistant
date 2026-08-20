@@ -1,0 +1,65 @@
+{
+  "request_id": "b237f72e67164f0694c3e200a43be197",
+  "user_text": "Evie, what's the local time right now?",
+  "total_seconds": 20.0302,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 12.0518,
+    "response_ready": 12.1671,
+    "tts_started": 12.1862,
+    "speech_finished": 20.0302
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0005,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 12.1502,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0186,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 7.844,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

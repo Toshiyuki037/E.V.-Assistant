@@ -1,0 +1,65 @@
+{
+  "request_id": "43b42dfa3a4443f289b13b4864837355",
+  "user_text": "Evie, can you open youtube.com and Google Chrome tab?",
+  "total_seconds": 14.1457,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 7.2048,
+    "tts_started": 7.223,
+    "audio_playback_started": 10.3648,
+    "first_audio_started": 10.3648,
+    "audio_playback_finished": 14.1457,
+    "speech_finished": 14.1457
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0005,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 7.2002,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0171,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 6.9227,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 3.7809,
+      "metadata": {
+        "chunk_index": 0,
+        "audio_seconds": 3.925
+      }
+    }
+  ],
+  "metadata": {}
+}

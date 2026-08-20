@@ -1,0 +1,65 @@
+{
+  "request_id": "2367770503cf4f92844fa43cb49d961c",
+  "user_text": "why is it taking so long for you to understand things",
+  "total_seconds": 58.8209,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 13.2247,
+    "response_ready": 14.9431,
+    "tts_started": 14.9633,
+    "speech_finished": 58.8209
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0027,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0007,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 14.9223,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.017,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 43.8576,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

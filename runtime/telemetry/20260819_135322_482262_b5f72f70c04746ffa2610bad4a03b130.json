@@ -1,0 +1,65 @@
+{
+  "request_id": "b5f72f70c04746ffa2610bad4a03b130",
+  "user_text": "how's everything looking today",
+  "total_seconds": 47.9069,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 11.8178,
+    "response_ready": 13.3251,
+    "tts_started": 13.3422,
+    "speech_finished": 47.9069
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0024,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0035,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 13.3065,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0169,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 34.5647,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

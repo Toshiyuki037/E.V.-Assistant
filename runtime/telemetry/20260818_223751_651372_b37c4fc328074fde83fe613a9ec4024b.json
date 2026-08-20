@@ -1,0 +1,65 @@
+{
+  "request_id": "b37c4fc328074fde83fe613a9ec4024b",
+  "user_text": "I'm doing good. What a latency.",
+  "total_seconds": 38.8173,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 17.0321,
+    "response_ready": 17.8554,
+    "tts_started": 17.8801,
+    "speech_finished": 38.8172
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 2.35,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 15.4948,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0242,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 20.9371,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

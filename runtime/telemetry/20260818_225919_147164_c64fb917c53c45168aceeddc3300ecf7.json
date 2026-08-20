@@ -1,0 +1,65 @@
+{
+  "request_id": "c64fb917c53c45168aceeddc3300ecf7",
+  "user_text": "What's your latency looking like?",
+  "total_seconds": 48.2171,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 11.3582,
+    "response_ready": 12.5016,
+    "tts_started": 12.5198,
+    "speech_finished": 48.2171
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 12.4917,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0179,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 35.6973,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,65 @@
+{
+  "request_id": "cbf56edfe4fa449ba9e1ff35a4526e7f",
+  "user_text": "how's everything working",
+  "total_seconds": 46.9082,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 12.3891,
+    "response_ready": 14.0475,
+    "tts_started": 14.0667,
+    "speech_finished": 46.9082
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0021,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0019,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0068,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0009,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 14.0169,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0187,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 32.8415,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

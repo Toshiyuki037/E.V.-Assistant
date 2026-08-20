@@ -1,0 +1,65 @@
+{
+  "request_id": "dda22bd62e0c447b8b607c48773fb7c2",
+  "user_text": "EV, what do you see on my screen?",
+  "total_seconds": 48.9844,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 11.8679,
+    "response_ready": 14.7245,
+    "tts_started": 14.7296,
+    "speech_finished": 48.9844
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0005,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 13.4303,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0048,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 34.2548,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

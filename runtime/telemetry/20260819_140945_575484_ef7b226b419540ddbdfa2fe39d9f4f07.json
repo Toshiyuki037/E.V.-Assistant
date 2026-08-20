@@ -1,0 +1,65 @@
+{
+  "request_id": "ef7b226b419540ddbdfa2fe39d9f4f07",
+  "user_text": "Sweet.",
+  "total_seconds": 20.1693,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 11.1794,
+    "response_ready": 11.7422,
+    "tts_started": 11.7597,
+    "speech_finished": 20.1693
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 11.7285,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0168,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 8.4095,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

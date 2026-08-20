@@ -1,0 +1,83 @@
+{
+  "request_id": "9f1179151f244abcb6cb1151985362f0",
+  "user_text": "how are you",
+  "total_seconds": 29.1673,
+  "marks": {
+    "request_received": 0.0,
+    "response_ready": 16.9907,
+    "tts_started": 17.0157,
+    "audio_playback_started": 21.1888,
+    "first_audio_started": 21.1888,
+    "audio_playback_finished": 29.1672,
+    "speech_finished": 29.1673
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0019,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0021,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0064,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0062,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0016,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 16.9565,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0202,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 12.1516,
+      "metadata": {}
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 5.7478,
+      "metadata": {
+        "chunk_index": 0,
+        "audio_seconds": 4.245
+      }
+    },
+    {
+      "name": "tts_playback",
+      "seconds": 2.2305,
+      "metadata": {
+        "chunk_index": 1,
+        "audio_seconds": 1.664
+      }
+    }
+  ],
+  "metadata": {}
+}

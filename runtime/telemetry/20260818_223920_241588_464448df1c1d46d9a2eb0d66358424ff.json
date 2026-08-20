@@ -1,0 +1,65 @@
+{
+  "request_id": "464448df1c1d46d9a2eb0d66358424ff",
+  "user_text": "Yeah, can you check that for me also diagnostic while you're at it?",
+  "total_seconds": 79.5547,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 19.6183,
+    "response_ready": 56.3062,
+    "tts_started": 56.3401,
+    "speech_finished": 79.5547
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 37.155,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0325,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 23.2146,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

@@ -1,0 +1,65 @@
+{
+  "request_id": "33ea75f8142542d68c0fd35455e1b885",
+  "user_text": "system diagnostic test",
+  "total_seconds": 70.4298,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 19.4434,
+    "response_ready": 24.6178,
+    "tts_started": 24.6276,
+    "speech_finished": 70.4298
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0012,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0011,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0004,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 21.2075,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0083,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 45.8021,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

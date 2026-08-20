@@ -1,0 +1,65 @@
+{
+  "request_id": "56c4cdeb4f9b4896a34009fbf5045e64",
+  "user_text": "Eevee, look at your project file on the instant. I'm trying to get you to your NUI right now in the desktop app, but I'm noticing that some bugs aren't working yet and features seem limitless in terms of the visible UI.",
+  "total_seconds": 82.4992,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 27.0305,
+    "response_ready": 29.4381,
+    "tts_started": 29.4642,
+    "speech_finished": 82.4992
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0003,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 4.3051,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 25.1243,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0257,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 53.035,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

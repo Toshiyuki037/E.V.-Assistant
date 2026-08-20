@@ -1,0 +1,65 @@
+{
+  "request_id": "d91b9b66de87474993867154ac771a0e",
+  "user_text": "EV. Does the UL enough in the stop adder enough for me to call and run a connect?",
+  "total_seconds": 50.6537,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 14.7406,
+    "response_ready": 15.9049,
+    "tts_started": 15.9266,
+    "speech_finished": 50.6537
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0002,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 3.4606,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 12.4357,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0191,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 34.7271,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

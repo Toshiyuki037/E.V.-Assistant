@@ -1,0 +1,65 @@
+{
+  "request_id": "5ee1a5dab59e40c3859928178f602701",
+  "user_text": "I smile.",
+  "total_seconds": 26.2337,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 19.3923,
+    "response_ready": 20.9499,
+    "tts_started": 20.9672,
+    "speech_finished": 26.2337
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0001,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 20.9353,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0171,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 5.2664,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}

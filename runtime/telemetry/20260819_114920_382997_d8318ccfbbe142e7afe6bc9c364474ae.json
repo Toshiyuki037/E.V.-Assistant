@@ -1,0 +1,65 @@
+{
+  "request_id": "d8318ccfbbe142e7afe6bc9c364474ae",
+  "user_text": "wake up. ever, ever, ever ask me anything like that again",
+  "total_seconds": 42.8262,
+  "marks": {
+    "request_received": 0.0,
+    "first_authoritative_sentence": 26.4686,
+    "response_ready": 27.2806,
+    "tts_started": 27.3043,
+    "speech_finished": 42.8262
+  },
+  "spans": [
+    {
+      "name": "phase11_workflow",
+      "seconds": 0.0021,
+      "metadata": {}
+    },
+    {
+      "name": "phase15_system",
+      "seconds": 0.0022,
+      "metadata": {}
+    },
+    {
+      "name": "phase12_coding",
+      "seconds": 0.006,
+      "metadata": {}
+    },
+    {
+      "name": "phase7_agent",
+      "seconds": 0.0019,
+      "metadata": {}
+    },
+    {
+      "name": "phase13_computer",
+      "seconds": 0.0008,
+      "metadata": {}
+    },
+    {
+      "name": "phase6_tool_routing",
+      "seconds": 0.0022,
+      "metadata": {}
+    },
+    {
+      "name": "memory_processing",
+      "seconds": 0.0,
+      "metadata": {}
+    },
+    {
+      "name": "reasoning",
+      "seconds": 27.2355,
+      "metadata": {}
+    },
+    {
+      "name": "conversation_save",
+      "seconds": 0.0201,
+      "metadata": {}
+    },
+    {
+      "name": "tts_total",
+      "seconds": 15.5219,
+      "metadata": {}
+    }
+  ],
+  "metadata": {}
+}
